@@ -909,6 +909,8 @@ void ClearCensus()
     NuclearPowerPlantCount = 0;
     SeaPortCount = 0;
     AirportCount = 0;
+
+    census.clear();
 }
 
 
