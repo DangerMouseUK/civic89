@@ -365,14 +365,14 @@ void SendMessages(const Budget& budget, const Census& census)
         break;
 
     case 14:
-        if ((CombinedZoneCount > 10) && ((CombinedZoneCount << 1) > RoadCount))
+        if ((CombinedZoneCount > 10) && ((CombinedZoneCount << 1) > census.RoadCount))
         {
             SendMes(NotificationId::RoadsNeeded);
         }
         break;
 
     case 18:
-        if ((CombinedZoneCount > 50) && (CombinedZoneCount > RailCount))
+        if ((CombinedZoneCount > 50) && (CombinedZoneCount > census.RailCount))
         {
             SendMes(NotificationId::RailNeeded);
         }
@@ -465,7 +465,7 @@ void SendMessages(const Budget& budget, const Census& census)
         break;
 
     case 54:
-        if ((RoadEffect < 20) && (RoadCount > 30))
+        if ((RoadEffect < 20) && (census.RoadCount > 30))
         {
             SendMes(NotificationId::RoadsDeteriorating);
         }

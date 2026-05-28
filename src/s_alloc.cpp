@@ -28,8 +28,6 @@ Point<int> SimulationTarget{};
 int CurrentTile; // unmasked tile value
 int CurrentTileMasked; // masked tile value
 
-int RoadCount, RailCount, BurningTileCount;
-
 int ResidentialPopulationCount, CommercialPopulationCount, IndustrialPopulationCount, PopulationTotal, PreviousPopulationTotal;
 int ResidentialZoneCount, CommercialZoneCount, IndustrialZoneCount, CombinedZoneCount;
 int HospitalCount, ChurchCount, StadiumCount;

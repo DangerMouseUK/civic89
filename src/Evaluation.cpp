@@ -226,10 +226,10 @@ void ChangeEval()
 }
 
 
-void GetAssessedValue()
+void GetAssessedValue(const Census& census)
 {
-    int assesedValue = RoadCount * 5;
-    assesedValue += RailCount * 10;
+    int assesedValue = census.RoadCount * 5;
+    assesedValue += census.RailCount * 10;
     assesedValue += PoliceStationCount * 1000;
     assesedValue += FireStationCount * 1000;
     assesedValue += HospitalCount * 400;
@@ -326,9 +326,9 @@ int GetUnemployment()
 }
 
 
-int GetFire()
-{
-    return std::clamp(BurningTileCount * 5, 0, 255);
+int GetFire(const Census& census)
+{   
+    return std::clamp(census.BurningTileCount * 5, 0, 255);
 }
 
 
@@ -392,7 +392,7 @@ void GetScore(const Budget& budget, const Census& census)
         SM = .95f + ((float)deltaCityPop / (CityPop - deltaCityPop));
     }
     z = static_cast<int>(z * SM);
-    z = z - GetFire();		/* dec score for fires */
+    z = z - GetFire(census);		/* dec score for fires */
     z = z - (budget.TaxRate());
 
     TM = static_cast<float>(census.UnpoweredZoneCount + census.PoweredZoneCount);	/* dec score for unpowered zones */
@@ -427,7 +427,7 @@ void DoVotes()
 }
 
 
-void DoProblems(const Budget& budget)
+void DoProblems(const Budget& budget, const Census& census)
 {
     Problems =
     {
@@ -437,7 +437,7 @@ void DoProblems(const Budget& budget)
         Problem{ ProblemTitles[3], budget.TaxRate() * 10 },
         Problem{ ProblemTitles[4], AverageTraffic() },
         Problem{ ProblemTitles[5], GetUnemployment() },
-        Problem{ ProblemTitles[6], GetFire() }
+        Problem{ ProblemTitles[6], GetFire(census) }
     };
 
     VoteProblems();
@@ -450,9 +450,9 @@ void CityEvaluation(const Budget& budget, const Census& census)
 {
     if (PopulationTotal)
     {
-        GetAssessedValue();
+        GetAssessedValue(census);
         DoPopNum();
-        DoProblems(budget);
+        DoProblems(budget, census);
         GetScore(budget, census);
         DoVotes();
         ChangeEval();

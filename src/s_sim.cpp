@@ -228,7 +228,7 @@ void processMeltdown(const int x, const int y)
 
 void updateRails(const Point<int>& position)
 {
-    RailCount++;
+    census.RailCount++;
     generateTrain(position);
    
     if (RoadEffect < 30) // Deteriorating  Rail
@@ -383,7 +383,7 @@ bool updateBridges()
 }
 
 
-void updateRoads()
+void updateRoads(Census& census)
 {
     static int DensityTable[3] =
     {
@@ -392,7 +392,7 @@ void updateRoads()
         TrafficHeavyBase    // Heavy Traffic
     };
 
-    RoadCount++;
+    census.RoadCount++;
 
     if (RoadEffect < 30) // Deteriorating Roads
     {
@@ -418,7 +418,7 @@ void updateRoads()
 
     if (!(CurrentTile & BurnableBit)) /* If Bridge */
     {
-        RoadCount += 4;
+        census.RoadCount += 4;
         if (updateBridges())
         {
             return;
@@ -437,7 +437,7 @@ void updateRoads()
     }
     else
     {
-        RoadCount++;
+        census.RoadCount++;
         trafficDensity = 2;
     }
 
@@ -674,7 +674,7 @@ void updateSpecialZones(bool powered, const CityProperties& properties)
 
 
 /* comefrom: Simulate initSimulation */
-void MapScan(int x1, int x2, const CityProperties& properties)
+void MapScan(int x1, int x2, const CityProperties& properties, Census& census)
 {
     for (int x = x1; x < x2; x++)
     {
@@ -693,7 +693,7 @@ void MapScan(int x1, int x2, const CityProperties& properties)
                     {
                         if (CurrentTileMasked >= FireBase)
                         {
-                            BurningTileCount++;
+                            census.BurningTileCount++;
                             if (!(rand16() & 3)) // 1 in 4 times
                             {
                                 updateFire();
@@ -718,7 +718,7 @@ void MapScan(int x1, int x2, const CityProperties& properties)
 
                     if ((CurrentTileMasked >= BridgeBase) && (CurrentTileMasked < PowerBase))
                     {
-                        updateRoads();
+                        updateRoads(census);
                         continue;
                     }
 
@@ -894,9 +894,6 @@ void resetScanState()
 
 void ClearCensus()
 {
-    BurningTileCount = 0;
-    RoadCount = 0;
-    RailCount = 0;
     ResidentialPopulationCount = 0;
     CommercialPopulationCount = 0;
     IndustrialPopulationCount = 0;
@@ -999,14 +996,14 @@ void Take2Census()
 }
 
 
-void CollectTax(const CityProperties& properties, Budget& budget)
+void CollectTax(const CityProperties& properties, Budget& budget, const Census& census)
 {
     static float RLevels[3] = { 0.7f, 0.9f, 1.2f };
     static float FLevels[3] = { 1.4f, 1.2f, 0.8f };
 
     budget.PoliceFundsNeeded(PoliceStationCount * 100);
     budget.FireFundsNeeded(FireStationCount * 100);
-    budget.RoadFundsNeeded(static_cast<int>((RoadCount + (RailCount * 2)) * RLevels[properties.GameLevel()]));
+    budget.RoadFundsNeeded(static_cast<int>((census.RoadCount + (census.RailCount * 2)) * RLevels[properties.GameLevel()]));
 
     budget.TaxIncome(static_cast<int>(((static_cast<float>(PopulationTotal) * LVAverage) / 120.0f) * budget.TaxRate() * FLevels[properties.GameLevel()])); //yuck
 
@@ -1236,7 +1233,7 @@ namespace
     void scanMapSegment(CityProperties& properties, Budget&)
     {
         const auto currentPhase = SimPhaseCounter.current() % SimPhaseCount;
-        MapScan((currentPhase - 1) * EighthWorldWidth, currentPhase * EighthWorldWidth, properties);
+        MapScan((currentPhase - 1) * EighthWorldWidth, currentPhase * EighthWorldWidth, properties, census);
     }
 
 
@@ -1254,7 +1251,7 @@ namespace
 
         if (!(CityTime % TaxFrequency))
         {
-            CollectTax(properties, budget);
+            CollectTax(properties, budget, census);
             CityEvaluation(budget, census);
         }
     }
@@ -1379,7 +1376,7 @@ void initSimulation(CityProperties& properties, Budget& budget)
     ClearCensus();
 
     resetScanState();
-    MapScan(0, SimWidth, properties); /* XXX are you sure ??? */
+    MapScan(0, SimWidth, properties, census); /* XXX are you sure ??? */
     powerScan();
     pollutionAndLandValueScan();
     crimeScan();
