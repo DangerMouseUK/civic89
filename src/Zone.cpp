@@ -595,15 +595,15 @@ int housePopulation()
 }
 
 
-void updateIndustry(bool zonePowered)
+void updateIndustry(bool zonePowered, Census& census)
 {
     int zscore;
 
     setSmoke(zonePowered);
 
     int zonePopulation{ industrialZonePopulation(CurrentTileMasked) };
-    IndustrialPopulationCount += zonePopulation;
-    IndustrialZoneCount++;
+    census.IndustrialPopulationCount += zonePopulation;
+    census.IndustrialZoneCount++;
 
     TrafficResult trafficResult{ TrafficResult::RouteFound };
 
@@ -641,15 +641,15 @@ void updateIndustry(bool zonePowered)
 }
 
 
-void updateCommercial(bool zonePowered)
+void updateCommercial(bool zonePowered, Census& census)
 {
     int zscore, locvalve, value;
 
-    CommercialZoneCount++;
+    census.CommercialZoneCount++;
 
     int tpop = commercialZonePopulation(CurrentTileMasked);
 
-    CommercialPopulationCount += tpop;
+    census.CommercialPopulationCount += tpop;
 
     TrafficResult trafficResult{TrafficResult::RouteFound};
 
@@ -691,7 +691,7 @@ void updateCommercial(bool zonePowered)
 }
 
 
-void updateResidential(const Point<int>& location, bool zonePowered)
+void updateResidential(const Point<int>& location, bool zonePowered, Census& census)
 {
     int residentialPopulation = 0, value = 0;
 
@@ -706,8 +706,8 @@ void updateResidential(const Point<int>& location, bool zonePowered)
         residentialPopulation = residentialZonePopulation(tileValue);
     }
 
-    ResidentialZoneCount++;
-    ResidentialPopulationCount += residentialPopulation;
+    census.ResidentialZoneCount++;
+    census.ResidentialPopulationCount += residentialPopulation;
 
     TrafficResult trafficResult{ TrafficResult::RouteFound };
     if (residentialPopulation > randomRange(0, 35))
@@ -769,7 +769,7 @@ void updateZone(const Point<int>& location, const CityProperties& properties, Ce
 
     if (CurrentTileMasked < Hospital)
     {
-        updateResidential(location, zonePowered);
+        updateResidential(location, zonePowered, census);
         return;
     }
 
@@ -782,10 +782,10 @@ void updateZone(const Point<int>& location, const CityProperties& properties, Ce
 
     if (CurrentTileMasked < IndustryBase)
     {
-        updateCommercial(zonePowered);
+        updateCommercial(zonePowered, census);
         return;
     }
 
-    updateIndustry(zonePowered);
+    updateIndustry(zonePowered, census);
     return;
 }

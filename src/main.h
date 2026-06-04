@@ -23,7 +23,7 @@
 extern int CurrentTile; // unmasked tile value
 extern int CurrentTileMasked; // masked tile value
 
-extern int ResidentialPopulationCount, CommercialPopulationCount, IndustrialPopulationCount, PopulationTotal, PreviousPopulationTotal;
+extern int PopulationTotal, PreviousPopulationTotal;
 extern int ResidentialZoneCount, CommercialZoneCount, IndustrialZoneCount, CombinedZoneCount;
 extern int HospitalCount, ChurchCount, StadiumCount;
 extern int PoliceStationCount, FireStationCount;

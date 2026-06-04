@@ -242,10 +242,10 @@ void GetAssessedValue(const Census& census)
 }
 
 
-void DoPopNum()
+void DoPopNum(const Census& census)
 {
     int oldCityPop{ CityPop };
-    CityPop = (ResidentialPopulationCount + (CommercialPopulationCount * 8) + (IndustrialPopulationCount * 8)) * 20;
+    CityPop = (census.ResidentialPopulationCount + (census.CommercialPopulationCount * 8) + (census.IndustrialPopulationCount * 8)) * 20;
     
     if (oldCityPop == 0)
     {
@@ -302,14 +302,14 @@ int AverageTraffic()
 }
 
 
-int GetUnemployment()
+int GetUnemployment(const Census& census)
 {
     float ratio{ 0.0f };
 
-    int base{ (CommercialPopulationCount + IndustrialPopulationCount) * 8 };
+    int base{ (census.CommercialPopulationCount + census.IndustrialPopulationCount) * 8 };
     if (base)
     {
-        ratio = (static_cast<float>(ResidentialPopulationCount)) / base;
+        ratio = (static_cast<float>(census.ResidentialPopulationCount)) / base;
     }
     else
     {
@@ -436,7 +436,7 @@ void DoProblems(const Budget& budget, const Census& census)
         Problem{ ProblemTitles[2], static_cast<int>(LVAverage * 0.7f) },
         Problem{ ProblemTitles[3], budget.TaxRate() * 10 },
         Problem{ ProblemTitles[4], AverageTraffic() },
-        Problem{ ProblemTitles[5], GetUnemployment() },
+        Problem{ ProblemTitles[5], GetUnemployment(census) },
         Problem{ ProblemTitles[6], GetFire(census) }
     };
 
@@ -451,7 +451,7 @@ void CityEvaluation(const Budget& budget, const Census& census)
     if (PopulationTotal)
     {
         GetAssessedValue(census);
-        DoPopNum();
+        DoPopNum(census);
         DoProblems(budget, census);
         GetScore(budget, census);
         DoVotes();

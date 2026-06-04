@@ -279,14 +279,14 @@ void DoScenarioScore(int type)
 }
 
 
-void CheckGrowth()
+void CheckGrowth(const Census& census)
 {
     if (CityTime % 4 != 0)
     {
         return;
     }
 
-    int currentPopulation = ((ResidentialPopulationCount)+(CommercialPopulationCount * 8) + (IndustrialPopulationCount * 8)) * 20;
+    int currentPopulation = ((census.ResidentialPopulationCount)+(census.CommercialPopulationCount * 8) + (census.IndustrialPopulationCount * 8)) * 20;
     NotificationId growthMessageId = NotificationId::None;
 
     if (LastCityPop)
@@ -335,9 +335,9 @@ void SendMessages(const Budget& budget, const Census& census)
         }
     }
 
-    CheckGrowth();
+    CheckGrowth(census);
 
-    CombinedZoneCount = ResidentialZoneCount + CommercialZoneCount + IndustrialZoneCount;
+    CombinedZoneCount = census.ResidentialZoneCount + census.CommercialZoneCount + census.IndustrialZoneCount;
     int PowerPop = NuclearPowerPlantCount + CoalPowerPlantCount;
 
     switch (CityTime % 64)
@@ -386,7 +386,7 @@ void SendMessages(const Budget& budget, const Census& census)
         break;
 
     case 26:
-        if ((ResidentialPopulationCount > 500) && (StadiumCount == 0)) /* need Stad */
+        if ((census.ResidentialPopulationCount > 500) && (StadiumCount == 0)) /* need Stad */
         {
             SendMes(NotificationId::StadiumNeeded);
             ResCap = 1;
@@ -398,7 +398,7 @@ void SendMessages(const Budget& budget, const Census& census)
         break;
 
     case 28:
-        if ((IndustrialPopulationCount > 70) && (SeaPortCount == 0))
+        if ((census.IndustrialPopulationCount > 70) && (SeaPortCount == 0))
         {
             SendMes(NotificationId::SeaportNeeded);
             IndCap = 1;
@@ -407,7 +407,7 @@ void SendMessages(const Budget& budget, const Census& census)
         break;
 
     case 30:
-        if ((CommercialPopulationCount > 100) && (AirportCount == 0))
+        if ((census.CommercialPopulationCount > 100) && (AirportCount == 0))
         {
             SendMes(NotificationId::AirportNeeded);
             ComCap = 1;

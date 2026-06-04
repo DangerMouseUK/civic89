@@ -58,7 +58,7 @@ bool DoInitialEval = false;
 
 namespace
 {
-	Census census;
+	Census CityCensus;
 	RCI rci;
 
     constexpr auto CensusRate = 4;
@@ -228,7 +228,7 @@ void processMeltdown(const int x, const int y)
 
 void updateRails(const Point<int>& position)
 {
-    census.RailCount++;
+    CityCensus.RailCount++;
     generateTrain(position);
    
     if (RoadEffect < 30) // Deteriorating  Rail
@@ -754,9 +754,9 @@ void SetValves(const CityProperties& properties, const Budget& budget)
     float Rratio, Cratio, Iratio, temp;
     float NormResPop, PjResPop, PjComPop, PjIndPop;
 
-    MiscHistory[2] = ResidentialPopulationCount;
-    MiscHistory[3] = CommercialPopulationCount;
-    MiscHistory[4] = IndustrialPopulationCount;
+    MiscHistory[2] = CityCensus.ResidentialPopulationCount;
+    MiscHistory[3] = CityCensus.CommercialPopulationCount;
+    MiscHistory[4] = CityCensus.IndustrialPopulationCount;
     MiscHistory[5] = rci.residentialDemand();
     MiscHistory[6] = rci.commercialDemand();
     MiscHistory[7] = rci.industrialDemand();
@@ -769,9 +769,9 @@ void SetValves(const CityProperties& properties, const Budget& budget)
     MiscHistory[16] = static_cast<int>(cityClass());
     MiscHistory[17] = cityScore();
 
-    NormResPop = static_cast<float>(ResidentialPopulationCount / 8);
+    NormResPop = static_cast<float>(CityCensus.ResidentialPopulationCount / 8);
     PreviousPopulationTotal = PopulationTotal;
-    PopulationTotal = static_cast<int>(NormResPop) + CommercialPopulationCount + IndustrialPopulationCount;
+    PopulationTotal = static_cast<int>(NormResPop) + CityCensus.CommercialPopulationCount + CityCensus.IndustrialPopulationCount;
 
     if (NormResPop) Employment = ((CommercialPopulationHistory[1] + IndustrialPopulationHistory[1]) / NormResPop);
     else Employment = 1;
@@ -804,7 +804,7 @@ void SetValves(const CityProperties& properties, const Budget& budget)
         temp = static_cast<float>(ResidentialPopulationHistory[z] + CommercialPopulationHistory[z] + IndustrialPopulationHistory[z]);
     }
 
-    IntMarket = (NormResPop + CommercialPopulationCount + IndustrialPopulationCount) / 3.7f;
+    IntMarket = (NormResPop + CityCensus.CommercialPopulationCount + CityCensus.IndustrialPopulationCount) / 3.7f;
 
     PjComPop = IntMarket * LaborBase;
 
@@ -824,7 +824,7 @@ void SetValves(const CityProperties& properties, const Budget& budget)
         break;
     }
 
-    PjIndPop = IndustrialPopulationCount * LaborBase * temp;
+    PjIndPop = CityCensus.IndustrialPopulationCount * LaborBase * temp;
     if (PjIndPop < 5)
     {
         PjIndPop = 5;
@@ -838,17 +838,17 @@ void SetValves(const CityProperties& properties, const Budget& budget)
     {
         Rratio = 1.3f;
     }
-    if (CommercialPopulationCount)
+    if (CityCensus.CommercialPopulationCount)
     {
-        Cratio = (PjComPop / CommercialPopulationCount);
+        Cratio = (PjComPop / CityCensus.CommercialPopulationCount);
     }
     else
     {
         Cratio = PjComPop;
     }
-    if (IndustrialPopulationCount)
+    if (CityCensus.IndustrialPopulationCount)
     {
-        Iratio = (PjIndPop / IndustrialPopulationCount);
+        Iratio = (PjIndPop / CityCensus.IndustrialPopulationCount);
     }
     else
     {
@@ -894,9 +894,6 @@ void resetScanState()
 
 void ClearCensus()
 {
-    ResidentialPopulationCount = 0;
-    CommercialPopulationCount = 0;
-    IndustrialPopulationCount = 0;
     ResidentialZoneCount = 0;
     CommercialZoneCount = 0;
     IndustrialZoneCount = 0;
@@ -910,7 +907,7 @@ void ClearCensus()
     SeaPortCount = 0;
     AirportCount = 0;
 
-    census.clear();
+    CityCensus.clear();
 }
 
 
@@ -936,9 +933,9 @@ void TakeCensus(Budget& budget)
     CommercialPopulationHistoryHighest = *std::max_element(CommercialPopulationHistory.begin(), CommercialPopulationHistory.end());
     IndustrialPopulationHistoryHighest = *std::max_element(IndustrialPopulationHistory.begin(), IndustrialPopulationHistory.end());
 
-    ResidentialPopulationHistory[0] = ResidentialPopulationCount / 8; // magic number
-    CommercialPopulationHistory[0] = CommercialPopulationCount;
-    IndustrialPopulationHistory[0] = IndustrialPopulationCount;
+    ResidentialPopulationHistory[0] = CityCensus.ResidentialPopulationCount / 8; // magic number
+    CommercialPopulationHistory[0] = CityCensus.CommercialPopulationCount;
+    IndustrialPopulationHistory[0] = CityCensus.IndustrialPopulationCount;
 
     CrimeRamp += (CrimeAverage - CrimeRamp) / RampSmoothingFactor;
     CrimeHistory[0] = CrimeRamp;
@@ -950,28 +947,28 @@ void TakeCensus(Budget& budget)
     CrimeHistory[0] = std::clamp(CrimeHistory[0], 0, 255);
     PollutionHistory[0] = std::clamp(PollutionHistory[0], 0, 255);
 
-    if (HospitalCount < (ResidentialPopulationCount / 256))
+    if (HospitalCount < (CityCensus.ResidentialPopulationCount / 256))
     {
         HospitalBuildCount = 1;
     }
-    if (HospitalCount > (ResidentialPopulationCount / 256))
+    if (HospitalCount > (CityCensus.ResidentialPopulationCount / 256))
     {
         HospitalBuildCount = -1;
     }
-    if (HospitalCount == (ResidentialPopulationCount / 256))
+    if (HospitalCount == (CityCensus.ResidentialPopulationCount / 256))
     {
         HospitalBuildCount = 0;
     }
 
-    if (ChurchCount < (ResidentialPopulationCount / 256))
+    if (ChurchCount < (CityCensus.ResidentialPopulationCount / 256))
     {
         ChurchBuildCount = 1;
     }
-    if (ChurchCount > (ResidentialPopulationCount / 256))
+    if (ChurchCount > (CityCensus.ResidentialPopulationCount / 256))
     {
         ChurchBuildCount = -1;
     }
-    if (ChurchCount == (ResidentialPopulationCount / 256))
+    if (ChurchCount == (CityCensus.ResidentialPopulationCount / 256))
     {
         ChurchBuildCount = 0;
     }
@@ -988,9 +985,9 @@ void Take2Census()
     std::rotate(PollutionHis120Years.rbegin(), PollutionHis120Years.rbegin() + 1, PollutionHis120Years.rend());
     std::rotate(MoneyHis120Years.rbegin(), MoneyHis120Years.rbegin() + 1, MoneyHis120Years.rend());
 
-    ResHis120Years[0] = ResidentialPopulationCount / 8; // magic number
-    ComHis120Years[0] = CommercialPopulationCount;
-    IndHis120Years[0] = IndustrialPopulationCount;
+    ResHis120Years[0] = CityCensus.ResidentialPopulationCount / 8; // magic number
+    ComHis120Years[0] = CityCensus.CommercialPopulationCount;
+    IndHis120Years[0] = CityCensus.IndustrialPopulationCount;
 
     CrimeHis120Years[0] = CrimeHistory[0];
     PollutionHis120Years[0] = PollutionHistory[0];
@@ -1144,9 +1141,9 @@ void SimLoadInit(CityProperties& properties)
     static int ScoreWaitTab[9] = { 0, 30 * 48, 5 * 48, 5 * 48, 10 * 48,
                      5 * 48, 10 * 48, 5 * 48, 10 * 48 };
 
-    ResidentialPopulationCount = MiscHistory[2];
-    CommercialPopulationCount = MiscHistory[3];
-    IndustrialPopulationCount = MiscHistory[4];
+    CityCensus.ResidentialPopulationCount = MiscHistory[2];
+    CityCensus.CommercialPopulationCount = MiscHistory[3];
+    CityCensus.IndustrialPopulationCount = MiscHistory[4];
     rci.residentialDemand(MiscHistory[5]);
     rci.commercialDemand(MiscHistory[6]);
     rci.industrialDemand(MiscHistory[7]);
@@ -1217,7 +1214,7 @@ namespace
         if (DoInitialEval)
         {
             DoInitialEval = false;
-            CityEvaluation(budget, census);
+            CityEvaluation(budget, CityCensus);
         }
 
         CityTime++;
@@ -1235,7 +1232,7 @@ namespace
     void scanMapSegment(CityProperties& properties, Budget&)
     {
         const auto currentPhase = SimPhaseCounter.current() % SimPhaseCount;
-        MapScan((currentPhase - 1) * EighthWorldWidth, currentPhase * EighthWorldWidth, properties, census);
+        MapScan((currentPhase - 1) * EighthWorldWidth, currentPhase * EighthWorldWidth, properties, CityCensus);
     }
 
 
@@ -1253,8 +1250,8 @@ namespace
 
         if (!(CityTime % TaxFrequency))
         {
-            CollectTax(properties, budget, census);
-            CityEvaluation(budget, census);
+            CollectTax(properties, budget, CityCensus);
+            CityEvaluation(budget, CityCensus);
         }
     }
 
@@ -1267,7 +1264,7 @@ namespace
         }
 
         DecTrafficMem();
-        SendMessages(budget, census);
+        SendMessages(budget, CityCensus);
     }
 
 
@@ -1378,7 +1375,7 @@ void initSimulation(CityProperties& properties, Budget& budget)
     ClearCensus();
 
     resetScanState();
-    MapScan(0, SimWidth, properties, census); /* XXX are you sure ??? */
+    MapScan(0, SimWidth, properties, CityCensus); /* XXX are you sure ??? */
     powerScan();
     pollutionAndLandValueScan();
     crimeScan();
