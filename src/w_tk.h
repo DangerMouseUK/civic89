@@ -12,5 +12,9 @@
 
 #include <string>
 
+class AudioService;
+
 bool Eval(const std::string&);
 void StopEarthquake();
+void DoEarthQuake(); // Application adapter for the inherited disaster entry point.
+void DoEarthQuake(AudioService& audio);

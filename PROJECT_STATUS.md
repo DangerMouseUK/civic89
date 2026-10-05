@@ -1,6 +1,6 @@
 # Civic 89 - Project Status
 
-**Current phase:** Baseline Bootstrap on `feature/cmake-bootstrap`
+**Current phase:** M1-02 first typed audio route on `codex/eval-inventory`
 **Updated:** 5 October 2026
 **Current product name:** Civic 89  
 **Repository root:** `C:\Dev\Projects\civic89`  
@@ -8,7 +8,9 @@
 
 ## Authoritative local repository state
 
-- Branch: `feature/cmake-bootstrap`, tracking `origin/feature/cmake-bootstrap`; initial working tree was clean.
+- Branch: `codex/eval-inventory`, tracking `origin/codex/eval-inventory`; published with user approval for PR review.
+- Local and remote `main`: merge commit `b6fc77e561bb3bbcc60c75603b942e755f4992a9` from [PR #1](https://github.com/DangerMouseUK/civic89/pull/1), merged by the user on 5 October 2026.
+- The merged local `feature/cmake-bootstrap` was safely deleted with `git branch -d`; its remote branch had already been deleted. No other stale feature branches existed. Upstream refs and the baseline tag are preserved.
 - `.git`: confirmed at `C:\Dev\Projects\civic89\.git`.
 - Baseline SHA: `9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad`.
 - Baseline tag: `upstream-sdlpp-baseline` (annotated; verified locally and on origin).
@@ -16,7 +18,7 @@
 - Civic 89 `origin`: `https://github.com/DangerMouseUK/civic89.git`.
 - Upstream push URL remains `DISABLED`. Complete inherited history is preserved.
 - Existing documentation/policy commits: `72608d8`, `a36e360`.
-- Bootstrap commits pushed to `origin/feature/cmake-bootstrap`: `d83be2c` (assets), `ae0ba9d` (build/tests), `2ca122b` (CI), `9f63d86` (evidence/status).
+- Bootstrap commits now on `main`: `d83be2c` (assets), `ae0ba9d` (build/tests), `2ca122b` (CI), `9f63d86` and `a47cd47` (evidence/status).
 - The actual cloned SHA exactly matches the SDLPP SHA used by the engineering audit.
 
 ## Bootstrap checklist
@@ -46,12 +48,26 @@
 - [x] Verify hosted CI: [run 37317705607](https://github.com/DangerMouseUK/civic89/actions/runs/37317705607) passed Debug and Release configure/build plus 2/2 tests in each configuration for `9f63d86`, using separate VS 2026 Windows runners and pinned external vcpkg checkouts.
 - [x] Capture a fresh-source Release screenshot and verify its normal exit with code 0.
 - [x] Record commands, results, inherited differences and generated save fixtures under `tests/baseline/`.
+- [x] Merge PR #1, synchronize local `main` with `git pull --ff-only`, and remove the merged feature branch.
+- [x] Verify merged-main hosted CI: [run 37355668174](https://github.com/DangerMouseUK/civic89/actions/runs/37355668174) passed for `b6fc77e`.
 
-## First engineering task
+## Current engineering task
 
-**Baseline Bootstrap only:** introduce CMake/CMakePresets and reproducible vcpkg usage while preserving source layout, behaviour and the inherited Visual Studio build as a comparison path.
+Baseline Bootstrap is merged. **M1-01** inventory/design and inherited characterization are committed locally as `8f7d3e1` / `8b4d5c2`. The subsequent increment implements the first bounded **M1-02** route:
 
-No UI redesign, no simulation changes, no `Eval()` removal and no major source moves in the first branch.
+- [x] [Inventory](project/reference/LEGACY_EVAL_INVENTORY.md) all 12 live `Eval` calls plus the inactive options call, including reachability, operands and intended replacements.
+- [x] [Record typed interfaces](project/decisions/0001_TYPED_PRESENTATION_BOUNDARY.md) and the migration/compatibility decisions. The first audio seam is implemented; the broader design remains proposed.
+- [x] Link actual inherited `w_sound.cpp` and `w_tk.cpp` into `civic89_legacy_tests`; characterize routing, mute/initialization defects, bulldozer loop state and earthquake start/stop ordering.
+- [x] Configure/build Debug and Release; all **3/3 CTest checks pass in each configuration**. Exact commands remain in [project/BUILDING.md](project/BUILDING.md); logs are `out/audit/eval-{configure,build,test}-{debug,release}.log`.
+- [x] Add the minimal typed `AudioService` and application-owned null adapter; inject it into the earthquake helper through the inherited application entry point.
+- [x] Migrate only the earthquake low-explosion sound request, retaining lazy initialization, sound-before-visual order and the existing shake/timer state changes. The visual `Eval` and other audio paths remain.
+- [x] Verify the typed sound/channel and dispatch-time state with a recording test adapter; verify the production null adapter stays silent and preserves the saved sound flag.
+- [x] Build Debug/Release and pass **3/3 CTests in each** after migration; retained Visual Studio Release also builds. Commands are in [project/BUILDING.md](project/BUILDING.md); logs are `out/audit/typed-audio-{build,test}-{debug,release}.log` and `out/audit/typed-audio-inherited-release.log`.
+- [ ] Migrate remaining audio operands and introduce typed presentation/navigation adapters with tests (M1-02).
+- [ ] Establish a scenario loader seam, validate all eight fixtures and test native start/failure paths (M1-03). There is currently no working scenario startup smoke path.
+- [ ] Delete the bridge only after all entries are covered or deliberately retired (M1-04).
+
+Production changes are limited to `main.cpp`, `w_sound.cpp` / `.h`, `w_tk.cpp` / `.h` and the new header-only `AudioService.h`. The 47 translation units, retained `.sln`/`.vcxproj`, disaster damage/RNG, save implementation and disabled visual timers are unchanged. The migrated sound no longer prints a string `Eval` command; actual playback stays silent. New audio/test code compiles without warnings; rebuilt inherited code emits existing warnings, including the two C4100 warnings in the legacy test target and four CS1668 environment warnings in the inherited Release build.
 
 ## Verified environment and dependency baseline
 
@@ -63,15 +79,15 @@ No UI redesign, no simulation changes, no `Eval()` removal and no major source m
 
 Exact commands/target mapping: [project/BUILDING.md](project/BUILDING.md). Local evidence: [tests/baseline/BOOTSTRAP_2026-10-05.md](tests/baseline/BOOTSTRAP_2026-10-05.md). Asset provenance and replacement decision: [project/reference/RUNTIME_ASSETS.md](project/reference/RUNTIME_ASSETS.md), `assets/runtime-assets.json`, `assets/ASSET-LICENSES.yml`.
 
-Bootstrap is ready for review with local and hosted build/test evidence. Remote `main` and `feature/cmake-bootstrap` were verified at `a36e360` before this work; the four bootstrap commits are now pushed to the engineering branch with user approval. The follow-up evidence update records the fresh-source rebuild, screenshot and successful hosted run. No upstream push or history/tag rewrite occurred. Hosted CI verifies separate clean runner builds; manual GUI testing remains on the primary workstation.
+Bootstrap review and merge are complete, with local and hosted build/test evidence retained. No upstream push or history/tag rewrite occurred. Hosted CI verifies separate clean runner builds; manual GUI testing remains on the primary workstation. The subsequent inventory/design and first typed audio increments are published for PR review with user approval. Their local Debug/Release evidence is recorded above; live hosted CI results are reported in the PR checks. No new GUI or actual audio-device test was run for this narrow route; recording/null helper tests and both build paths provide its evidence.
 
 ## Inherited limitations and release gates
 
 - Missing fonts were an inherited packaging defect, not a Civic 89 regression. Startup now works with approved fonts/substitute. Original developer font versions and pixel-identical text metrics cannot be established.
 - **Historical `.cty` compatibility is unproven.** The inherited writer uses native 32-bit arrays and produced a **51,360-byte** save; some supplied cities are **27,120 bytes**. `FileIo.cpp` does not validate short reads. A current-version round trip does not establish historical/scenario compatibility. Investigate separately with tests; no format change is made here.
 - `icons/LICENSE.txt` supplies OpenSVG attribution without identifying original icon sets/licences. Public binary redistribution remains blocked on that audit. Other retained graphics/fixtures preserve inherited project-level GPL/additional-terms provenance, not a completed per-asset rights review.
-- Audio/scenario/earthquake paths retain the stubbed `Eval()` bridge. Resource lifetime concerns remain inherited; normal GUI exit testing does not prove leak-free teardown.
+- Remaining audio/scenario/earthquake visual paths retain the stubbed `Eval()` bridge; only the earthquake sound request now uses typed audio. The [inventory](project/reference/LEGACY_EVAL_INVENTORY.md) records disconnected scenario startup, empty tool-error commands, an ineffective mute setter, dormant message audio/win paths and disabled earthquake timers. Tests cover the audio/earthquake helpers, not real playback, visual effects or scenario loading. Resource lifetime concerns remain inherited; normal GUI exit testing does not prove leak-free teardown.
 - `/W4` exposes **50 inherited warnings per configuration**: 40 C4100, one C4189, two C4389, one C4456, six C4459. The inherited `/W3` comparison build reported none. No warning-as-error policy introduced.
 - A final inherited MSBuild rerun passed after the manifest change with four CS1668 environment warnings: two missing `LIB` search directories reported twice by Roslyn inline tasks (Enterprise ATL/MFC and `lib\um\x64`). These are workstation/global-integration warnings, not C++ errors; no unrelated environment repair was made.
 - Original UI/window/resource branding is retained for comparison. `civic89.exe` is the new target name; public product branding/packaging remains later work.
-- No inherited C++ source or `.sln`/`.vcxproj` edits. Catch2, engine extraction, deterministic simulation digests, ASan and exhaustive UI/asset compliance testing remain later milestones.
+- Retained `.sln`/`.vcxproj` remain unedited and build after the first typed route. Catch2, engine extraction, deterministic simulation digests, ASan and exhaustive UI/asset compliance testing remain later milestones.

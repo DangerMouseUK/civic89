@@ -82,6 +82,19 @@ if(BUILD_TESTING)
     add_test(NAME inherited-source-list COMMAND "${CMAKE_COMMAND}"
         "-DSOURCE_DIR=${CMAKE_SOURCE_DIR}" -P "${CMAKE_SOURCE_DIR}/cmake/VerifySourceParity.cmake"
     )
+
+    # Characterize the actual legacy bridge without constructing the game/UI.
+    add_executable(civic89_legacy_tests
+        tests/LegacyBridge.cpp src/w_tk.cpp src/w_sound.cpp
+    )
+    target_include_directories(civic89_legacy_tests PRIVATE src)
+    target_link_libraries(civic89_legacy_tests PRIVATE SDL3::SDL3)
+    target_compile_options(civic89_legacy_tests PRIVATE /W4 /sdl /permissive-)
+    set_target_properties(civic89_legacy_tests PROPERTIES
+        VS_GLOBAL_VcpkgEnabled false VS_GLOBAL_VcpkgEnableManifest false
+    )
+    add_test(NAME legacy-audio-and-earthquake COMMAND civic89_legacy_tests)
+    set_tests_properties(legacy-audio-and-earthquake PROPERTIES TIMEOUT 10)
 endif()
 
 # Install only the application, pinned dependencies and inventoried assets.

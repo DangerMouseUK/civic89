@@ -9,6 +9,7 @@
 // it under the terms of the GNU GPLv3, with additional terms. See the README
 // file, included in this distribution, for details.
 #include "w_tk.h"
+#include "AudioService.h"
 
 #include <string>
 
@@ -62,6 +63,21 @@ void MakeSound(const std::string& channel, const std::string& id)
     }
 
     Eval("UIMakeSound \"" + channel + "\" \"" + id + "\"");
+}
+
+
+void MakeSound(SoundId sound, AudioChannel channel, AudioService& audio)
+{
+    if (!UserSoundOn)
+    {
+        return;
+    }
+    if (!SoundInitialized)
+    {
+        InitializeSound();
+    }
+
+    audio.playEffect(sound, channel);
 }
 
 
