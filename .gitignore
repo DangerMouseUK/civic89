@@ -3,6 +3,10 @@
 /micropolis-sdl2
 /images/*.bmp
 /res/*.ttf
+!/res/Raleway-Medium.ttf
+!/res/Raleway-Bold.ttf
+!/res/Raleway-BoldItalic.ttf
+!/res/virtue.ttf
 /icons/24
 /icons/32
 /icons/64
@@ -21,3 +25,7 @@
 /micropolis-sdlpp
 /png
 /doc
+
+# Civic 89 build output and local CMake settings
+/out/
+/CMakeUserPresets.json
