@@ -10,6 +10,7 @@
 // file, included in this distribution, for details.
 #include "main.h"
 
+#include "AudioService.h"
 #include "Budget.h"
 #include "CityProperties.h"
 #include "Colors.h"
@@ -121,6 +122,7 @@ namespace
 
     Budget budget{};
     CityProperties cityProperties{};
+    NullAudioService audioService;
 
     std::unique_ptr<MiniMapWindow> miniMapWindow;
 
@@ -291,6 +293,13 @@ void initWillStuff()
 GameOptions& gameplayOptions()
 {
     return gameOptions;
+}
+
+
+// Keep service ownership in the application while the disaster API migrates.
+void DoEarthQuake()
+{
+    DoEarthQuake(audioService);
 }
 
 

@@ -38,10 +38,10 @@ void StopEarthquake()
 }
 
 
-void DoEarthQuake()
+void DoEarthQuake(AudioService& audio)
 {
     std::cout << "DoEarthQuake" << std::endl;
-    MakeSound("city", "Explosion-Low");
+    MakeSound(SoundId::ExplosionLow, AudioChannel::City, audio);
     Eval("UIEarthQuake");
     ShakeNow++;
     if (earthquake_timer_set)
