@@ -129,6 +129,12 @@ namespace
         ConsoleCapture console;
         StopBulldozer();
         require(console.take().empty(), "Stopping uninitialized sound should do nothing");
+        require(!userSoundOn() && Dozing == 0, "Cold stop should not initialize sound or change loop state");
+
+        SoundOff();
+        require(userSoundOn() && Dozing == 0, "Cold SoundOff should initialize sound and clear loop state");
+        require(console.take() == "Eval: UISoundOff\n", "Cold SoundOff should still emit its stop request");
+        resetBridge();
 
         StartBulldozer();
         StartBulldozer();
@@ -149,6 +155,16 @@ namespace
         MakeSound("city", "Siren");
         require(console.take() == "Eval: UIMakeSound \"city\" \"Siren\"\n",
             "Inherited SoundOff does not prevent later effect requests");
+
+        StartBulldozer();
+        require(console.take() == "Eval: UIStartSound edit 1\n", "Loop should restart after SoundOff");
+        userSoundOn(false);
+        StopBulldozer();
+        require(!userSoundOn() && Dozing == 1 && console.take().empty(),
+            "Stop while uninitialized must retain the inherited guard and loop state");
+        SoundOff();
+        require(userSoundOn() && Dozing == 0 && console.take() == "Eval: UISoundOff\n",
+            "SoundOff should reinitialize and clear a guarded loop");
     }
 
     void checkEarthquakeLifecycle()
