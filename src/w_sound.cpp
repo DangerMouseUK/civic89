@@ -99,30 +99,18 @@ void MakeSoundOn(const char* channel, const char* id)
 }
 
 
-void SoundOff()
+void SoundOff(AudioService& audio)
 {
     if (!SoundInitialized)
     {
         InitializeSound();
     }
-    Eval("UISoundOff");
+    audio.stopAll();
     Dozing = 0;
 }
 
 
-void DoStartSound(const std::string& channel, const std::string& id)
-{
-    Eval("UIStartSound " + channel + " " + id);
-}
-
-
-void DoStopSound(const char* id)
-{
-    Eval("UIStopSound " + std::string(id));
-}
-
-
-void StartBulldozer()
+void StartBulldozer(AudioService& audio)
 {
     if (!UserSoundOn)
     {
@@ -134,19 +122,19 @@ void StartBulldozer()
     }
     if (!Dozing)
     {
-        DoStartSound("edit", "1");
+        audio.startLoop(SoundId::Bulldozer, AudioChannel::Construction);
         Dozing = 1;
     }
 }
 
 
-void StopBulldozer()
+void StopBulldozer(AudioService& audio)
 {
     if ((!UserSoundOn) || (!SoundInitialized))
     {
         return;
     }
 
-    DoStopSound("1");
+    audio.stopLoop(AudioChannel::Construction);
     Dozing = 0;
 }

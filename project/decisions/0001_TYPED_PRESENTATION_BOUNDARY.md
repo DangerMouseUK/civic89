@@ -1,14 +1,14 @@
 # ADR 0001: Typed presentation boundary
 
-**Status:** First audio route implemented; the broader presentation/scenario boundary remains proposed.
+**Status:** Earthquake audio and audio controls implemented; the broader presentation/scenario boundary remains proposed.
 
 **Date:** 5 October 2026
 
-**Scope:** M1-01 inventory, the first M1-02 audio route and the remaining design for M1-02/M1-03.
+**Scope:** M1-01 inventory, the first M1-02 audio routes and the remaining design for M1-02/M1-03.
 
 ## Context
 
-The [bridge inventory](../reference/LEGACY_EVAL_INVENTORY.md) identifies 12 live `Eval()` calls. The current implementation only logs and returns `false`. Several wrappers are dormant, scenario startup is disconnected from loading, and audio payloads retain script syntax. Replacing strings with a generic string-keyed event bus would preserve the same ambiguity.
+The [bridge inventory](../reference/LEGACY_EVAL_INVENTORY.md) initially identified 12 live `Eval()` calls; 9 remain after retiring the audio controls. The bridge only logs and returns `false`. Several wrappers are dormant, scenario startup is disconnected from loading, and audio payloads retain script syntax. Replacing strings with a generic string-keyed event bus would preserve the same ambiguity.
 
 Follow the governing [phase-safe refactoring sequence and typed boundary](../engineering/05_ARCHITECTURE_AND_REFACTORING.md): test, introduce an interface, route one path, verify parity, delete the obsolete path, then consider source moves. Engine extraction and functioning audio are later milestones.
 
@@ -16,7 +16,7 @@ Follow the governing [phase-safe refactoring sequence and typed boundary](../eng
 
 Use small synchronous C++ interfaces, called on the existing application/simulation thread. The application owns and injects the adapters; no global string registry, queued event framework, SDL types or window names cross this boundary. Begin with recording adapters for tests and a null audio adapter. Construct adapters before their callers and keep them alive until the game/session stops.
 
-The following remains the broader illustrative design. The production [AudioService.h](../../src/AudioService.h) currently contains only `SoundId::ExplosionLow`, `AudioChannel::City` and `playEffect(SoundId, AudioChannel)`, plus the null adapter. Rates, additional sounds/channels, loops and presentation/scenario interfaces will be added when their callers migrate:
+The following remains the broader illustrative design. The production [AudioService.h](../../src/AudioService.h) currently contains `ExplosionLow` / `Bulldozer`, `City` / `Construction`, and `playEffect`, `startLoop`, `stopLoop` and `stopAll`, plus the null adapter. Rates, additional sounds and presentation/scenario interfaces will be added when their callers migrate:
 
 ```cpp
 enum class AudioChannel { City, Construction };
@@ -79,10 +79,20 @@ Loop stop can use a channel because the baseline has a single construction loop 
 
 The application owns a `NullAudioService` beside its other existing services. The inherited no-argument `DoEarthQuake()` entry point is now a one-line application adapter that passes this service to `DoEarthQuake(AudioService&)`. `MakeEarthquake` and its callers remain untouched. The helper sends `ExplosionLow` on `City` through the typed `MakeSound` overload, then retains the legacy visual command and shake/timer mutations in their original order.
 
-The typed sound overload retains the same private enable guard and lazy `SoundInitialized` update as the string overload. This deliberately preserves the value saved through `userSoundOn()` / `MiscHistory[55]`; mute/shutdown repairs remain separate decisions. The null implementation opens no device, loads no asset and adds no dependency. The only diagnostic difference on this path is removal of `Eval: UIMakeSound "city" "Explosion-Low"`; `DoEarthQuake` and `Eval: UIEarthQuake` still log. Playback stays silent. No other audio operand is migrated.
+The typed sound overload retains the same private enable guard and lazy `SoundInitialized` update as the string overload. This deliberately preserves the value saved through `userSoundOn()` / `MiscHistory[55]`; mute/shutdown repairs remain separate decisions. The null implementation opens no device, loads no asset and adds no dependency. The only diagnostic difference on this path is removal of `Eval: UIMakeSound "city" "Explosion-Low"`; `DoEarthQuake` and `Eval: UIEarthQuake` still log. Playback stays silent. Remaining string effects are untouched; loop controls are recorded below.
 
 The recording adapter exists only in `tests/LegacyBridge.cpp`. Tests check the exact typed sound/channel, one request per earthquake, initialization before dispatch, and console/shake/timer snapshots at dispatch to prove it precedes the visual command and state increment. Repeated start and explicit stop retain their prior state assertions. Running the helper with the actual null adapter also verifies lazy initialization and the absence of a string sound command.
 
 This header-only service keeps the existing 47 production translation units and leaves `.sln`/`.vcxproj` unchanged. CMake Debug/Release builds and all three CTests pass. The inherited Visual Studio Release build is checked separately. Commands remain in [BUILDING.md](../BUILDING.md); local logs use `out/audit/typed-audio-*`.
 
 Tests characterize helper routing/state, not real audio, camera shaking or simulation parity. Scenario smoke and deterministic disaster/map digests remain open gates. The disaster RNG/damage code, save implementation and disabled visual timers are unchanged; no source move or new production dependency is introduced.
+
+## Audio controls: implementation and compatibility record
+
+Before migration, cold `SoundOff` and the stop guard were characterized against the actual legacy code in both configurations (`f25acee`). The guard test starts a loop, clears initialization through the existing sound setter, then verifies that `StopBulldozer` leaves `Dozing` set and that `SoundOff` reinitializes and clears it. This records an inherited behavior rather than repairing it during migration.
+
+The application retains its no-argument `StartBulldozer`, `StopBulldozer` and `SoundOff` entry points as adapters to overloads that accept `AudioService&`. `StartBulldozer` requests `startLoop(Bulldozer, Construction)` before setting `Dozing`; repeat starts remain suppressed. `StopBulldozer` requests `stopLoop(Construction)` before clearing `Dozing`; repeated initialized stops still dispatch, while cold/disabled guards remain. `SoundOff` lazily initializes, requests `stopAll`, then clears `Dozing` without changing persistent mute behavior.
+
+The old internal `DoStartSound` / `DoStopSound` functions and declarations have no remaining callers and are removed. Along with `UISoundOff`, this retires three live `Eval` calls. It also retires the old `DoStartSound` declaration/definition mismatch. No strings, loop-number parsing or registry replace these commands; the baseline's sole loop (`1` on `edit`) is represented by typed `Bulldozer` and `Construction`.
+
+Recording tests assert request kinds, sound/channel, initialization and loop state at dispatch, request order and repeat suppression. The production null adapter is also exercised for cold stop, start, stop and stop-all. The controls still have no game callers, and no new UI route enables them. Expected diagnostic changes are removal of `UISoundOff`, `UIStartSound` and `UIStopSound` logs. No device, sample, save-format or simulation behavior is changed. Verification logs use `out/audit/typed-control-*`; build/test commands remain in [BUILDING.md](../BUILDING.md).

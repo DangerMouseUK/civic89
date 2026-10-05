@@ -303,6 +303,24 @@ void DoEarthQuake()
 }
 
 
+void StartBulldozer()
+{
+    StartBulldozer(audioService);
+}
+
+
+void StopBulldozer()
+{
+    StopBulldozer(audioService);
+}
+
+
+void SoundOff()
+{
+    SoundOff(audioService);
+}
+
+
 void simInit()
 {
     userSoundOn(true);

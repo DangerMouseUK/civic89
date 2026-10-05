@@ -22,8 +22,9 @@ void MakeSoundOn(const char* channel, const char* id);
 void StartBulldozer();
 void StopBulldozer();
 void SoundOff();
-void DoStartSound(const char* channel, const char* id);
-void DoStopSound(const char* id);
+void StartBulldozer(AudioService& audio);
+void StopBulldozer(AudioService& audio);
+void SoundOff(AudioService& audio);
 
 bool userSoundOn();
 void userSoundOn(bool);

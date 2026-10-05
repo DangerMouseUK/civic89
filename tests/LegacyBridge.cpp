@@ -3,6 +3,7 @@
 #include "w_tk.h"
 
 #include <iostream>
+#include <optional>
 #include <sstream>
 #include <stdexcept>
 #include <string>
@@ -47,14 +48,18 @@ namespace
         std::streambuf* previous;
     };
 
-    struct RecordedEffect
+    enum class AudioRequestKind { Effect, StartLoop, StopLoop, StopAll };
+
+    struct RecordedAudioRequest
     {
-        SoundId sound;
-        AudioChannel channel;
+        AudioRequestKind kind;
+        std::optional<SoundId> sound;
+        std::optional<AudioChannel> channel;
         std::string consoleBeforeEffect;
         int shakeBeforeEffect;
         int timerBeforeEffect;
         bool soundInitialized;
+        int dozingBeforeRequest;
     };
 
     class RecordingAudioService final : public AudioService
@@ -64,12 +69,33 @@ namespace
 
         void playEffect(SoundId sound, AudioChannel channel) override
         {
-            effects.push_back({ sound, channel, capture.contents(), ShakeNow, earthquake_timer_set, userSoundOn() });
+            record(AudioRequestKind::Effect, sound, channel);
         }
 
-        std::vector<RecordedEffect> effects;
+        void startLoop(SoundId sound, AudioChannel channel) override
+        {
+            record(AudioRequestKind::StartLoop, sound, channel);
+        }
+
+        void stopLoop(AudioChannel channel) override
+        {
+            record(AudioRequestKind::StopLoop, std::nullopt, channel);
+        }
+
+        void stopAll() override
+        {
+            record(AudioRequestKind::StopAll, std::nullopt, std::nullopt);
+        }
+
+        std::vector<RecordedAudioRequest> requests;
 
     private:
+        void record(AudioRequestKind kind, std::optional<SoundId> sound, std::optional<AudioChannel> channel)
+        {
+            requests.push_back({ kind, sound, channel, capture.contents(), ShakeNow, earthquake_timer_set,
+                userSoundOn(), Dozing });
+        }
+
         const ConsoleCapture& capture;
     };
 
@@ -127,44 +153,77 @@ namespace
     {
         resetBridge();
         ConsoleCapture console;
-        StopBulldozer();
-        require(console.take().empty(), "Stopping uninitialized sound should do nothing");
+        RecordingAudioService audio(console);
+        StopBulldozer(audio);
+        require(audio.requests.empty(), "Stopping uninitialized sound should not dispatch");
         require(!userSoundOn() && Dozing == 0, "Cold stop should not initialize sound or change loop state");
 
-        SoundOff();
+        SoundOff(audio);
         require(userSoundOn() && Dozing == 0, "Cold SoundOff should initialize sound and clear loop state");
-        require(console.take() == "Eval: UISoundOff\n", "Cold SoundOff should still emit its stop request");
+        require(audio.requests.size() == 1 && audio.requests.back().kind == AudioRequestKind::StopAll &&
+            audio.requests.back().soundInitialized && audio.requests.back().dozingBeforeRequest == 0,
+            "Cold SoundOff should initialize before dispatching stop-all");
         resetBridge();
+        audio.requests.clear();
 
-        StartBulldozer();
-        StartBulldozer();
+        StartBulldozer(audio);
+        StartBulldozer(audio);
         require(userSoundOn() && Dozing == 1, "Bulldozer start should set initialization and loop state");
-        require(console.take() == "Eval: UIStartSound edit 1\n", "Repeated start should emit one loop request");
+        require(audio.requests.size() == 1 && audio.requests.front().kind == AudioRequestKind::StartLoop &&
+            audio.requests.front().sound == SoundId::Bulldozer &&
+            audio.requests.front().channel == AudioChannel::Construction &&
+            audio.requests.front().soundInitialized && audio.requests.front().dozingBeforeRequest == 0,
+            "Repeated start must dispatch one typed construction loop before setting Dozing");
 
-        StopBulldozer();
-        StopBulldozer();
+        StopBulldozer(audio);
+        StopBulldozer(audio);
         require(Dozing == 0, "Bulldozer stop should clear loop state");
-        require(console.take() == "Eval: UIStopSound 1\nEval: UIStopSound 1\n",
-            "Inherited repeated stop behavior changed");
+        require(audio.requests.size() == 3 && audio.requests[1].kind == AudioRequestKind::StopLoop &&
+            audio.requests[2].kind == AudioRequestKind::StopLoop &&
+            audio.requests[1].channel == AudioChannel::Construction &&
+            audio.requests[2].channel == AudioChannel::Construction &&
+            audio.requests[1].dozingBeforeRequest == 1 && audio.requests[2].dozingBeforeRequest == 0,
+            "Repeated stop must dispatch construction stop requests before clearing Dozing");
 
-        StartBulldozer();
-        SoundOff();
+        audio.requests.clear();
+        StartBulldozer(audio);
+        SoundOff(audio);
         require(Dozing == 0 && userSoundOn(), "SoundOff clears the loop but leaves initialization set");
-        require(console.take() == "Eval: UIStartSound edit 1\nEval: UISoundOff\n",
-            "SoundOff routing changed");
+        require(audio.requests.size() == 2 && audio.requests[0].kind == AudioRequestKind::StartLoop &&
+            audio.requests[1].kind == AudioRequestKind::StopAll && audio.requests[1].dozingBeforeRequest == 1 &&
+            audio.requests[1].soundInitialized && !audio.requests[1].sound && !audio.requests[1].channel,
+            "SoundOff must stop all before clearing loop state");
+        require(console.take().empty(), "Typed controls must not emit legacy string commands");
         MakeSound("city", "Siren");
         require(console.take() == "Eval: UIMakeSound \"city\" \"Siren\"\n",
             "Inherited SoundOff does not prevent later effect requests");
 
-        StartBulldozer();
-        require(console.take() == "Eval: UIStartSound edit 1\n", "Loop should restart after SoundOff");
+        audio.requests.clear();
+        StartBulldozer(audio);
+        require(audio.requests.size() == 1 && Dozing == 1, "Loop should restart after SoundOff");
         userSoundOn(false);
-        StopBulldozer();
-        require(!userSoundOn() && Dozing == 1 && console.take().empty(),
+        StopBulldozer(audio);
+        require(!userSoundOn() && Dozing == 1 && audio.requests.size() == 1,
             "Stop while uninitialized must retain the inherited guard and loop state");
-        SoundOff();
-        require(userSoundOn() && Dozing == 0 && console.take() == "Eval: UISoundOff\n",
+        SoundOff(audio);
+        require(userSoundOn() && Dozing == 0 && audio.requests.size() == 2 &&
+            audio.requests.back().kind == AudioRequestKind::StopAll &&
+            audio.requests.back().dozingBeforeRequest == 1 && audio.requests.back().soundInitialized,
             "SoundOff should reinitialize and clear a guarded loop");
+        require(console.take().empty(), "Guarded controls must not emit legacy string commands");
+
+        resetBridge();
+        NullAudioService nullAudio;
+        StopBulldozer(nullAudio);
+        require(!userSoundOn() && Dozing == 0, "Null cold stop must keep the initialization guard");
+        StartBulldozer(nullAudio);
+        require(userSoundOn() && Dozing == 1, "Null loop start must retain state changes");
+        StopBulldozer(nullAudio);
+        require(Dozing == 0 && userSoundOn(), "Null loop stop must retain state changes");
+        StartBulldozer(nullAudio);
+        SoundOff(nullAudio);
+        require(Dozing == 0 && userSoundOn() && console.take().empty(),
+            "Null sound-off must clear loop state and remain silent");
     }
 
     void checkEarthquakeLifecycle()
@@ -178,9 +237,10 @@ namespace
 
         DoEarthQuake(audio);
         require(ShakeNow == 1 && earthquake_timer_set == 1, "Earthquake should set shake/timer state");
-        require(audio.effects.size() == 1, "Earthquake should emit one typed sound request");
-        const auto& first = audio.effects.front();
-        require(first.sound == SoundId::ExplosionLow && first.channel == AudioChannel::City,
+        require(audio.requests.size() == 1, "Earthquake should emit one typed sound request");
+        const auto& first = audio.requests.front();
+        require(first.kind == AudioRequestKind::Effect && first.sound == SoundId::ExplosionLow &&
+            first.channel == AudioChannel::City,
             "Earthquake typed sound/channel changed");
         require(first.consoleBeforeEffect == "DoEarthQuake\n" && first.shakeBeforeEffect == 0 &&
             first.timerBeforeEffect == 0 && first.soundInitialized,
@@ -189,9 +249,10 @@ namespace
 
         DoEarthQuake(audio);
         require(ShakeNow == 2 && earthquake_timer_set == 1, "Repeated earthquake should increment shake state");
-        require(audio.effects.size() == 2, "Each earthquake should request its sound once");
-        const auto& second = audio.effects.back();
-        require(second.sound == SoundId::ExplosionLow && second.channel == AudioChannel::City &&
+        require(audio.requests.size() == 2, "Each earthquake should request its sound once");
+        const auto& second = audio.requests.back();
+        require(second.kind == AudioRequestKind::Effect && second.sound == SoundId::ExplosionLow &&
+            second.channel == AudioChannel::City &&
             second.consoleBeforeEffect == "DoEarthQuake\n" && second.shakeBeforeEffect == 1 &&
             second.timerBeforeEffect == 1 && second.soundInitialized,
             "Repeated earthquake sound must precede its visual command and state increment");
@@ -220,7 +281,7 @@ int main()
         checkSoundRouting();
         checkBulldozerLifecycle();
         checkEarthquakeLifecycle();
-        std::cout << "Legacy audio and typed earthquake routing/lifecycle tests passed\n";
+        std::cout << "Legacy effects and typed audio control/earthquake tests passed\n";
         return 0;
     }
     catch (const std::exception& error)
