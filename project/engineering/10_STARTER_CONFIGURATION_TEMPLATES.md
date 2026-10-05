@@ -9,6 +9,8 @@
 
 These are **starter templates**, not blindly copyable final files. The coding agent must reconcile actual source lists and installed package target names with the repository it is migrating. The goal is to make the intended structure explicit.
 
+**Implemented bootstrap update, 5 October 2026:** Use the committed root CMake files and `project/BUILDING.md`. They require CMake 4.2+, use the VS 2026 generator, `nfd::nfd`, an explicit 47-file source list and a dependency-free C++ smoke runner. Catch2/engine targets remain planned. CI must keep its external vcpkg checkout under `RUNNER_TEMP`, not inside `GITHUB_WORKSPACE` as the historical example below does.
+
 ## 2. Civic 89 fixed identifiers
 
 ```text

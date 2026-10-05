@@ -7,6 +7,8 @@
 
 ## 1. Purpose of this document set
 
+**Bootstrap update (5 October 2026):** Repository setup, origin/tag push and `feature/cmake-bootstrap` are complete. The inherited `micropolis-sdlpp.sln` builds and now runs with the documented approved font baseline. CMake Debug/Release and runtime/source-list tests pass locally. Earlier capture-point statements in this set are historical; use `PROJECT_STATUS.md`, `project/BUILDING.md` and `project/reference/RUNTIME_ASSETS.md` for current facts and remaining limitations.
+
 This pack is the working engineering specification for **Civic 89**, a polished, modern, native Windows application built from the authentic open-source Micropolis / original SimCity simulation lineage.
 
 The set is deliberately split into focused documents so that it can be used in three ways:
@@ -128,11 +130,11 @@ The first engineering milestone is **Baseline Bootstrap**. The local repository 
 - [x] Confirm `.git` exists inside the project root; no manual `git init` was used.
 - [x] Rename inherited `origin` to `upstream-sdlpp`.
 - [x] Capture exact baseline SHA `9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad` and create annotated tag `upstream-sdlpp-baseline`.
-- [ ] Create an empty Civic 89 GitHub repository and add it as the new `origin`.
-- [ ] Push `main` and `upstream-sdlpp-baseline`.
-- [ ] Verify the inherited `micropolis-cpp.sln` builds and runs unchanged on the primary workstation.
-- [ ] Add this documentation/agent pack and make the first Civic 89-owned documentation commit.
-- [ ] Create `feature/cmake-bootstrap`.
-- [ ] Introduce CMake, pinned/reproducible vcpkg use, CI and smoke tests without altering gameplay.
+- [x] Create an empty Civic 89 GitHub repository and add it as the new `origin`.
+- [x] Push `main` and `upstream-sdlpp-baseline`.
+- [x] Verify the inherited `micropolis-sdlpp.sln` builds and runs with approved font staging (historical file compatibility remains unproven).
+- [x] Add this documentation/agent pack and make the first Civic 89-owned documentation commit.
+- [x] Create `feature/cmake-bootstrap`.
+- [x] Introduce CMake, pinned/reproducible vcpkg use, CI and smoke tests without altering gameplay (local checks pass; hosted CI remains unverified).
 
-Do not hand the coding agent an engineering branch until the inherited build comparison path has been checked and the documentation baseline is committed.
+These prerequisites were completed before engineering work. Current verification and remaining inherited limitations are in `PROJECT_STATUS.md`.

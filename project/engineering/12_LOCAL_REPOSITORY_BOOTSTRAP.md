@@ -7,6 +7,8 @@
 
 ## 1. The answer to "where does Git start?"
 
+**Current update, 5 October 2026:** Repository/origin/tag setup and the initial documentation commits are complete. The active branch is `feature/cmake-bootstrap`; CMake Debug/Release and the retained solution build locally. Missing fonts are resolved with the documented OFL baseline/substitute. Historical save compatibility and public asset clearance remain unproven. This document retains the original onboarding procedure; do not re-run clone/tag/remote creation on the established workspace. See `PROJECT_STATUS.md` and `project/BUILDING.md`.
+
 The Civic 89 Git repository root is exactly:
 
 ```text
@@ -53,7 +55,7 @@ C:\Dev\
         ├── __README_OG
         ├── README.md
         ├── vcpkg.json
-        ├── micropolis-cpp.sln
+        ├── micropolis-sdlpp.sln
         └── micropolis-cpp.vcxproj
 ```
 
@@ -113,7 +115,7 @@ The exact SHA returned by `git rev-parse HEAD` is `9c4e85a0decd57ba6f76d9e1ec824
 
 ## 5. Create the Civic 89 GitHub origin
 
-**Current next repository action:** this step is still pending. No `origin` existed when the baseline record above was captured.
+**Completed:** `origin` is `https://github.com/DangerMouseUK/civic89.git`; `main`, `feature/cmake-bootstrap` and the fixed baseline tag are on origin. No `origin` existed at the earlier capture point above. The following is the repeat-onboarding procedure, not a pending local action.
 
 Create a new repository named:
 
@@ -149,7 +151,7 @@ upstream-sdlpp  https://github.com/ldicker83/Micropolis-SDLPP.git
 Open:
 
 ```text
-C:\Dev\Projects\civic89\micropolis-cpp.sln
+C:\Dev\Projects\civic89\micropolis-sdlpp.sln
 ```
 
 in Visual Studio Enterprise 2026. Build **x64 Release** (and Debug if practical), then run the inherited application.
