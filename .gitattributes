@@ -1,0 +1,23 @@
+# Civic 89 repository line-ending policy.
+#
+# Keep project documentation and cross-platform build/configuration
+# files as LF in both Git and the working tree.
+
+/AGENTS.md text eol=lf
+/PROJECT_STATUS.md text eol=lf
+/project/** text eol=lf
+
+/.github/** text eol=lf
+/CMakeLists.txt text eol=lf
+/CMakePresets.json text eol=lf
+/cmake/** text eol=lf
+*.cmake text eol=lf
+
+# Cross-platform shell scripts.
+*.sh text eol=lf
+
+# Windows-native scripts.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+/.gitattributes text eol=lf
