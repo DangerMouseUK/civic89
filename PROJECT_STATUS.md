@@ -16,7 +16,7 @@
 - Civic 89 `origin`: `https://github.com/DangerMouseUK/civic89.git`.
 - Upstream push URL remains `DISABLED`. Complete inherited history is preserved.
 - Existing documentation/policy commits: `72608d8`, `a36e360`.
-- Local bootstrap commits: `d83be2c` (assets), `ae0ba9d` (build/tests), `2ca122b` (CI), followed by the final evidence/status documentation commit.
+- Bootstrap commits pushed to `origin/feature/cmake-bootstrap`: `d83be2c` (assets), `ae0ba9d` (build/tests), `2ca122b` (CI), `9f63d86` (evidence/status).
 - The actual cloned SHA exactly matches the SDLPP SHA used by the engineering audit.
 
 ## Bootstrap checklist
@@ -41,7 +41,10 @@
 - [x] CMake Release GUI comparison: map, date advancement, construction, minimap, native save/open, own-save reload and normal exit.
 - [x] CMake Debug and portable Release installation startup/date/exit checks (exit code 0).
 - [x] Stage all 122 assets from a Git archive, without ignored workstation files.
-- [x] Add Debug/Release GitHub Actions on the VS 2026 Windows runner after local build/run checks; validate YAML locally. Hosted CI has not run because these commits have not been pushed.
+- [x] Configure/build/test both presets from a fresh full-source Git archive of `9f63d86`, with MSBuild vcpkg integration disabled in that process; 2/2 tests pass in each configuration.
+- [x] Add Debug/Release GitHub Actions on the VS 2026 Windows runner after local build/run checks; validate YAML locally.
+- [x] Verify hosted CI: [run 37317705607](https://github.com/DangerMouseUK/civic89/actions/runs/37317705607) passed Debug and Release configure/build plus 2/2 tests in each configuration for `9f63d86`, using separate VS 2026 Windows runners and pinned external vcpkg checkouts.
+- [x] Capture a fresh-source Release screenshot and verify its normal exit with code 0.
 - [x] Record commands, results, inherited differences and generated save fixtures under `tests/baseline/`.
 
 ## First engineering task
@@ -60,7 +63,7 @@ No UI redesign, no simulation changes, no `Eval()` removal and no major source m
 
 Exact commands/target mapping: [project/BUILDING.md](project/BUILDING.md). Local evidence: [tests/baseline/BOOTSTRAP_2026-10-05.md](tests/baseline/BOOTSTRAP_2026-10-05.md). Asset provenance and replacement decision: [project/reference/RUNTIME_ASSETS.md](project/reference/RUNTIME_ASSETS.md), `assets/runtime-assets.json`, `assets/ASSET-LICENSES.yml`.
 
-Local bootstrap is ready for review. Remote `main` and `feature/cmake-bootstrap` were verified at `a36e360` before this work; the new logically separated commits are local only. No upstream push or history/tag rewrite occurred. GitHub Actions execution and a full build on a second clean workstation remain unverified.
+Bootstrap is ready for review with local and hosted build/test evidence. Remote `main` and `feature/cmake-bootstrap` were verified at `a36e360` before this work; the four bootstrap commits are now pushed to the engineering branch with user approval. The follow-up evidence update records the fresh-source rebuild, screenshot and successful hosted run. No upstream push or history/tag rewrite occurred. Hosted CI verifies separate clean runner builds; manual GUI testing remains on the primary workstation.
 
 ## Inherited limitations and release gates
 

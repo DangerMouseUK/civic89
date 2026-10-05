@@ -135,6 +135,6 @@ The first engineering milestone is **Baseline Bootstrap**. The local repository 
 - [x] Verify the inherited `micropolis-sdlpp.sln` builds and runs with approved font staging (historical file compatibility remains unproven).
 - [x] Add this documentation/agent pack and make the first Civic 89-owned documentation commit.
 - [x] Create `feature/cmake-bootstrap`.
-- [x] Introduce CMake, pinned/reproducible vcpkg use, CI and smoke tests without altering gameplay (local checks pass; hosted CI remains unverified).
+- [x] Introduce CMake, pinned/reproducible vcpkg use, CI and smoke tests without altering gameplay (local fresh-source and hosted Debug/Release checks pass; see `PROJECT_STATUS.md`).
 
 These prerequisites were completed before engineering work. Current verification and remaining inherited limitations are in `PROJECT_STATUS.md`.
