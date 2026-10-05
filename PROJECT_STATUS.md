@@ -8,7 +8,7 @@
 
 ## Authoritative local repository state
 
-- Branch: `codex/eval-inventory`, created locally from synchronized `main`; no upstream/push yet.
+- Branch: `codex/eval-inventory`, tracking `origin/codex/eval-inventory`; published with user approval for PR review.
 - Local and remote `main`: merge commit `b6fc77e561bb3bbcc60c75603b942e755f4992a9` from [PR #1](https://github.com/DangerMouseUK/civic89/pull/1), merged by the user on 5 October 2026.
 - The merged local `feature/cmake-bootstrap` was safely deleted with `git branch -d`; its remote branch had already been deleted. No other stale feature branches existed. Upstream refs and the baseline tag are preserved.
 - `.git`: confirmed at `C:\Dev\Projects\civic89\.git`.
@@ -79,7 +79,7 @@ Production changes are limited to `main.cpp`, `w_sound.cpp` / `.h`, `w_tk.cpp` /
 
 Exact commands/target mapping: [project/BUILDING.md](project/BUILDING.md). Local evidence: [tests/baseline/BOOTSTRAP_2026-10-05.md](tests/baseline/BOOTSTRAP_2026-10-05.md). Asset provenance and replacement decision: [project/reference/RUNTIME_ASSETS.md](project/reference/RUNTIME_ASSETS.md), `assets/runtime-assets.json`, `assets/ASSET-LICENSES.yml`.
 
-Bootstrap review and merge are complete, with local and hosted build/test evidence retained. No upstream push or history/tag rewrite occurred. Hosted CI verifies separate clean runner builds; manual GUI testing remains on the primary workstation. The subsequent inventory/design and first typed audio increments have local Debug/Release evidence and have not been pushed or checked by hosted CI. No new GUI or actual audio-device test was run for this narrow route; recording/null helper tests and both build paths provide its evidence.
+Bootstrap review and merge are complete, with local and hosted build/test evidence retained. No upstream push or history/tag rewrite occurred. Hosted CI verifies separate clean runner builds; manual GUI testing remains on the primary workstation. The subsequent inventory/design and first typed audio increments are published for PR review with user approval. Their local Debug/Release evidence is recorded above; live hosted CI results are reported in the PR checks. No new GUI or actual audio-device test was run for this narrow route; recording/null helper tests and both build paths provide its evidence.
 
 ## Inherited limitations and release gates
 
