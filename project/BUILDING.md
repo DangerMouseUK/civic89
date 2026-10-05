@@ -89,6 +89,19 @@ Global MSBuild vcpkg integration remains available for that inherited comparison
 
 ## Tests and limits
 
-`civic89_tests` uses inherited `Font.cpp`/`GameDataLoader.cpp`, a small C++ runner, SDL dummy video and software rendering. It decodes, uploads and renders all 82 required textures, constructs every startup font size and validates months/tool data. The second CTest check compares all sources with the retained `.vcxproj`. Catch2/engine extraction, deterministic simulation digests, historical file parsing, ASan and exhaustive UI tests are deferred. No production refactor was needed.
+The presets run three CTest checks:
+
+- `runtime-assets-and-data`: `civic89_tests` uses inherited `Font.cpp`/`GameDataLoader.cpp`, a small C++ runner, SDL dummy video and software rendering. It decodes, uploads and renders all 82 required textures, constructs every startup font size and validates months/tool data.
+- `inherited-source-list`: compares all application sources with the retained `.vcxproj`.
+- `legacy-audio-and-earthquake`: `civic89_legacy_tests` links the actual inherited `w_sound.cpp`/`w_tk.cpp`, checks command routing and lifecycle state, and records known stub defects. It opens no window or audio device and needs no runtime assets. It does not test scenario loading, earthquake damage/RNG, automatic visual timeout or audible playback; see the [inventory and migration gates](reference/LEGACY_EVAL_INVENTORY.md).
+
+To run just the new characterization check in either configuration:
+
+```powershell
+ctest --preset windows-x64-debug -R '^legacy-audio-and-earthquake$' --output-on-failure
+ctest --preset windows-x64-release -R '^legacy-audio-and-earthquake$' --output-on-failure
+```
+
+`civic89_legacy_tests.exe` is beside the corresponding `civic89.exe` in the paths above. New test code compiles without warnings; recompiling inherited `w_sound.cpp` for this target repeats two existing C4100 warnings. Catch2/engine extraction, deterministic simulation digests, historical file parsing, ASan and exhaustive UI tests are deferred. No production refactor was needed.
 
 See `tests/baseline/BOOTSTRAP_2026-10-05.md` for checkpoint results; raw local configure/build/test/run logs are in ignored `out/audit/`. See `project/reference/RUNTIME_ASSETS.md` for complete resource and licence details.
