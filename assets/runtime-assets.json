@@ -1,0 +1,1373 @@
+{
+  "baseline": "9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad",
+  "font_commit": "6c67ab1f7aa65c442bd2745bb9d4ef1cd7bc01fa",
+  "files": [
+    {
+      "path": "cities/about.cty",
+      "sha256": "659e4e3675147a14d1bdb49477f3fb01e68e8e2a1d2ae96f382ac8f2a5849dac",
+      "bytes": 27120,
+      "hash_mode": "raw",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/cities/about.cty",
+      "referenced_by": [
+        "src/FileIo.cpp"
+      ]
+    },
+    {
+      "path": "cities/badnews.cty",
+      "sha256": "77cbfc846f1b7c94d0ca2c3c547b2b491ff60ce5ff9176398d05022350aa8204",
+      "bytes": 27120,
+      "hash_mode": "raw",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/cities/badnews.cty",
+      "referenced_by": [
+        "src/FileIo.cpp"
+      ]
+    },
+    {
+      "path": "cities/bluebird.cty",
+      "sha256": "7da0b406d856c9bb855f6ee3322dbb936132abc061918c742648cec838bd078f",
+      "bytes": 27120,
+      "hash_mode": "raw",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/cities/bluebird.cty",
+      "referenced_by": [
+        "src/FileIo.cpp"
+      ]
+    },
+    {
+      "path": "cities/bruce.cty",
+      "sha256": "bfc4d874b617ede8557b22444c43c62626df3d6f3a8aaf7f29951f0c135a687e",
+      "bytes": 27120,
+      "hash_mode": "raw",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/cities/bruce.cty",
+      "referenced_by": [
+        "src/FileIo.cpp"
+      ]
+    },
+    {
+      "path": "cities/deadwood.cty",
+      "sha256": "dc5f603f4cf97586bd084fc8403a3e9a6331985af457b15ede109cc23a4a28fe",
+      "bytes": 27120,
+      "hash_mode": "raw",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/cities/deadwood.cty",
+      "referenced_by": [
+        "src/FileIo.cpp"
+      ]
+    },
+    {
+      "path": "cities/finnigan.cty",
+      "sha256": "932f7da9fcc8b76bcec82016256767e21fd98406e71ad643ba09882e2ee9b0e4",
+      "bytes": 27120,
+      "hash_mode": "raw",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/cities/finnigan.cty",
+      "referenced_by": [
+        "src/FileIo.cpp"
+      ]
+    },
+    {
+      "path": "cities/freds.cty",
+      "sha256": "e9ebaa967b5eea4d0e6c486ba0f966835097db10bf616d6615a0b1d201db0251",
+      "bytes": 27120,
+      "hash_mode": "raw",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/cities/freds.cty",
+      "referenced_by": [
+        "src/FileIo.cpp"
+      ]
+    },
+    {
+      "path": "cities/haight.cty",
+      "sha256": "510fcdbd90d1ab86f3d266b6cbdcd7529d89deb972fe51feac2f876d75ef4cca",
+      "bytes": 27120,
+      "hash_mode": "raw",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/cities/haight.cty",
+      "referenced_by": [
+        "src/FileIo.cpp"
+      ]
+    },
+    {
+      "path": "cities/happisle.cty",
+      "sha256": "84925f4518eccc4f2e53f4adb8598e932693a2fd0f7829586f12a8d22e73c1c7",
+      "bytes": 27120,
+      "hash_mode": "raw",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/cities/happisle.cty",
+      "referenced_by": [
+        "src/FileIo.cpp"
+      ]
+    },
+    {
+      "path": "cities/joffburg.cty",
+      "sha256": "e810f654295ca3ff79112ba337282285ad29111cd4da997b40318cd72c4767eb",
+      "bytes": 27120,
+      "hash_mode": "raw",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/cities/joffburg.cty",
+      "referenced_by": [
+        "src/FileIo.cpp"
+      ]
+    },
+    {
+      "path": "cities/kamakura.cty",
+      "sha256": "fe6637e5795f2bbd9b96852bad601d29017ddbcb01b71ea46e34d92c4a67637a",
+      "bytes": 27120,
+      "hash_mode": "raw",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/cities/kamakura.cty",
+      "referenced_by": [
+        "src/FileIo.cpp"
+      ]
+    },
+    {
+      "path": "cities/kobe.cty",
+      "sha256": "157e5acc9f261715764c4eb4079969fc615fcccb982b2d288d5ad495b1ad9d66",
+      "bytes": 27120,
+      "hash_mode": "raw",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/cities/kobe.cty",
+      "referenced_by": [
+        "src/FileIo.cpp"
+      ]
+    },
+    {
+      "path": "cities/kowloon.cty",
+      "sha256": "03eabae903f9b2e12819fb3f7061443b96a7276620b27b3a57bf89e5c3c54973",
+      "bytes": 27120,
+      "hash_mode": "raw",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/cities/kowloon.cty",
+      "referenced_by": [
+        "src/FileIo.cpp"
+      ]
+    },
+    {
+      "path": "cities/kyoto.cty",
+      "sha256": "1f1cd1f3251ed7c5d3f2d3e194968c3c37a39f9a1668d28bc1e73a304560cdaa",
+      "bytes": 27120,
+      "hash_mode": "raw",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/cities/kyoto.cty",
+      "referenced_by": [
+        "src/FileIo.cpp"
+      ]
+    },
+    {
+      "path": "cities/linecity.cty",
+      "sha256": "f81648b1015672d1f9478a419a81f3bd243088cd56a468b1885ef59789d8c4ee",
+      "bytes": 27120,
+      "hash_mode": "raw",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/cities/linecity.cty",
+      "referenced_by": [
+        "src/FileIo.cpp"
+      ]
+    },
+    {
+      "path": "cities/med_isle.cty",
+      "sha256": "37359ca3cd64727555edeffa854db4efcbe204acb8e869c2d36c44c326c02347",
+      "bytes": 27120,
+      "hash_mode": "raw",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/cities/med_isle.cty",
+      "referenced_by": [
+        "src/FileIo.cpp"
+      ]
+    },
+    {
+      "path": "cities/ndulls.cty",
+      "sha256": "4e3e2f4cf315f14c0db5e3f591d501a8fe3acd27fbc00c5f27122de61f2abd28",
+      "bytes": 27120,
+      "hash_mode": "raw",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/cities/ndulls.cty",
+      "referenced_by": [
+        "src/FileIo.cpp"
+      ]
+    },
+    {
+      "path": "cities/neatmap.cty",
+      "sha256": "970644296503ee3c2b587605288fc3a8960656cdde37288adb290812f28dc8e8",
+      "bytes": 27120,
+      "hash_mode": "raw",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/cities/neatmap.cty",
+      "referenced_by": [
+        "src/FileIo.cpp"
+      ]
+    },
+    {
+      "path": "cities/radial.cty",
+      "sha256": "3ded35f8763d26a61e345ace98ea5f7bf7c8971d00f1c5f54c0dccab2cf959c8",
+      "bytes": 27120,
+      "hash_mode": "raw",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/cities/radial.cty",
+      "referenced_by": [
+        "src/FileIo.cpp"
+      ]
+    },
+    {
+      "path": "cities/senri.cty",
+      "sha256": "d21685b5b95e6732f93492c16aecf92216f8339fec177fd86de6c8b016c67842",
+      "bytes": 27120,
+      "hash_mode": "raw",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/cities/senri.cty",
+      "referenced_by": [
+        "src/FileIo.cpp"
+      ]
+    },
+    {
+      "path": "cities/southpac.cty",
+      "sha256": "152375e26e6af0c12af5d31266c18d5909c5eb29c3875c90b5951c15dab7673d",
+      "bytes": 27120,
+      "hash_mode": "raw",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/cities/southpac.cty",
+      "referenced_by": [
+        "src/FileIo.cpp"
+      ]
+    },
+    {
+      "path": "cities/splats.cty",
+      "sha256": "4c1ded455b395cd78aeb2846615dbceda5c5b3e2b1eb8798526dd1beb9b9216f",
+      "bytes": 27120,
+      "hash_mode": "raw",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/cities/splats.cty",
+      "referenced_by": [
+        "src/FileIo.cpp"
+      ]
+    },
+    {
+      "path": "cities/wetcity.cty",
+      "sha256": "0858c04180509d33a323abbf7d044df3cff561d8dfaac0b4ef24ef5a2eb2063d",
+      "bytes": 27120,
+      "hash_mode": "raw",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/cities/wetcity.cty",
+      "referenced_by": [
+        "src/FileIo.cpp"
+      ]
+    },
+    {
+      "path": "cities/yokohama.cty",
+      "sha256": "a2589b99ecf2a1fb3198595b28a5fc96b58c8ab61d804a4ab6008be779f8616f",
+      "bytes": 27120,
+      "hash_mode": "raw",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/cities/yokohama.cty",
+      "referenced_by": [
+        "src/FileIo.cpp"
+      ]
+    },
+    {
+      "path": "icons/LICENSE.txt",
+      "sha256": "a2214420ca90a67658e68a02a1f224324f16137bf2ebf74862503328e148a4ed",
+      "bytes": 42,
+      "hash_mode": "lf",
+      "licence_group": "inherited-icons",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/icons/LICENSE.txt",
+      "referenced_by": []
+    },
+    {
+      "path": "icons/buttons.png",
+      "sha256": "c67101d28a6f02993bb295c50616a71429eae16ed92381d0cbf4ed65e78367c4",
+      "bytes": 18425,
+      "hash_mode": "raw",
+      "licence_group": "inherited-icons",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/icons/buttons.png",
+      "referenced_by": [
+        "src/UI/ToolPalette.cpp"
+      ]
+    },
+    {
+      "path": "icons/minimap.png",
+      "sha256": "6cc67da3b863da27c6252c7e8a097dab04dde99df913d771ddccaa11f3ccd615",
+      "bytes": 6429,
+      "hash_mode": "raw",
+      "licence_group": "inherited-icons",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/icons/minimap.png",
+      "referenced_by": [
+        "src/UI/MiniMapWindow.cpp"
+      ]
+    },
+    {
+      "path": "images/DashboardWindow.png",
+      "sha256": "f15148e422f1fb1269a2d95bcde3e1a632a7843004f692447ab57627a00d9ae4",
+      "bytes": 4078,
+      "hash_mode": "raw",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/images/DashboardWindow.png",
+      "referenced_by": [
+        "src/UI/DashboardWindow.cpp"
+      ]
+    },
+    {
+      "path": "images/EvalWindow.png",
+      "sha256": "3f244fdbfbc6e115bfe1944c6b6bfdaf954446642e806bb66c67ca2456ce13c0",
+      "bytes": 4570,
+      "hash_mode": "raw",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/images/EvalWindow.png",
+      "referenced_by": [
+        "src/UI/EvaluationWindow.cpp"
+      ]
+    },
+    {
+      "path": "images/OptionsWindow.png",
+      "sha256": "65529b33ce8c48944fb00ff421d488061eccbb01867c75496d37a58492acebd4",
+      "bytes": 8976,
+      "hash_mode": "raw",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/images/OptionsWindow.png",
+      "referenced_by": [
+        "src/UI/OptionsWindow.cpp"
+      ]
+    },
+    {
+      "path": "images/QueryWindow.png",
+      "sha256": "8611c4521c5c17e44ed9010a5661ee44319fa2169c18681d61f44f2f08841827",
+      "bytes": 1948,
+      "hash_mode": "raw",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/images/QueryWindow.png",
+      "referenced_by": [
+        "src/UI/QueryWindow.cpp"
+      ]
+    },
+    {
+      "path": "images/ToolPalette.png",
+      "sha256": "aaaea5f0a7f9c7c85e84b667449aaa8a55cc59ccee3263e2e8b94f62457661da",
+      "bytes": 1206,
+      "hash_mode": "raw",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/images/ToolPalette.png",
+      "referenced_by": [
+        "src/UI/ToolPalette.cpp"
+      ]
+    },
+    {
+      "path": "images/airport.xpm",
+      "sha256": "3682c023166d0347f3fcd840c86a6b43f548f1ed594bd94d34a07cdd67acc419",
+      "bytes": 9926,
+      "hash_mode": "lf",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/images/airport.xpm",
+      "referenced_by": [
+        "src/UI/ToolPalette.cpp"
+      ]
+    },
+    {
+      "path": "images/budget.png",
+      "sha256": "5ac603e39ee4ab1ccdb32ebd59582f8f12f20fbc35633fedf773b4a0c132516e",
+      "bytes": 11174,
+      "hash_mode": "raw",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/images/budget.png",
+      "referenced_by": [
+        "src/UI/BudgetWindow.cpp"
+      ]
+    },
+    {
+      "path": "images/coal.xpm",
+      "sha256": "94191a7f686d5b647fabdf53da188b8f895ace5e401e31275105c4b0b76e71be",
+      "bytes": 4713,
+      "hash_mode": "lf",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/images/coal.xpm",
+      "referenced_by": [
+        "src/UI/ToolPalette.cpp"
+      ]
+    },
+    {
+      "path": "images/com.xpm",
+      "sha256": "38c7428dbd8ff156d9d5171f371747f56018dced94c02601fc3ab6ebb5358c34",
+      "bytes": 2681,
+      "hash_mode": "lf",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/images/com.xpm",
+      "referenced_by": [
+        "src/UI/ToolPalette.cpp"
+      ]
+    },
+    {
+      "path": "images/fire.xpm",
+      "sha256": "f9edd9958026d6004d15b12c5a379c55738fe6fdbc116614f144cbc383fb67f3",
+      "bytes": 2872,
+      "hash_mode": "lf",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/images/fire.xpm",
+      "referenced_by": [
+        "src/UI/ToolPalette.cpp"
+      ]
+    },
+    {
+      "path": "images/graph.png",
+      "sha256": "0ef72f39627f1e77889514679d2ba3fbaa3fc65329633b39b350f88860ec14f1",
+      "bytes": 5580,
+      "hash_mode": "raw",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/images/graph.png",
+      "referenced_by": [
+        "src/UI/GraphWindow.cpp"
+      ]
+    },
+    {
+      "path": "images/ind.xpm",
+      "sha256": "180eaa3ca26b71266c8e558e8cfd271978ce92eba87ecac03d2e425b1104821a",
+      "bytes": 2681,
+      "hash_mode": "lf",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/images/ind.xpm",
+      "referenced_by": [
+        "src/UI/ToolPalette.cpp"
+      ]
+    },
+    {
+      "path": "images/nuclear.xpm",
+      "sha256": "e04cb4a886a2a9287b59dcc776d34dfbeff54033c5e8b4a8b7ef34f5d9a33464",
+      "bytes": 4668,
+      "hash_mode": "lf",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/images/nuclear.xpm",
+      "referenced_by": [
+        "src/UI/ToolPalette.cpp"
+      ]
+    },
+    {
+      "path": "images/obj1-0.xpm",
+      "sha256": "18254332f8f6adf49e90c36c112960438e8335a63842d77fe672ce6a3d6f058f",
+      "bytes": 1345,
+      "hash_mode": "lf",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/images/obj1-0.xpm",
+      "referenced_by": [
+        "src/Sprite.cpp"
+      ]
+    },
+    {
+      "path": "images/obj1-1.xpm",
+      "sha256": "4cb830f710e4d1ecd1c37ea972c1782a4bab98c34bf10784df3f5a35bfa31d16",
+      "bytes": 1345,
+      "hash_mode": "lf",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/images/obj1-1.xpm",
+      "referenced_by": [
+        "src/Sprite.cpp"
+      ]
+    },
+    {
+      "path": "images/obj1-2.xpm",
+      "sha256": "907d7beab8b3e3dd89d6383c9cca800022bca4e9fc19f540c7689974905af1b7",
+      "bytes": 1345,
+      "hash_mode": "lf",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/images/obj1-2.xpm",
+      "referenced_by": [
+        "src/Sprite.cpp"
+      ]
+    },
+    {
+      "path": "images/obj1-3.xpm",
+      "sha256": "ce36f238b40c2ded27e0ecd4b96dc75f433b3c0ba83dcf59eb76b26825b0512b",
+      "bytes": 1345,
+      "hash_mode": "lf",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/images/obj1-3.xpm",
+      "referenced_by": [
+        "src/Sprite.cpp"
+      ]
+    },
+    {
+      "path": "images/obj1-4.xpm",
+      "sha256": "f4da90d6d2545a4f46b5a4c991339b2d8f7b01402097953bc8708063be941ce1",
+      "bytes": 1219,
+      "hash_mode": "lf",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/images/obj1-4.xpm",
+      "referenced_by": [
+        "src/Sprite.cpp"
+      ]
+    },
+    {
+      "path": "images/obj2-0.xpm",
+      "sha256": "fa07cf468fbf5ea2f5f003765867ca8e2099a700e0eb8d13e0311bb20ce17c90",
+      "bytes": 1409,
+      "hash_mode": "lf",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/images/obj2-0.xpm",
+      "referenced_by": [
+        "src/Sprite.cpp"
+      ]
+    },
+    {
+      "path": "images/obj2-1.xpm",
+      "sha256": "eb3cceb0f89c1089320c566f0aaf6815ee7a4baf918984c8d8d6e2246be55196",
+      "bytes": 1409,
+      "hash_mode": "lf",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/images/obj2-1.xpm",
+      "referenced_by": [
+        "src/Sprite.cpp"
+      ]
+    },
+    {
+      "path": "images/obj2-2.xpm",
+      "sha256": "dffa007ac61be6cd656e59df1764d910180ecf42e2cd495db93d820a32559e80",
+      "bytes": 1409,
+      "hash_mode": "lf",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/images/obj2-2.xpm",
+      "referenced_by": [
+        "src/Sprite.cpp"
+      ]
+    },
+    {
+      "path": "images/obj2-3.xpm",
+      "sha256": "e2b90be5aa4a561357c3dea5e64a11be8d4977c41ca441633c32400bf0253688",
+      "bytes": 1409,
+      "hash_mode": "lf",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/images/obj2-3.xpm",
+      "referenced_by": [
+        "src/Sprite.cpp"
+      ]
+    },
+    {
+      "path": "images/obj2-4.xpm",
+      "sha256": "b5eae95ffa5be20200f62175db6ed32410aaa77e2c2f7154feca8f9888d7e798",
+      "bytes": 1409,
+      "hash_mode": "lf",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/images/obj2-4.xpm",
+      "referenced_by": [
+        "src/Sprite.cpp"
+      ]
+    },
+    {
+      "path": "images/obj2-5.xpm",
+      "sha256": "3a755e68938d0f1e80c2d8667aeba36b230b435d364124cba9b1453e1b4c6f8a",
+      "bytes": 1409,
+      "hash_mode": "lf",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/images/obj2-5.xpm",
+      "referenced_by": [
+        "src/Sprite.cpp"
+      ]
+    },
+    {
+      "path": "images/obj2-6.xpm",
+      "sha256": "385bf39cf6781324777971e31eaa2e69b26e0bc5716752fea0731dac40cda94f",
+      "bytes": 1409,
+      "hash_mode": "lf",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/images/obj2-6.xpm",
+      "referenced_by": [
+        "src/Sprite.cpp"
+      ]
+    },
+    {
+      "path": "images/obj2-7.xpm",
+      "sha256": "fa07cf468fbf5ea2f5f003765867ca8e2099a700e0eb8d13e0311bb20ce17c90",
+      "bytes": 1409,
+      "hash_mode": "lf",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/images/obj2-7.xpm",
+      "referenced_by": [
+        "src/Sprite.cpp"
+      ]
+    },
+    {
+      "path": "images/obj2-8.xpm",
+      "sha256": "fa07cf468fbf5ea2f5f003765867ca8e2099a700e0eb8d13e0311bb20ce17c90",
+      "bytes": 1409,
+      "hash_mode": "lf",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/images/obj2-8.xpm",
+      "referenced_by": [
+        "src/Sprite.cpp"
+      ]
+    },
+    {
+      "path": "images/obj3-0.xpm",
+      "sha256": "ec8a5aa2edec3b81bf4ff62423c0344ab0a56127424c937bbe088caf3f28301c",
+      "bytes": 2690,
+      "hash_mode": "lf",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/images/obj3-0.xpm",
+      "referenced_by": [
+        "src/Sprite.cpp"
+      ]
+    },
+    {
+      "path": "images/obj3-1.xpm",
+      "sha256": "74f702d49dc07cf004576d30b54fa1ed59989313fedf45569244234a7ec2f941",
+      "bytes": 2731,
+      "hash_mode": "lf",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/images/obj3-1.xpm",
+      "referenced_by": [
+        "src/Sprite.cpp"
+      ]
+    },
+    {
+      "path": "images/obj3-10.xpm",
+      "sha256": "e500f106600f78ebd4cae1f2e2f088dbfdc9669f46a26827b00f5cef81e776f0",
+      "bytes": 2731,
+      "hash_mode": "lf",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/images/obj3-10.xpm",
+      "referenced_by": [
+        "src/Sprite.cpp"
+      ]
+    },
+    {
+      "path": "images/obj3-11.xpm",
+      "sha256": "ec8a5aa2edec3b81bf4ff62423c0344ab0a56127424c937bbe088caf3f28301c",
+      "bytes": 2690,
+      "hash_mode": "lf",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/images/obj3-11.xpm",
+      "referenced_by": [
+        "src/Sprite.cpp"
+      ]
+    },
+    {
+      "path": "images/obj3-2.xpm",
+      "sha256": "d29b72013c61c56e74400d3c767441a2ce8bb878d4f9fd033b15af030685b3fb",
+      "bytes": 2731,
+      "hash_mode": "lf",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/images/obj3-2.xpm",
+      "referenced_by": [
+        "src/Sprite.cpp"
+      ]
+    },
+    {
+      "path": "images/obj3-3.xpm",
+      "sha256": "dec6dfcb696f70c1d9618b31a029e517af8a3a2e7b1ced7d4f662fb59f73cb66",
+      "bytes": 2731,
+      "hash_mode": "lf",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/images/obj3-3.xpm",
+      "referenced_by": [
+        "src/Sprite.cpp"
+      ]
+    },
+    {
+      "path": "images/obj3-4.xpm",
+      "sha256": "73da486aad09aaeb41b8f320296205b75d26e35ecf5a8f48a2f77934ca84f1e5",
+      "bytes": 2731,
+      "hash_mode": "lf",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/images/obj3-4.xpm",
+      "referenced_by": [
+        "src/Sprite.cpp"
+      ]
+    },
+    {
+      "path": "images/obj3-5.xpm",
+      "sha256": "1185ca53ed164dd4de65779f89474568638169f89304698be8cecb8c3b454383",
+      "bytes": 2731,
+      "hash_mode": "lf",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/images/obj3-5.xpm",
+      "referenced_by": [
+        "src/Sprite.cpp"
+      ]
+    },
+    {
+      "path": "images/obj3-6.xpm",
+      "sha256": "58557bddfba7af70e8df486a584d1b2b6501b5e27cbbb8367bc48aec30db6645",
+      "bytes": 2731,
+      "hash_mode": "lf",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/images/obj3-6.xpm",
+      "referenced_by": [
+        "src/Sprite.cpp"
+      ]
+    },
+    {
+      "path": "images/obj3-7.xpm",
+      "sha256": "3cb81a0a5fcdb54c4ee2ba15aec5754da325d6c1f6ead6c874031db2f4c29116",
+      "bytes": 2731,
+      "hash_mode": "lf",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/images/obj3-7.xpm",
+      "referenced_by": [
+        "src/Sprite.cpp"
+      ]
+    },
+    {
+      "path": "images/obj3-8.xpm",
+      "sha256": "ff0b51d5eb981bb6c80dc7110a426a08f62a9fc98dcb8e5da87c8d44d99a269e",
+      "bytes": 2731,
+      "hash_mode": "lf",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/images/obj3-8.xpm",
+      "referenced_by": [
+        "src/Sprite.cpp"
+      ]
+    },
+    {
+      "path": "images/obj3-9.xpm",
+      "sha256": "e500f106600f78ebd4cae1f2e2f088dbfdc9669f46a26827b00f5cef81e776f0",
+      "bytes": 2731,
+      "hash_mode": "lf",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/images/obj3-9.xpm",
+      "referenced_by": [
+        "src/Sprite.cpp"
+      ]
+    },
+    {
+      "path": "images/obj4-0.xpm",
+      "sha256": "a9f20308844e05be74de93d2cddc9edab557140ff84ea905c82f4d7e79dc963f",
+      "bytes": 2753,
+      "hash_mode": "lf",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/images/obj4-0.xpm",
+      "referenced_by": [
+        "src/Sprite.cpp"
+      ]
+    },
+    {
+      "path": "images/obj4-1.xpm",
+      "sha256": "8d554badf5054f1a2327c2b025d0de2075108cb5f387400e9b1658a323e43a5d",
+      "bytes": 2753,
+      "hash_mode": "lf",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/images/obj4-1.xpm",
+      "referenced_by": [
+        "src/Sprite.cpp"
+      ]
+    },
+    {
+      "path": "images/obj4-2.xpm",
+      "sha256": "5742efd0a88e248d1c2ff02177de5512d6e7a73db759edcc0b7ad454ea503992",
+      "bytes": 2753,
+      "hash_mode": "lf",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/images/obj4-2.xpm",
+      "referenced_by": [
+        "src/Sprite.cpp"
+      ]
+    },
+    {
+      "path": "images/obj4-3.xpm",
+      "sha256": "39f61c981221946206530f6a8ed4e6e5da27a6d5fcc95ef28466899e972394a1",
+      "bytes": 2753,
+      "hash_mode": "lf",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/images/obj4-3.xpm",
+      "referenced_by": [
+        "src/Sprite.cpp"
+      ]
+    },
+    {
+      "path": "images/obj4-4.xpm",
+      "sha256": "6f10e97bcbc109e16b8fb6a3692a5a1c1fc1203eb23ea76f1fbf9c426e57b351",
+      "bytes": 2753,
+      "hash_mode": "lf",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/images/obj4-4.xpm",
+      "referenced_by": [
+        "src/Sprite.cpp"
+      ]
+    },
+    {
+      "path": "images/obj4-5.xpm",
+      "sha256": "1317796b9ea49aafd9f256146553f1860c4f587e77f8bd79a34dd7d5a8a3d1af",
+      "bytes": 2753,
+      "hash_mode": "lf",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/images/obj4-5.xpm",
+      "referenced_by": [
+        "src/Sprite.cpp"
+      ]
+    },
+    {
+      "path": "images/obj4-6.xpm",
+      "sha256": "6752df0cb4ab146a55ea97a13da42327ee008fa6342a6f05f4387115f68fc5ef",
+      "bytes": 2753,
+      "hash_mode": "lf",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/images/obj4-6.xpm",
+      "referenced_by": [
+        "src/Sprite.cpp"
+      ]
+    },
+    {
+      "path": "images/obj4-7.xpm",
+      "sha256": "77306e8c070cbff3cc374c7422a661211b5388825a5d1c61ba020e604f08a7e3",
+      "bytes": 2753,
+      "hash_mode": "lf",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/images/obj4-7.xpm",
+      "referenced_by": [
+        "src/Sprite.cpp"
+      ]
+    },
+    {
+      "path": "images/obj4-8.xpm",
+      "sha256": "6752df0cb4ab146a55ea97a13da42327ee008fa6342a6f05f4387115f68fc5ef",
+      "bytes": 2753,
+      "hash_mode": "lf",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/images/obj4-8.xpm",
+      "referenced_by": [
+        "src/Sprite.cpp"
+      ]
+    },
+    {
+      "path": "images/obj5-0.xpm",
+      "sha256": "0590dc50cffda849f723e75d5f4f3070e33dcab3662635b1bb2c951e59a0e09d",
+      "bytes": 2648,
+      "hash_mode": "lf",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/images/obj5-0.xpm",
+      "referenced_by": [
+        "src/Sprite.cpp"
+      ]
+    },
+    {
+      "path": "images/obj5-1.xpm",
+      "sha256": "b465f22499806014c4f44af4745c9cd40bf5f413b95af57bacaec541543bc11f",
+      "bytes": 2668,
+      "hash_mode": "lf",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/images/obj5-1.xpm",
+      "referenced_by": [
+        "src/Sprite.cpp"
+      ]
+    },
+    {
+      "path": "images/obj5-10.xpm",
+      "sha256": "6243ebcdbd830746d158d6bf8a068db35010fa1643baebc908ed6231f7ee532a",
+      "bytes": 2668,
+      "hash_mode": "lf",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/images/obj5-10.xpm",
+      "referenced_by": [
+        "src/Sprite.cpp"
+      ]
+    },
+    {
+      "path": "images/obj5-11.xpm",
+      "sha256": "c96de8bc6030a746c1977922c5b716efccc93fab558e8a74eb8de2e6bf5b51a0",
+      "bytes": 2669,
+      "hash_mode": "lf",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/images/obj5-11.xpm",
+      "referenced_by": [
+        "src/Sprite.cpp"
+      ]
+    },
+    {
+      "path": "images/obj5-12.xpm",
+      "sha256": "1a402d0cd6efb63ff2e9db2d86206bac874bf3c5a3857d6cf6542a0fc56703fb",
+      "bytes": 2669,
+      "hash_mode": "lf",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/images/obj5-12.xpm",
+      "referenced_by": [
+        "src/Sprite.cpp"
+      ]
+    },
+    {
+      "path": "images/obj5-13.xpm",
+      "sha256": "2eb423303f714afec953a718f71d87680d1e813e3fcf9af6f5dde7e72e090a18",
+      "bytes": 2669,
+      "hash_mode": "lf",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/images/obj5-13.xpm",
+      "referenced_by": [
+        "src/Sprite.cpp"
+      ]
+    },
+    {
+      "path": "images/obj5-14.xpm",
+      "sha256": "2eb423303f714afec953a718f71d87680d1e813e3fcf9af6f5dde7e72e090a18",
+      "bytes": 2669,
+      "hash_mode": "lf",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/images/obj5-14.xpm",
+      "referenced_by": [
+        "src/Sprite.cpp"
+      ]
+    },
+    {
+      "path": "images/obj5-15.xpm",
+      "sha256": "0590dc50cffda849f723e75d5f4f3070e33dcab3662635b1bb2c951e59a0e09d",
+      "bytes": 2648,
+      "hash_mode": "lf",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/images/obj5-15.xpm",
+      "referenced_by": [
+        "src/Sprite.cpp"
+      ]
+    },
+    {
+      "path": "images/obj5-16.xpm",
+      "sha256": "0590dc50cffda849f723e75d5f4f3070e33dcab3662635b1bb2c951e59a0e09d",
+      "bytes": 2648,
+      "hash_mode": "lf",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/images/obj5-16.xpm",
+      "referenced_by": [
+        "src/Sprite.cpp"
+      ]
+    },
+    {
+      "path": "images/obj5-2.xpm",
+      "sha256": "4b3fd64e103e6071541502bcd4572bdeca54d0c19e1216d443bfdc0b5dca525d",
+      "bytes": 2668,
+      "hash_mode": "lf",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/images/obj5-2.xpm",
+      "referenced_by": [
+        "src/Sprite.cpp"
+      ]
+    },
+    {
+      "path": "images/obj5-3.xpm",
+      "sha256": "300c7471e99d708106ff10d496f06695b3c1c69b0ffb348551ab98a35f57e1cf",
+      "bytes": 2668,
+      "hash_mode": "lf",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/images/obj5-3.xpm",
+      "referenced_by": [
+        "src/Sprite.cpp"
+      ]
+    },
+    {
+      "path": "images/obj5-4.xpm",
+      "sha256": "c6a2000db8de851c0bb8c42b1b7922426de5b9ff16c241ced1a4133db46c8447",
+      "bytes": 2668,
+      "hash_mode": "lf",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/images/obj5-4.xpm",
+      "referenced_by": [
+        "src/Sprite.cpp"
+      ]
+    },
+    {
+      "path": "images/obj5-5.xpm",
+      "sha256": "d73763cb6d65511e457650a28ab94087f5b412e8b8fb5218fb06c136f7182a93",
+      "bytes": 2668,
+      "hash_mode": "lf",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/images/obj5-5.xpm",
+      "referenced_by": [
+        "src/Sprite.cpp"
+      ]
+    },
+    {
+      "path": "images/obj5-6.xpm",
+      "sha256": "2a02970acaf444fd900176d9ab553b3418072572b087c10c92a1dd7de0b69aa3",
+      "bytes": 2668,
+      "hash_mode": "lf",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/images/obj5-6.xpm",
+      "referenced_by": [
+        "src/Sprite.cpp"
+      ]
+    },
+    {
+      "path": "images/obj5-7.xpm",
+      "sha256": "0f80ef7c855384c09c61e6b1b420f91c61c1e3c430d6c73400be36b1a226c401",
+      "bytes": 2668,
+      "hash_mode": "lf",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/images/obj5-7.xpm",
+      "referenced_by": [
+        "src/Sprite.cpp"
+      ]
+    },
+    {
+      "path": "images/obj5-8.xpm",
+      "sha256": "5785c2d726221d0012dc30cc6f8feba54657b15d57cc38fb8e7d51ad09a70660",
+      "bytes": 2668,
+      "hash_mode": "lf",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/images/obj5-8.xpm",
+      "referenced_by": [
+        "src/Sprite.cpp"
+      ]
+    },
+    {
+      "path": "images/obj5-9.xpm",
+      "sha256": "6243ebcdbd830746d158d6bf8a068db35010fa1643baebc908ed6231f7ee532a",
+      "bytes": 2668,
+      "hash_mode": "lf",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/images/obj5-9.xpm",
+      "referenced_by": [
+        "src/Sprite.cpp"
+      ]
+    },
+    {
+      "path": "images/obj6-0.xpm",
+      "sha256": "2af55d30962257ce612e4e70573a98000ec9d40e19ea0963a7f7bf59b6eaa72c",
+      "bytes": 2647,
+      "hash_mode": "lf",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/images/obj6-0.xpm",
+      "referenced_by": [
+        "src/Sprite.cpp"
+      ]
+    },
+    {
+      "path": "images/obj6-1.xpm",
+      "sha256": "09fe1f966a4c6f31c2cbc06345059fa82ea7a0320426fdb57c314a7f7c1febe3",
+      "bytes": 2647,
+      "hash_mode": "lf",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/images/obj6-1.xpm",
+      "referenced_by": [
+        "src/Sprite.cpp"
+      ]
+    },
+    {
+      "path": "images/obj6-2.xpm",
+      "sha256": "7cbba11d81ee8b2a9aa77ad44321251e90758082a07d5c82ad3372f22c02eedb",
+      "bytes": 2647,
+      "hash_mode": "lf",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/images/obj6-2.xpm",
+      "referenced_by": [
+        "src/Sprite.cpp"
+      ]
+    },
+    {
+      "path": "images/obj7-0.xpm",
+      "sha256": "d1479bab1e3bba283862122bf191617947984c3cee3125e4963f29d3ffa8f786",
+      "bytes": 2605,
+      "hash_mode": "lf",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/images/obj7-0.xpm",
+      "referenced_by": [
+        "src/Sprite.cpp"
+      ]
+    },
+    {
+      "path": "images/obj7-1.xpm",
+      "sha256": "a862705bbd7d545c8933d5404a1f90b68c45cf1b9250b21b83f45c5e9fc6dee8",
+      "bytes": 2626,
+      "hash_mode": "lf",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/images/obj7-1.xpm",
+      "referenced_by": [
+        "src/Sprite.cpp"
+      ]
+    },
+    {
+      "path": "images/obj7-2.xpm",
+      "sha256": "df4b547861eebc427fdba3cc1b46193c509a26df32f2e675a5ea1b5a5f551f97",
+      "bytes": 2626,
+      "hash_mode": "lf",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/images/obj7-2.xpm",
+      "referenced_by": [
+        "src/Sprite.cpp"
+      ]
+    },
+    {
+      "path": "images/obj7-3.xpm",
+      "sha256": "b550b221307758e3d0db524b402aa01040ffd52e5563d84e05da8aecd94d6adc",
+      "bytes": 2626,
+      "hash_mode": "lf",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/images/obj7-3.xpm",
+      "referenced_by": [
+        "src/Sprite.cpp"
+      ]
+    },
+    {
+      "path": "images/obj7-4.xpm",
+      "sha256": "b67718ab39defaee85195ac27e63d8a599bcce5451e05b5c8231a68f9202014a",
+      "bytes": 2647,
+      "hash_mode": "lf",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/images/obj7-4.xpm",
+      "referenced_by": [
+        "src/Sprite.cpp"
+      ]
+    },
+    {
+      "path": "images/obj7-5.xpm",
+      "sha256": "2c61d04ee638cbfcf524963b4a9d5de7f391a1f08c97e76f4358c169fd9fb052",
+      "bytes": 2647,
+      "hash_mode": "lf",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/images/obj7-5.xpm",
+      "referenced_by": [
+        "src/Sprite.cpp"
+      ]
+    },
+    {
+      "path": "images/police.xpm",
+      "sha256": "916115817282f7eac5fd5116bff75ac68346b65c882ed206413c74fc49d27cfc",
+      "bytes": 2782,
+      "hash_mode": "lf",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/images/police.xpm",
+      "referenced_by": [
+        "src/UI/ToolPalette.cpp"
+      ]
+    },
+    {
+      "path": "images/res.xpm",
+      "sha256": "dc0ddc58e0f587b6f55ced7653448cbdc6366a6a69f09236296dc7906d0b8e4e",
+      "bytes": 2681,
+      "hash_mode": "lf",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/images/res.xpm",
+      "referenced_by": [
+        "src/UI/ToolPalette.cpp"
+      ]
+    },
+    {
+      "path": "images/seaport.xpm",
+      "sha256": "10a4e9a71d3457f534d03846dd70192565ea2a94674b6680c1547be5b0f0fbe7",
+      "bytes": 4653,
+      "hash_mode": "lf",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/images/seaport.xpm",
+      "referenced_by": [
+        "src/UI/ToolPalette.cpp"
+      ]
+    },
+    {
+      "path": "images/stadium.xpm",
+      "sha256": "66ec864647dc7a694d93e6b2f9f5b10fdb3e1f8adaf92d44202dfd9a2706e5fc",
+      "bytes": 4607,
+      "hash_mode": "lf",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/images/stadium.xpm",
+      "referenced_by": [
+        "src/UI/ToolPalette.cpp"
+      ]
+    },
+    {
+      "path": "images/tiles.xpm",
+      "sha256": "5a2432b42112aa1e904c736e362f75bc902e8c60adf69f4c965995f869ef6cbb",
+      "bytes": 308512,
+      "hash_mode": "lf",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/images/tiles.xpm",
+      "referenced_by": [
+        "src/main.cpp"
+      ]
+    },
+    {
+      "path": "images/tilessm.xpm",
+      "sha256": "acaefd1b0d5367767849744768abfb95fc22e542cdd99b6050af69f1307e6f58",
+      "bytes": 24352,
+      "hash_mode": "lf",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/images/tilessm.xpm",
+      "referenced_by": [
+        "src/UI/MiniMapWindow.cpp"
+      ]
+    },
+    {
+      "path": "res/Raleway-Bold.ttf",
+      "sha256": "4bbee5ac4b10b4fbe5fdb0bff6a75898d8800c62ad16311484e8680ef46b5701",
+      "bytes": 176280,
+      "hash_mode": "raw",
+      "licence_group": "raleway",
+      "source": "https://raw.githubusercontent.com/impallari/Raleway/6c67ab1f7aa65c442bd2745bb9d4ef1cd7bc01fa/fonts/v3.000%20Fontlab/TTF/Raleway-Bold.ttf",
+      "referenced_by": [
+        "src/UI/EvaluationWindow.cpp",
+        "src/UI/QueryWindow.cpp"
+      ]
+    },
+    {
+      "path": "res/Raleway-BoldItalic.ttf",
+      "sha256": "88f61a661d8ccdc2189b9baf5a46f26a3889c3902e27dd4b07b1f5845172cdfe",
+      "bytes": 146180,
+      "hash_mode": "raw",
+      "licence_group": "raleway",
+      "source": "https://raw.githubusercontent.com/impallari/Raleway/6c67ab1f7aa65c442bd2745bb9d4ef1cd7bc01fa/fonts/v3.000%20Fontlab/TTF/Raleway-Bold-Italic.ttf",
+      "referenced_by": [
+        "src/UI/EvaluationWindow.cpp",
+        "src/UI/QueryWindow.cpp"
+      ]
+    },
+    {
+      "path": "res/Raleway-Medium.ttf",
+      "sha256": "84e15d32decbb3e051c169b4023d7debafa044587b8f12eeb3324f4ed2683f48",
+      "bytes": 178116,
+      "hash_mode": "raw",
+      "licence_group": "raleway",
+      "source": "https://raw.githubusercontent.com/impallari/Raleway/6c67ab1f7aa65c442bd2745bb9d4ef1cd7bc01fa/fonts/v3.000%20Fontlab/TTF/Raleway-Medium.ttf",
+      "referenced_by": [
+        "src/UI/BudgetWindow.cpp",
+        "src/UI/DashboardWindow.cpp",
+        "src/UI/EvaluationWindow.cpp",
+        "src/UI/QueryWindow.cpp"
+      ]
+    },
+    {
+      "path": "res/licenses/raleway/OFL.txt",
+      "sha256": "3c2988f0e70eeb4d545fbdf5d8dd0abdd7b5754d0048e0287251fc686f913200",
+      "bytes": 4555,
+      "hash_mode": "lf",
+      "licence_group": "raleway",
+      "source": "https://raw.githubusercontent.com/impallari/Raleway/6c67ab1f7aa65c442bd2745bb9d4ef1cd7bc01fa/OFL.txt",
+      "referenced_by": []
+    },
+    {
+      "path": "res/strings.json",
+      "sha256": "ef2746a43823daa39517e889678167b0e0252bbf26d863403f87899f4db5edf4",
+      "bytes": 728,
+      "hash_mode": "lf",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/res/strings.json",
+      "referenced_by": [
+        "src/Constants.h"
+      ]
+    },
+    {
+      "path": "res/tools.json",
+      "sha256": "5576369dda6e80380e26a15a2130b2ac69f6f93914043431b72ac9de06b5812a",
+      "bytes": 1892,
+      "hash_mode": "lf",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/res/tools.json",
+      "referenced_by": [
+        "src/Constants.h"
+      ]
+    },
+    {
+      "path": "res/virtue.ttf",
+      "sha256": "4bbee5ac4b10b4fbe5fdb0bff6a75898d8800c62ad16311484e8680ef46b5701",
+      "bytes": 176280,
+      "hash_mode": "raw",
+      "licence_group": "raleway",
+      "source": "https://raw.githubusercontent.com/impallari/Raleway/6c67ab1f7aa65c442bd2745bb9d4ef1cd7bc01fa/fonts/v3.000%20Fontlab/TTF/Raleway-Bold.ttf",
+      "referenced_by": [
+        "src/UI/DashboardWindow.cpp"
+      ]
+    },
+    {
+      "path": "scenarios/snro.111",
+      "sha256": "9f3952195112f686e054c5c3db81dd3bb745e33f30e1fce6ea4e111de3d4a675",
+      "bytes": 51360,
+      "hash_mode": "raw",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/scenarios/snro.111",
+      "referenced_by": [
+        "src/FileIo.cpp"
+      ]
+    },
+    {
+      "path": "scenarios/snro.222",
+      "sha256": "9f36e0957ff47a09086363ab4cf07e09fe53647bb6ee0d07197146395f298134",
+      "bytes": 51360,
+      "hash_mode": "raw",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/scenarios/snro.222",
+      "referenced_by": [
+        "src/FileIo.cpp"
+      ]
+    },
+    {
+      "path": "scenarios/snro.333",
+      "sha256": "171229c665af06fbd7cb7009ae44f77c6d75128937d36259e329d2eccbc7b892",
+      "bytes": 51360,
+      "hash_mode": "raw",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/scenarios/snro.333",
+      "referenced_by": [
+        "src/FileIo.cpp"
+      ]
+    },
+    {
+      "path": "scenarios/snro.444",
+      "sha256": "1786cd51e317ad69a92a2451347e4c9ee9d07a98bf652bc1fa804376b5d61a9f",
+      "bytes": 51360,
+      "hash_mode": "raw",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/scenarios/snro.444",
+      "referenced_by": [
+        "src/FileIo.cpp"
+      ]
+    },
+    {
+      "path": "scenarios/snro.555",
+      "sha256": "1bdfad93a1aa47c5eb994ba4b38715d6d95a3bb50bca6c3610fd4bc8d6e49da6",
+      "bytes": 51360,
+      "hash_mode": "raw",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/scenarios/snro.555",
+      "referenced_by": [
+        "src/FileIo.cpp"
+      ]
+    },
+    {
+      "path": "scenarios/snro.666",
+      "sha256": "b34f46dc3c6c832ccc244aca33aa6fd4a6faeb33f517a9bc8acadbd35fb9b36f",
+      "bytes": 51360,
+      "hash_mode": "raw",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/scenarios/snro.666",
+      "referenced_by": [
+        "src/FileIo.cpp"
+      ]
+    },
+    {
+      "path": "scenarios/snro.777",
+      "sha256": "2489f27d44333aec6e6b2e554f77551bf27a2f702276ab626de456f6860a4688",
+      "bytes": 51360,
+      "hash_mode": "raw",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/scenarios/snro.777",
+      "referenced_by": [
+        "src/FileIo.cpp"
+      ]
+    },
+    {
+      "path": "scenarios/snro.888",
+      "sha256": "304b16585e006a3b97c3b7d952cb7277e777a0f8a365371e45e67e22598a9e1b",
+      "bytes": 51360,
+      "hash_mode": "raw",
+      "licence_group": "inherited-sdlpp",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/scenarios/snro.888",
+      "referenced_by": [
+        "src/FileIo.cpp"
+      ]
+    }
+  ],
+  "embedded_files": [
+    {
+      "path": "Micropolis.png",
+      "sha256": "3162ffd8318dfb4370fc592cf9eae2d635505eb4e17f8843bb68f5465551801e",
+      "bytes": 83669,
+      "hash_mode": "raw",
+      "licence_group": "inherited-embedded",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/Micropolis.png",
+      "referenced_by": [
+        "micropolis-sdlpp.rc"
+      ]
+    },
+    {
+      "path": "micropolis.ico",
+      "sha256": "03c77efbe9a4f64ec2bcf9a6a74c4fafbbb5998a2d4466c1e76507510d36f001",
+      "bytes": 375783,
+      "hash_mode": "raw",
+      "licence_group": "inherited-embedded",
+      "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/micropolis.ico",
+      "referenced_by": [
+        "micropolis-sdlpp.rc"
+      ]
+    }
+  ]
+}

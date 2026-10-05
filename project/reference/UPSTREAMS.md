@@ -16,6 +16,8 @@ The actual clone and the earlier engineering audit resolve to the same commit. T
 
 At this capture point, a new Civic 89 `origin` had not yet been configured.
 
+**Subsequent verified state, 5 October 2026:** `origin` is `https://github.com/DangerMouseUK/civic89.git`; its `main`, `feature/cmake-bootstrap` and fixed baseline tag are present. The upstream fetch remote is retained and its push URL is `DISABLED`. Current build and font baseline evidence are in `PROJECT_STATUS.md` and `RUNTIME_ASSETS.md`.
+
 ## Reference upstream
 
 **MicropolisCore**  

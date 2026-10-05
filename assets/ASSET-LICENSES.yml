@@ -1,0 +1,53 @@
+# Group ledger; runtime-assets.json records each staged file, pinned origin and SHA-256.
+assets:
+  - id: raleway
+    paths: [res/Raleway-Medium.ttf, res/Raleway-Bold.ttf, res/Raleway-BoldItalic.ttf, res/virtue.ttf]
+    name: Raleway static fonts and dashboard compatibility alias
+    source: https://github.com/impallari/Raleway/tree/6c67ab1f7aa65c442bd2745bb9d4ef1cd7bc01fa
+    author: Matt McInerney, Pablo Impallari, Rodrigo Fuenzalida and contributors
+    licence: OFL-1.1
+    licence_file: res/licenses/raleway/OFL.txt
+    redistribution: conditional
+    modification: conditional
+    requirements: Include copyright and OFL; do not sell fonts alone; respect Reserved Font Name on modified fonts.
+    notes: All binaries are unmodified. virtue.ttf is byte-identical Raleway Bold, not the excluded Virtue font. Internal font names remain Raleway.
+  - id: excluded-virtue
+    paths: []
+    name: Virtue by Marty P. Pfeiffer, referenced by inherited DashboardWindow.cpp
+    source: https://dl.dafont.com/dl/?f=virtue
+    author: Marty P. Pfeiffer, Scooter Graphics
+    licence: Proprietary freeware with restrictive bundled EULA
+    redistribution: not approved
+    modification: not approved
+    requirements: Obtain explicit redistribution rights before adding the original font.
+    notes: Audited readme.htm and eul.htm; a free download label is insufficient. Original font is not staged or committed.
+  - id: inherited-sdlpp
+    paths: [images/*.png, images/*.xpm, res/*.json, scenarios/snro.*, cities/*.cty]
+    name: Inherited open-source release graphics, data and city/scenario fixtures
+    source: https://github.com/ldicker83/Micropolis-SDLPP/tree/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad
+    author: Electronic Arts, Don Hopkins, Leeor Dicker and upstream contributors
+    licence: Inherited project GPLv3 and EA additional terms; see COPYING and __README_OG
+    redistribution: conditional on inherited release terms
+    modification: conditional on inherited release terms
+    requirements: Preserve COPYING, README.md, __README_OG, copyright notices and corresponding source.
+    notes: No retail assets added. Project-level provenance retained; per-asset author/licence audit remains a public-release gate.
+  - id: inherited-icons
+    paths: [icons/buttons.png, icons/minimap.png, icons/LICENSE.txt]
+    name: Inherited OpenSVG-derived icon atlases
+    source: https://github.com/ldicker83/Micropolis-SDLPP/tree/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/icons
+    author: OpenSVG attribution only; exact source sets and authors unknown
+    licence: Unknown per-icon terms; icons/LICENSE.txt is attribution, not a licence grant
+    redistribution: unresolved for public binary release
+    modification: unresolved
+    requirements: Recover original icon sets and licences before public packaging.
+    notes: Existing baseline files retained for local build comparison; no new icons imported.
+  - id: inherited-embedded
+    paths: [micropolis.ico, Micropolis.png]
+    name: Inherited Windows resource icon and embedded PNG
+    source: https://github.com/ldicker83/Micropolis-SDLPP/tree/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad
+    author: Inherited upstream project; individual asset authors not established
+    licence: Inherited project-level terms; separate rights and product branding review pending
+    redistribution: unresolved for public Civic 89 release
+    modification: subject to provenance and branding review
+    requirements: Preserve upstream attribution; replace or clear inherited product branding before public release.
+    notes: Compiled into the original RC for build comparison only; no new branding assets added.

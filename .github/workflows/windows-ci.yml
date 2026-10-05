@@ -1,0 +1,47 @@
+name: windows-ci
+
+on:
+  pull_request:
+  push:
+    branches: [main, feature/cmake-bootstrap]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-test:
+    runs-on: windows-2025-vs2026
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        preset: [windows-x64-debug, windows-x64-release]
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Bootstrap pinned external vcpkg
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $PSNativeCommandUseErrorActionPreference = $true
+          $registryBaseline = (Get-Content vcpkg.json -Raw | ConvertFrom-Json).'builtin-baseline'
+          $ciVcpkgRoot = Join-Path $env:RUNNER_TEMP 'civic89-vcpkg'
+          git clone --filter=blob:none --no-checkout https://github.com/microsoft/vcpkg.git $ciVcpkgRoot
+          git -C $ciVcpkgRoot checkout --detach $registryBaseline
+          & (Join-Path $ciVcpkgRoot 'bootstrap-vcpkg.bat') -disableMetrics
+          "VCPKG_ROOT=$ciVcpkgRoot" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
+      - name: Configure
+        run: cmake --preset ${{ matrix.preset }}
+
+      - name: Build
+        run: cmake --build --preset ${{ matrix.preset }} -- /m
+
+      - name: Test
+        run: ctest --preset ${{ matrix.preset }} --output-on-failure

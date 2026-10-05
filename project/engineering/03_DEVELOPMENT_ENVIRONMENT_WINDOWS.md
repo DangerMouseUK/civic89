@@ -7,6 +7,8 @@
 
 ## 1. Supported primary workstation
 
+**Verified bootstrap update, 5 October 2026:** Enterprise 2026 18.10.3 is installed. Committed CMake presets use the Visual Studio 18 2026 generator and require CMake 4.2+ (bundled version 4.3.1-msvc1), without a developer shell or Ninja. Current origin/build/asset state supersedes the historical setup snapshots below; see `PROJECT_STATUS.md` and `project/BUILDING.md`.
+
 ### Required
 
 - Windows 11 x64, fully updated.
@@ -101,7 +103,7 @@ Do **not** require global `vcpkg integrate install` for the CMake workflow. The 
 
 ## 4. Create the Civic 89 repository from SDLPP history
 
-**Primary workstation status (5 October 2026): completed through local baseline tagging.** The repository exists at `C:\Dev\Projects\civic89`, `.git` was confirmed, the inherited remote is now `upstream-sdlpp`, and the baseline/tag both point to `9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad`. A new Civic 89 `origin` is not yet configured.
+**Primary workstation status (5 October 2026): complete.** The repository exists at `C:\Dev\Projects\civic89`, the baseline/tag remain `9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad`, `origin` is `https://github.com/DangerMouseUK/civic89.git`, and upstream push is disabled. `feature/cmake-bootstrap` is active. Do not repeat these repository creation steps on the established workspace.
 
 **Do not run `git init` manually.** The repository is created by cloning SDLPP directly into the final Civic 89 folder, which automatically creates `C:\Dev\Projects\civic89\.git`.
 
