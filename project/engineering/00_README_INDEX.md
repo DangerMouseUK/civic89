@@ -7,7 +7,7 @@
 
 ## 1. Purpose of this document set
 
-**Bootstrap update (5 October 2026):** Repository setup, origin/tag push and `feature/cmake-bootstrap` are complete. The inherited `micropolis-sdlpp.sln` builds and now runs with the documented approved font baseline. CMake Debug/Release and runtime/source-list tests pass locally. Earlier capture-point statements in this set are historical; use `PROJECT_STATUS.md`, `project/BUILDING.md` and `project/reference/RUNTIME_ASSETS.md` for current facts and remaining limitations.
+**Engineering update (5 October 2026):** Baseline Bootstrap is merged through PR #1; local `main` is synchronized and the merged feature branch is deleted. The inherited `micropolis-sdlpp.sln` builds and runs with the approved font baseline, and CMake Debug/Release pass locally and in hosted CI. The next local increment on `codex/eval-inventory` records all bridge calls, proposes a typed boundary and adds audio/earthquake characterization tests. Earlier capture-point statements in this set are historical; use `PROJECT_STATUS.md`, `project/BUILDING.md`, `project/reference/RUNTIME_ASSETS.md` and `project/reference/LEGACY_EVAL_INVENTORY.md` for current facts and remaining limitations.
 
 This pack is the working engineering specification for **Civic 89**, a polished, modern, native Windows application built from the authentic open-source Micropolis / original SimCity simulation lineage.
 
