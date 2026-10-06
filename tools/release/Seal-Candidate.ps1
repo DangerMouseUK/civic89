@@ -42,7 +42,7 @@ Invoke-PackagedSmoke $stage
 [IO.Compression.ZipFile]::CreateFromDirectory($stage,(Join-Path $OutputDirectory "$name.zip"))
 Copy-Item -LiteralPath (Join-Path $DeliveryDirectory $sourceName) -Destination $OutputDirectory
 $signer=Join-Path $PSScriptRoot 'Sign-ReleaseFile.ps1'
-if ($signer.Contains('$') -or $SignTool.Contains('$') -or $Thumbprint -notmatch '^[0-9a-fA-F]{40}$' -or $TimestampUrl -notmatch '^https://[^"$]+$') {
+if ($signer.Contains('$') -or $SignTool.Contains('$') -or $Thumbprint -notmatch '^[0-9a-fA-F]{40}$' -or $TimestampUrl -notmatch '^https://[^"$\s]+$') {
     throw 'Invalid signing command configuration.'
 }
 $command='pwsh.exe -NoProfile -File $q' + $signer + '$q -Thumbprint ' + $Thumbprint +

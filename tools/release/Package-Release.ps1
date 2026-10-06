@@ -25,7 +25,7 @@ if ($Public) {
     if ($pending.Count) { throw "Public release gates are unresolved: $($pending.id -join ', ')" }
     if (!$SigningThumbprint -or $build.dirty) { throw 'Public packaging requires a clean signed build.' }
 }
-if ($SigningThumbprint -and (!$SignTool -or $SigningThumbprint -notmatch '^[0-9a-fA-F]{40}$' -or $TimestampUrl -notmatch '^https://')) {
+if ($SigningThumbprint -and (!$SignTool -or $SigningThumbprint -notmatch '^[0-9a-fA-F]{40}$' -or $TimestampUrl -notmatch '^https://[^"$\s]+$')) {
     throw 'Signing requires SignTool, a 40-digit certificate thumbprint and HTTPS timestamp service.'
 }
 $revision=& git -C $repo rev-parse HEAD

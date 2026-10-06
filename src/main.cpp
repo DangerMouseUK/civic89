@@ -1084,9 +1084,9 @@ int main(int argc, char* argv[])
         }
         else
         {
-        std::unique_ptr<char, SdlDeleter<char, SDL_free>> preferencePath(SDL_GetPrefPath("Civic89", "Civic89"));
-        if (!preferencePath) { throw std::runtime_error("Unable to locate Civic 89 user data."); }
-        userDirectory = pathFromUtf8(preferencePath.get());
+            std::unique_ptr<char, SdlDeleter<char, SDL_free>> preferencePath(SDL_GetPrefPath("Civic89", "Civic89"));
+            if (!preferencePath) { throw std::runtime_error("Unable to locate Civic 89 user data."); }
+            userDirectory = pathFromUtf8(preferencePath.get());
         }
 #endif
         struct SmokeDirectoryLifetime

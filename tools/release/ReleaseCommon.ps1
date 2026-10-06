@@ -77,7 +77,8 @@ function Test-ReleaseTree([string]$Root, [bool]$Installed = $false) {
         if (!$expected.ContainsKey($entry.path) -or $expected[$entry.path].sha256 -ne $entry.sha256 -or
             $expected[$entry.path].bytes -ne $entry.bytes) { throw "Package checksum mismatch: $($entry.path)" }
         if ([IO.Path]::GetExtension($entry.path) -in @('.exe','.dll')) {
-            if ((Get-PeArchitecture (Join-Path $Root $entry.path)) -ne $manifest.architecture) { throw 'Mixed package architectures.' }
+            $actualArchitecture=Get-PeArchitecture (Join-Path $Root $entry.path)
+            if ($actualArchitecture -ne $manifest.architecture) { throw "Mixed package architectures: $($entry.path) is $actualArchitecture; expected $($manifest.architecture)." }
             if ([IO.Path]::GetFileName($entry.path) -match '(_tests|runner|asan|140d|debug)') { throw 'Development binary in package.' }
         }
         if ($entry.path -match '(?i)(\.pdb$|\.cty\.tmp|(^|/)(audio\.cfg|ui\.cfg|display\.cfg|autosave\.cty|civic89\.log)$)') {

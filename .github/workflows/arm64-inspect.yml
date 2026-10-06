@@ -1,0 +1,29 @@
+name: arm64-runtime-inspection
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: windows-11-vs2026-arm
+    timeout-minutes: 10
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Inspect compiler ARM64 redistributable headers
+        run: |
+          $ErrorActionPreference='Stop'
+          . ./tools/release/ReleaseCommon.ps1
+          $vswhere="${env:ProgramFiles(x86)}/Microsoft Visual Studio/Installer/vswhere.exe"
+          $instance=& $vswhere -latest -products '*' -property installationPath
+          $version=(Get-Content "$instance/VC/Auxiliary/Build/Microsoft.VCRedistVersion.default.txt" -Raw).Trim()
+          $toolVersion=(Get-Content "$instance/VC/Auxiliary/Build/Microsoft.VCToolsVersion.default.txt" -Raw).Trim()
+          $dump="$instance/VC/Tools/MSVC/$toolVersion/bin/Hostarm64/arm64/link.exe"
+          foreach ($file in Get-ChildItem "$instance/VC/Redist/MSVC/$version/arm64/*.CRT/*.dll") {
+            "$($file.Name): $(Get-PeArchitecture $file.FullName)"
+            & $dump /dump /headers /loadconfig $file.FullName | Select-String 'machine|CHPE|ARM64|hybrid|Dynamic value' -Context 0,1
+          }
