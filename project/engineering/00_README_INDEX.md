@@ -7,7 +7,9 @@
 
 ## 1. Purpose of this document set
 
-**Engineering update (6 October 2026):** M0–M6 are merged through PR #11; local `main` is synchronized at `fa3534b` and the merged M6 branch is removed. `codex/m7-enhanced-foundation` delivers the complete user-selected M7 foundation: supported Classic development contract, exact versioned rulesets, explicit new-city selection, tagged Enhanced saves, Classic import/export, separate recovery slots and compatibility acceptance. Enhanced v1 shares Classic mechanics; larger maps and other gameplay candidates remain future work. Local and hosted application Debug/Release/ASan and native ARM64 pass 53/53; headless ASan/source export pass 43/43, all Classic goldens unchanged. Hosted run 37493323959 is green across all five jobs at 105ddc9 with complete x64/ARM64 delivery acceptance; final checks are tracked on PR #12. Use `PROJECT_STATUS.md`, ADR 0008, Classic compatibility, Enhanced format and M7 evidence for current delivery/checks. Public asset/brand/physical acceptance and signer provisioning remain gated. Delivery remains one whole milestone per branch/PR.
+**Engineering update (6 October 2026):** M0–M7 are merged through [PR #12](https://github.com/DangerMouseUK/civic89/pull/12); local `main` is synchronized at `eb73f64` and the merged M7 branch is removed. Final M7 head `6d73e53` passed all five jobs in [run 37494533588](https://github.com/DangerMouseUK/civic89/actions/runs/37494533588): application Debug/Release/ASan and native ARM64 53/53; headless ASan 43/43, with Classic parity unchanged and complete x64/ARM64 delivery acceptance.
+
+The user has narrowed the project to faithful original gameplay and modern Windows presentation. [ADR 0009](../decisions/0009_FAITHFUL_MODERNISATION_AND_GRAPHICS.md) withdraws earlier gameplay expansion candidates. The [roadmap](08_ROADMAP_AND_IMPLEMENTATION_BACKLOG.md) defines M8 faithfulness/Windows polish, including the merged M7 interface adjustment, and optional M9 graphics in Settings. The M8 branch retains M7 saves and delivers the simplified workflow, audit and regressions; required physical acceptance remains pending. M9 remains planned. Use [project status](../../PROJECT_STATUS.md), Classic compatibility, Enhanced format and [M8 evidence](../../tests/baseline/M8_2026-10-06.md) for current checks. Public asset/brand/physical acceptance and signer provisioning remain gated. Delivery remains one whole milestone per branch/PR.
 
 This pack is the working engineering specification for **Civic 89**, a polished, modern, native Windows application built from the authentic open-source Micropolis / original SimCity simulation lineage.
 
@@ -17,7 +19,7 @@ The set is deliberately split into focused documents so that it can be used in t
 2. as the `project/engineering/` foundation inside the source repository; and
 3. as a handoff package for a coding agent that needs explicit architectural, build, quality and licensing constraints.
 
-The project should not begin by redesigning gameplay. The first objective is to create a reproducible, testable, native Windows baseline that preserves the existing simulation and save compatibility. Modernisation starts only after that baseline is proven.
+Preserve the original gameplay throughout the project. The reproducible, testable native Windows baseline supports presentation modernisation while protecting simulation and save compatibility.
 
 ## 2. Recommended technical direction
 

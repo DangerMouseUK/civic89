@@ -9,7 +9,7 @@
 
 ### 1.1 Objective
 
-Create **Civic 89**, a polished native Windows edition built from the original Micropolis / SimCity Classic simulation lineage while preserving the behaviour that makes the classic game historically interesting. The work should modernise the application around the simulation before extending the simulation itself.
+Create **Civic 89**, a polished native Windows edition built from the original Micropolis / SimCity Classic simulation lineage while preserving its original gameplay and mechanics. Modernise the appearance, controls and Windows experience around one faithful simulation contract. The only optional enhancement is a graphics toggle, as decided by the user on 6 October 2026 in [ADR 0009](../decisions/0009_FAITHFUL_MODERNISATION_AND_GRAPHICS.md).
 
 ### 1.2 Primary goals
 
@@ -18,21 +18,23 @@ Create **Civic 89**, a polished native Windows edition built from the original M
 - Replace residual Tcl/Tk-style command plumbing with typed C++ interfaces.
 - Use a modern SDL3 rendering/input/audio stack.
 - Make the application comfortable on 1080p, 1440p, 4K, ultrawide and scaled Windows desktops.
-- Establish automated parity/regression tests before behaviour-changing work.
+- Preserve automated parity/regression evidence throughout modernisation.
 - Keep upstream provenance and GPL compliance straightforward.
 - Make the codebase understandable enough for long-term maintenance and agent-assisted development.
-- Create extension points for a later optional Enhanced Mode without contaminating Classic Mode.
+- Allow optional improved graphics without changing city state, mechanics, timing, RNG or saves.
 
-### 1.3 Non-goals for the initial modernisation
+### 1.3 Non-goals
 
-The following are deliberately outside the baseline phase:
+The following are outside the agreed project scope:
 
 - rewriting the simulation from scratch;
 - converting to Unity, Unreal, Electron or a browser shell;
 - adding multiplayer;
 - replacing all original pixel art immediately;
-- making map sizes unlimited before save-format and simulation assumptions are understood;
-- changing zoning, traffic, demand, tax or disaster rules in Classic Mode;
+- larger maps or expanded finance/population limits;
+- changing zoning, traffic, utilities, demand, tax, budget or disaster mechanics;
+- additional buildings, tools, scenarios, modding or achievements/challenges;
+- day/night and seasonal additions;
 - shipping under the SimCity name;
 - broad cross-platform support before the Windows code path is stable and tested.
 
@@ -40,7 +42,7 @@ The following are deliberately outside the baseline phase:
 
 ### 2.1 Preserve first, improve second
 
-Every major refactor should start with a test or baseline that demonstrates current behaviour. If a change affects Classic Mode behaviour, that difference must be intentional, documented and reviewable.
+Every major refactor should start with a test or baseline that demonstrates current behaviour. Preserve the original gameplay and mechanics. Record any fidelity discrepancy and obtain explicit user direction before an outcome-changing fix; a regression test alone does not authorise new or rebalanced mechanics.
 
 ### 2.2 Native but portable
 
@@ -113,6 +115,11 @@ The project needs explicit acceptance criteria for build reproducibility, simula
 
 ### ADR-007 - Classic Mode and Enhanced Mode are separate behavioural contracts
 
+**Superseded direction (6 October 2026):** the following records the original plan.
+[ADR 0009](../decisions/0009_FAITHFUL_MODERNISATION_AND_GRAPHICS.md) replaces future
+gameplay expansion with faithful modernisation and optional graphics. M7 remains
+merged; its interface adjustment belongs in M8.
+
 **Decision:** Classic Mode aims to preserve simulation behaviour. Enhanced Mode is the future location for intentionally changed or expanded mechanics.
 
 **Why:** This protects historical compatibility while still allowing the project to grow.
@@ -149,35 +156,35 @@ The project needs explicit acceptance criteria for build reproducibility, simula
 
 **Why:** Large whitespace diffs destroy blame/history value and make behavioural review harder. Apply formatting to new or materially edited code first.
 
-## 4. Product operating modes
+## 4. Gameplay and graphics
 
-### 4.1 Classic Mode
+### 4.1 One faithful gameplay contract
 
-Classic Mode should aim for:
+Preserve:
 
-- original map dimensions unless a documented compatibility mode exists;
+- original map dimensions and gameplay limits;
 - original simulation tick logic;
 - original RCI/economy/disaster mechanics;
 - original scenario objectives and start states;
 - compatible city load/save;
 - visual/UI improvements that do not change simulation results;
-- bug fixes only where clearly justified and documented.
+- fidelity fixes only with verified evidence and explicit direction for changed outcomes.
 
-### 4.2 Enhanced Mode
+### 4.2 Optional graphics preference
 
-Enhanced Mode can later introduce features such as:
+M9 may add Classic/Enhanced graphics in Settings, switchable during play. Both draw
+the same city and existing visual states/animations. The preference must not change
+rules, city/ruleset state, RNG, simulation/animation timing or save bytes. Keep
+licensed assets, faithful tile/sprite identities/footprints and original graphics available.
 
-- larger maps;
-- higher population/finance limits;
-- richer traffic or utility modelling;
-- additional zoning densities;
-- new buildings and disasters;
-- new visual layers;
-- achievements, scenario authoring or modding hooks;
-- day/night or seasonal presentation;
-- modern undo/history systems.
+### 4.3 Merged M7 compatibility and planned M8 adjustment
 
-Enhanced Mode must never silently change a Classic Mode save.
+The current M7 application exposes Classic v1/Enhanced v1 city identities and saves;
+both use the same mechanics. M8 will simplify the interface around one gameplay
+contract and remove the implication of an alternate simulation. Preserve existing
+`.c89` reading/saving/export/recovery and unchanged `.cty` output. A graphics switch
+must never require city conversion or save retagging. This is planned work, not a
+claim that the M7 interface has already changed.
 
 ## 5. Quality bar
 

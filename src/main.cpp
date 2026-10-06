@@ -96,6 +96,7 @@ uint32_t MainWindowId{};
 namespace
 {
     bool packageSmokeTest{false};
+    bool desktopAcceptance{false};
     constexpr auto TileSize = 16;
 
 
@@ -358,7 +359,7 @@ void resetGame(RulesetId ruleset)
 void newGame()
 {
     fileDialog->clearSaveFilename();
-    resetGame(interfaceManager->newCityRuleset());
+    resetGame(RulesetId::ClassicV1);
     interfaceManager->invalidateMinimap();
     cityRenderer->invalidate();
 }
@@ -373,6 +374,7 @@ void openGame()
         fileDialog->clearSaveFilename();
         syncAudioOptions();
         interfaceManager->cancelTool();
+        interfaceManager->hideAllWindows();
         updateDate();
         interfaceManager->invalidateMinimap();
         cityRenderer->invalidate();
@@ -380,17 +382,25 @@ void openGame()
 }
 
 
+CityIoResult saveCityTo(const std::filesystem::path& destination)
+{
+    const auto result = SaveCity(destination, cityProperties, budget, fileStorage);
+    if (result) { fileDialog->saveDestination(destination); }
+    return result;
+}
+
 void saveGame()
 {
+    auto destination = pathFromUtf8(fileDialog->fullPath());
     if (!fileDialog->filePicked() || SDL_GetModState() & SDL_KMOD_SHIFT)
     {
         if (!fileDialog->pickSaveFile(cityProperties.rulesetId())) { return; }
+        destination = pathFromUtf8(fileDialog->pickedSavePath());
     }
 
-    const auto result = SaveCity(pathFromUtf8(fileDialog->fullPath()), cityProperties, budget, fileStorage);
+    const auto result = saveCityTo(destination);
     if (!result)
     {
-        fileDialog->clearSaveFilename();
         reportCityError(result, DiagnosticCode::CitySave);
     }
     else { diagnostics->write(Severity::Info, DiagnosticCode::CitySave, "City saved", result.path); }
@@ -405,7 +415,7 @@ void importClassicGame()
     syncAudioOptions(); updateDate();
     interfaceManager->cancelTool(); interfaceManager->hideAllWindows();
     interfaceManager->invalidateMinimap(); cityRenderer->invalidate();
-    interfaceManager->message("Imported as Enhanced v1. Save As .c89; the original Classic file is unchanged.");
+    interfaceManager->message("Imported a city copy. Save As .c89; the source file is unchanged.");
 }
 
 void exportClassicGame()
@@ -414,7 +424,7 @@ void exportClassicGame()
     const auto result=ExportClassicCity(pathFromUtf8(fileDialog->exportPath()),cityProperties,budget,fileStorage);
     if (!result) { reportCityError(result,DiagnosticCode::CitySave); return; }
     diagnostics->write(Severity::Info,DiagnosticCode::CitySave,"Classic copy exported",result.path);
-    interfaceManager->message("Classic copy exported. The active city mode is unchanged.");
+    interfaceManager->message("Exported a .cty copy. Your current city and save destination are unchanged.");
 }
 
 
@@ -589,6 +599,7 @@ void performUiCommand(UiCommand command)
     case UiCommand::StartNewCity: newGame(); break;
     case UiCommand::ImportClassic: importClassicGame(); break;
     case UiCommand::ExportClassic: exportClassicGame(); break;
+    case UiCommand::Files: interfaceManager->show(ModernInterface::Panel::Files); break;
     default: break;
     }
 }
@@ -747,7 +758,7 @@ void handleWindowEvent(SDL_Event& event)
         MapToolGesture = false;
         EventHandling::MouseLeftDown = false;
         RightButtonDrag = false;
-        interfaceManager->mouseUp();
+        interfaceManager->focusLost();
         break;
     case SDL_EVENT_WINDOW_CLOSE_REQUESTED: simExit(); break;
     default: break;
@@ -945,6 +956,8 @@ void initUI()
 ModernInterface& applicationInterface() { return *interfaceManager; }
 UiSettings& applicationUiSettings() { return uiSettings; }
 #if defined(CIVIC89_MILESTONE_TESTS)
+CityIoResult applicationSaveCityTo(const std::filesystem::path& path) { return saveCityTo(path); }
+std::string applicationSaveDestination() { return fileDialog->filePicked() ? fileDialog->fullPath() : ""; }
 DisplaySettings applicationDisplaySettings() { return displaySettings; }
 #endif
 void rebuildPresentationGraphics()
@@ -1060,6 +1073,11 @@ int main(int argc, char* argv[])
         packageSmokeTest = true;
         startupScenario = Scenario::Detroit;
     }
+    else if (argc == 2 && std::string_view(argv[1]) == "--desktop-test")
+    {
+        desktopAcceptance = true;
+        startupScenario = Scenario::Detroit;
+    }
     else
     {
         bool valid=true, modeSet=false;
@@ -1087,7 +1105,9 @@ int main(int argc, char* argv[])
         if (!valid || (startupScenario && startupRuleset!=RulesetId::ClassicV1))
         {
             std::cerr << "Usage: civic89.exe [--mode classic|enhanced] [--scenario 1..8]\n"
-                "       civic89.exe --version | --smoke-test\nScenarios require Classic mode.\n";
+                "       civic89.exe --version | --smoke-test | --desktop-test\n"
+                "--mode is a legacy save-format selector; both use original gameplay.\n"
+                "Scenarios require --mode classic.\n";
             return 2;
         }
     }
@@ -1115,10 +1135,11 @@ int main(int argc, char* argv[])
 #if defined(CIVIC89_MILESTONE_TESTS)
         userDirectory = std::filesystem::temp_directory_path() / ("civic89-session-" + std::to_string(GetCurrentProcessId()));
 #else
-        if (packageSmokeTest)
+        if (packageSmokeTest || desktopAcceptance)
         {
             userDirectory = std::filesystem::temp_directory_path() /
-                ("civic89-package-test-" + std::to_string(GetCurrentProcessId()) + "-" + std::to_string(GetTickCount64()));
+                (std::string(desktopAcceptance ? "civic89-desktop-test-" : "civic89-package-test-") +
+                    std::to_string(GetCurrentProcessId()) + "-" + std::to_string(GetTickCount64()));
         }
         else
         {
@@ -1142,6 +1163,11 @@ int main(int argc, char* argv[])
         std::filesystem::create_directories(userDirectory);
         diagnostics = std::make_unique<DiagnosticLog>(userDirectory / "civic89.log");
         diagnostics->write(Severity::Info, DiagnosticCode::Startup, Civic89BuildIdentity);
+        if (desktopAcceptance)
+        {
+            diagnostics->write(Severity::Info, DiagnosticCode::Startup,"Desktop acceptance: isolated preferences/recovery",userDirectory);
+            std::cout << "Desktop test data: " << pathUtf8(userDirectory) << '\n';
+        }
         recovery = std::make_unique<RecoveryStore>(userDirectory);
         if (const auto settings = UiSettings::load(userDirectory / "ui.cfg"))
         {
@@ -1252,7 +1278,7 @@ int main(int argc, char* argv[])
                     if (!inspected) { diagnostics->write(Severity::Warning,DiagnosticCode::CityLoad,inspected.detail,inspected.path); }
                     else
                     {
-                        const std::string prompt="A " + std::string(findRuleset(identity)->label) + " autosave is available. Recover it?";
+                        const std::string prompt="A city autosave (" + std::string(findRuleset(identity)->extension) + ") is available. Recover it?";
                         const std::array<SDL_MessageBoxButtonData,2> buttons{{{SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT,1,"Recover"}, {SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT,0,"Start new city"}}};
                         const SDL_MessageBoxData box{SDL_MESSAGEBOX_INFORMATION, MainWindow, "Civic 89 recovery", prompt.c_str(), 2, buttons.data(), nullptr};
                         int selected = 0;

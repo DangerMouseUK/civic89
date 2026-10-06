@@ -4,7 +4,7 @@
 
 M6 supplies the complete packaging/signing/update/ARM64 engineering path; M7 adds
 mode-aware save acceptance to that delivery.
-`0.7.0-dev` identifies development candidates; it is not a stable Classic release
+`0.8.0-dev` identifies development candidates; it is not a stable Classic release
 or a city-format version. The current 51,360-byte save layout and all Classic
 goldens are retained. Older 27,120-byte saves and exact RNG/scenario replay remain
 unsupported. Enhanced v1 stores the same ordinary-city payload in a versioned
@@ -42,7 +42,7 @@ destination, or reuse that verified `ISCC.exe` without re-running bootstrap.
 The pinned download comes from the [official release](https://github.com/jrsoftware/issrc/releases/tag/is-6_7_3).
 Inno Setup is build tooling, not a game dependency.
 
-`out/releases/civic89-0.7.0-dev-windows-x64/` contains:
+`out/releases/civic89-0.8.0-dev-windows-x64/` contains:
 
 - Portable ZIP and per-user installer EXE.
 - Matching source ZIP from the exact build commit, with `source-provenance.json`
@@ -73,7 +73,7 @@ container, exports a Classic copy and tears down. It does not modify real prefer
 This is not a substitute for clean-machine visible/audio/DPI acceptance.
 
 ```powershell
-$delivery = 'out/releases/civic89-0.7.0-dev-windows-x64'
+$delivery = 'out/releases/civic89-0.8.0-dev-windows-x64'
 ./tools/release/Test-Release.ps1 -Directory "$delivery/portable"
 ./tools/release/Test-ReleaseTransactions.ps1 -DeliveryDirectory $delivery
 ./tools/release/Test-Installer.ps1 -DeliveryDirectory $delivery
@@ -140,7 +140,7 @@ the extracted package or corresponding source tree:
 
 ```powershell
 ./tools/release/Update-Portable.ps1 -InstallRoot "$env:LOCALAPPDATA\Civic89Portable" `
-  -Archive 'C:\Downloads\civic89-0.7.0-dev-windows-x64.zip' -ExpectedSha256 '<64 hex digits from trusted SHA256SUMS>'
+  -Archive 'C:\Downloads\civic89-0.8.0-dev-windows-x64.zip' -ExpectedSha256 '<64 hex digits from trusted SHA256SUMS>'
 ./tools/release/Launch-Portable.ps1 -InstallRoot "$env:LOCALAPPDATA\Civic89Portable"
 ./tools/release/Update-Portable.ps1 -InstallRoot "$env:LOCALAPPDATA\Civic89Portable" -Rollback
 ```

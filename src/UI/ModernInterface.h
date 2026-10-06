@@ -18,12 +18,12 @@ class ToolManager;
 class CityProperties;
 class AudioManager;
 struct ZoneStats;
-enum class UiCommand { Pause, Save, Open, Minimap, Evaluation, Scenarios, NewCity, Settings, Graphs, Budget, StartNewCity, ImportClassic, ExportClassic };
+enum class UiCommand { Pause, Save, Open, Minimap, Evaluation, Scenarios, NewCity, Settings, Graphs, Budget, StartNewCity, ImportClassic, ExportClassic, Files };
 
 class ModernInterface
 {
 public:
-    enum class Panel { None, Budget, Evaluation, Graphs, Settings, Query, Overlays, Scenarios, NewCity };
+    enum class Panel { None, Budget, Evaluation, Graphs, Settings, Query, Overlays, Scenarios, NewCity, Files };
     ModernInterface(SDL_Renderer*, Budget&, const RCI&, ToolManager&, const CityProperties&, AudioManager&, UiSettings&, const DisplaySettings&);
     void layout(Vector<float> size, float density);
     void draw(const Camera2D&);
@@ -37,7 +37,7 @@ public:
     void show(Panel value);
     void hideAllWindows() { show(Panel::None); }
     Panel currentPanel() const { return panel; }
-    RulesetId newCityRuleset() const { return selectedRuleset; }
+    void focusLost() { minimapDragging = false; binding = -1; focus = -1; }
     SDL_FRect panelArea() const;
     SDL_FRect minimapArea() const;
     void toggleMinimap() { minimapVisible = !minimapVisible; }
@@ -73,7 +73,6 @@ private:
     float density{1};
     float sidebar{184};
     Panel panel{Panel::None};
-    RulesetId selectedRuleset{RulesetId::ClassicV1};
     DataOverlay selectedOverlay{DataOverlay::None};
     bool minimapVisible{true};
     bool minimapDragging{false};

@@ -36,11 +36,19 @@ namespace
 
         const auto tools = GameDataLoader::loadTools();
         require(tools.size() == 17 && tools.front().type == Tool::Type::None, "Expected 16 tools and the empty tool");
-        const auto road = std::find_if(tools.begin(), tools.end(), [](const Tool& tool) {
-            return tool.type == Tool::Type::Road;
-        });
-        require(road != tools.end() && road->cost == 10 && road->draggable && road->name == "Roads",
-            "The inherited road tool data changed or did not load");
+        // Audited against upstream-sdlpp-baseline res/tools.json, not regenerated
+        // from the current loader. Protect all original costs and footprints.
+        constexpr std::array costs{100,100,100,500,0,500,5,1,20,10,5000,10,3000,3000,5000,10000};
+        constexpr std::array sizes{3,3,3,3,1,3,1,1,1,1,4,1,4,4,4,6};
+        for (size_t i=0;i<costs.size();++i)
+        {
+            const auto item=std::find_if(tools.begin(),tools.end(),[i](const Tool& tool) {
+                return tool.type==static_cast<Tool::Type>(i);
+            });
+            require(item!=tools.end() && item->cost==costs[i] && item->size==sizes[i] &&
+                item->offset==(sizes[i]>1 ? 1 : 0) && item->draggable==(i==6 || i==8 || i==9),
+                "The inherited tool cost/footprint/drag contract changed");
+        }
     }
 
     void checkTextures()
