@@ -245,9 +245,37 @@ Compile/test after the engine/platform boundary is clean.
 
 Do not start until Classic Mode has a supported contract.
 
-Candidate backlog:
+**Scope decision (6 October 2026):** the user selected the complete foundation,
+not implementation of every candidate gameplay feature. Establish the supported
+development contract first; stable public release remains separately gated.
 
-- versioned ruleset abstraction;
+### M7-01 Classic development contract
+
+Specify supported mechanics, platforms, file layout and historical/replay limits.
+
+### M7-02 Versioned rulesets
+
+Typed Classic v1/Enhanced v1 identities and capability definitions; reject unknown
+versions before mutation. Enhanced v1 initially shares Classic mechanics.
+
+### M7-03 Explicit mode selection
+
+New-city mode selection, active identity in the UI and headless runner, and Classic
+scenario policy. Existing sessions must not change modes through a preference.
+
+### M7-04 Save/import/export/recovery boundary
+
+Preserve `.cty`; add a bounded, checksummed, versioned Enhanced container, explicit
+Classic import/export and separate recovery slots. Retain atomic publication.
+
+### M7-05 Compatibility acceptance
+
+Unchanged Classic goldens and generated-city baseline; both mode paths; save round
+trips; unknown/corrupt/truncated input and publication failure isolation; UI acceptance;
+Debug/Release/ASan/native ARM64, delivery checks and retained Visual Studio parity.
+
+Future Enhanced candidate backlog (outside the M7 foundation):
+
 - larger maps;
 - expanded finance/population types;
 - additional buildings/tools;
