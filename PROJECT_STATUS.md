@@ -8,9 +8,9 @@
 
 ## Authoritative local repository state
 
-- Branch: `codex/typed-city-effects`, created locally from synchronized `main`; no upstream/push yet.
+- Branch: `codex/typed-city-effects`, tracking `origin/codex/typed-city-effects`; published with user approval for PR review against `main`.
 - Local and remote `main`: merge commit `3e30b82c92ad011fc2c1fb0d86d1ce342a16a76c` from [PR #3](https://github.com/DangerMouseUK/civic89/pull/3), merged by the user on 6 October 2026. Bootstrap and the first typed earthquake route remain in its history.
-- The merged local `codex/typed-audio-control` was safely deleted with `git branch -d`; GitHub had already deleted its remote branch. The earlier bootstrap/inventory branches are also deleted. Origin has only `main`; no other stale feature branches existed. Upstream refs and the baseline tag are preserved.
+- The merged local `codex/typed-audio-control` was safely deleted with `git branch -d`; GitHub had already deleted its remote branch. The earlier bootstrap/inventory branches are also deleted. At cleanup, origin had only `main`; no other stale feature branches existed. Upstream refs and the baseline tag are preserved.
 - `.git`: confirmed at `C:\Dev\Projects\civic89\.git`.
 - Baseline SHA: `9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad`.
 - Baseline tag: `upstream-sdlpp-baseline` (annotated; verified locally and on origin).
@@ -92,7 +92,7 @@ The current production increment touches only `main.cpp`, `w_sound.h`, `AudioSer
 
 Exact commands/target mapping: [project/BUILDING.md](project/BUILDING.md). Local evidence: [tests/baseline/BOOTSTRAP_2026-10-05.md](tests/baseline/BOOTSTRAP_2026-10-05.md). Asset provenance and replacement decision: [project/reference/RUNTIME_ASSETS.md](project/reference/RUNTIME_ASSETS.md), `assets/runtime-assets.json`, `assets/ASSET-LICENSES.yml`.
 
-Bootstrap, the first typed earthquake route and audio controls are merged, with local and hosted build/test evidence retained. No upstream push or history/tag rewrite occurred. Hosted CI verifies separate clean runner builds; manual GUI testing remains on the primary workstation. The current default-effect increment has local Debug/Release evidence and has not been pushed or checked by hosted CI. No new GUI, actual audio-device or deterministic simulation test was run for this routing change; recording/null helper tests, the mechanical caller comparison and both build paths provide its evidence.
+Bootstrap, the first typed earthquake route and audio controls are merged, with local and hosted build/test evidence retained. No upstream push or history/tag rewrite occurred. Hosted CI verifies separate clean runner builds; manual GUI testing remains on the primary workstation. The current default-effect increment has local Debug/Release evidence and is published with user approval for PR review; live hosted CI results appear in the PR checks. No new GUI, actual audio-device or deterministic simulation test was run for this routing change; recording/null helper tests, the mechanical caller comparison and both build paths provide its evidence.
 
 ## Inherited limitations and release gates
 
