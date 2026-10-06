@@ -19,7 +19,6 @@
 #include "Scan.h"
 
 #include "w_sound.h"
-#include "w_tk.h"
 #include "Util.h"
 
 
@@ -172,20 +171,6 @@ void updateDate()
 			showBudgetWindow();
 		}
     }
-}
-
-
-void UpdateOptionsMenu(int options)
-{
-  /*
-  char buf[256];
-  sprintf(buf, "UISetOptions %d %d %d %d %d %d %d %d",
-	  (options&1)?1:0, (options&2)?1:0,
-	  (options&4)?1:0, (options&8)?1:0,
-	  (options&16)?1:0, (options&32)?1:0,
-	  (options&64)?1:0, (options&128)?1:0);
-  Eval(buf);
-  */
 }
 
 

@@ -2,7 +2,8 @@
 #pragma once
 
 // Add sounds/channels as their call paths migrate from the legacy bridge.
-enum class SoundId { ExplosionLow, Bulldozer, ExplosionHigh, HeavyTraffic, HonkLow };
+enum class SoundId { ExplosionLow, Bulldozer, ExplosionHigh, HeavyTraffic, HonkLow,
+    ShipHorn, Monster, HonkMedium, HonkHigh, Siren, MustBulldoze, InsufficientFunds };
 enum class AudioChannel { City, Construction };
 
 class AudioService

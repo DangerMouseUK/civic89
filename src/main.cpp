@@ -24,6 +24,8 @@
 #include "Map.h"
 #include "Month.h"
 #include "PresentationEvents.h"
+#include "ScenarioController.h"
+#include "ScenarioData.h"
 #include "s_alloc.h"
 #include "s_disast.h"
 #include "s_gen.h"
@@ -47,6 +49,8 @@
 
 #include <algorithm>
 #include <cstdint>
+#include <charconv>
+#include <optional>
 #include <iostream>
 #include <memory>
 #include <sstream>
@@ -124,7 +128,17 @@ namespace
     Budget budget{};
     CityProperties cityProperties{};
     NullAudioService audioService;
-    NullPresentationEvents presentationEvents;
+    class ApplicationPresentationEvents final : public PresentationEvents
+    {
+    public:
+        void earthquakeStarted() override {} // Visual backend remains M3 work.
+        void focusMap(Point<int>) override {} // Preserve the inherited no-op navigation.
+        void generationStarted() override {} // Notification precedes GenerateMap.
+        void showMessage(const std::string& message) override;
+        void scenarioStarted(Scenario scenario) override;
+        void scenarioFinished(ScenarioOutcome outcome) override;
+    };
+    ApplicationPresentationEvents presentationEvents;
 
     std::unique_ptr<MiniMapWindow> miniMapWindow;
 
@@ -298,6 +312,26 @@ GameOptions& gameplayOptions()
 }
 
 
+void ApplicationPresentationEvents::showMessage(const std::string& message)
+{
+    if (interfaceManager) { interfaceManager->dashboardWindow().setMessage(message); }
+}
+
+void ApplicationPresentationEvents::scenarioStarted(Scenario scenario)
+{
+    if (interfaceManager)
+    {
+        interfaceManager->dashboardWindow().cityName(cityProperties.CityName());
+        showMessage(std::string("Scenario started: ") + scenarioDefinition(scenario)->cityName);
+    }
+}
+
+void ApplicationPresentationEvents::scenarioFinished(ScenarioOutcome outcome)
+{
+    showMessage(outcome == ScenarioOutcome::Won ? "Scenario won." : "Scenario lost.");
+}
+
+
 void MakeSound(SoundId sound, AudioChannel channel)
 {
     MakeSound(sound, channel, audioService);
@@ -365,9 +399,47 @@ void doPlayNewCity(CityProperties& properties, Budget& budget)
 }
 
 
-void doStartScenario(int scenario)
+ScenarioResult doStartScenario(Scenario scenario)
 {
-    Eval("UIStartScenario " + std::to_string(scenario));
+    ScenarioController controller(cityProperties, budget, presentationEvents);
+    const auto result = controller.start(scenario);
+    if (result == ScenarioResult::Success)
+    {
+        interfaceManager->fileIoDialog().clearSaveFilename();
+        interfaceManager->toolPalette().cancelTool();
+        drawBigMap();
+    }
+    return result;
+}
+
+void selectScenario()
+{
+    std::array<SDL_MessageBoxButtonData, 9> buttons{};
+    buttons[0] = {SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT, 0, "Cancel"};
+    for (size_t i = 0; i < ScenarioDefinitions.size(); ++i)
+    {
+        const auto& definition = ScenarioDefinitions[i];
+        buttons[i + 1] = {0, definition.legacyId, definition.cityName};
+    }
+    const SDL_MessageBoxData dialog{SDL_MESSAGEBOX_INFORMATION, MainWindow, "Civic 89 - Scenarios",
+        "Choose a scenario. Starting one replaces the current city; save it first if needed.",
+        static_cast<int>(buttons.size()), buttons.data(), nullptr};
+    int selected = 0;
+    if (!SDL_ShowMessageBox(&dialog, &selected))
+    {
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Civic 89", SDL_GetError(), MainWindow);
+        return;
+    }
+    const auto scenario = scenarioFromLegacyId(selected);
+    if (!scenario) { return; } // Cancel or closed dialog.
+    const auto result = doStartScenario(*scenario);
+    if (result != ScenarioResult::Success)
+    {
+        const auto* error = result == ScenarioResult::MissingFile ?
+            "The scenario file is missing. The current city has been kept." :
+            "The scenario file is invalid or unreadable. The current city has been kept.";
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Civic 89 - Scenario", error, MainWindow);
+    }
 }
 
 
@@ -396,7 +468,11 @@ void primeGame(const int startFlag, CityProperties& properties, Budget& budget)
         break;
 
     default: // scenario number
-        doStartScenario(startFlag);
+        const auto scenario = scenarioFromLegacyId(startFlag);
+        if (!scenario || doStartScenario(*scenario) != ScenarioResult::Success)
+        {
+            throw std::runtime_error("Unable to start scenario " + std::to_string(startFlag));
+        }
         break;
     }
 }
@@ -668,6 +744,10 @@ void handleKeyEvent(SDL_Event& event)
 
     case SDLK_F5:
         showEvaluationWindow();
+        break;
+
+    case SDLK_F6:
+        selectScenario();
         break;
 
     case SDLK_F7:
@@ -965,11 +1045,18 @@ void drawDraggableToolVector()
 }
 
 
-void gameInit()
+void gameInit(std::optional<Scenario> scenario)
 {
     simInit();
 
-    primeGame(-1, cityProperties, budget);
+    if (scenario)
+    {
+        if (doStartScenario(*scenario) != ScenarioResult::Success)
+        {
+            throw std::runtime_error("Unable to load the selected scenario file.");
+        }
+    }
+    else { primeGame(-1, cityProperties, budget); }
 
     updateMapDrawParameters();
     initTimers();
@@ -1048,7 +1135,7 @@ void initUI()
 	initMinimap(mainWindowPosition, mode);
 
     interfaceManager = std::make_shared<InterfaceManager>(MainWindowRenderer, MainWindow, budget, currentRCI(), *toolManager);
-	shareInterfaceManager(interfaceManager);
+	sharePresentationEvents(presentationEvents);
 
     positionDashboardWindow();
     interfaceManager->positionWindow(InterfaceManager::Window::ToolPalette, ToolPaletteDefaultPosition);
@@ -1129,6 +1216,24 @@ void GameLoop()
 
 int main(int argc, char* argv[])
 {
+    std::optional<Scenario> startupScenario;
+    if (argc != 1)
+    {
+        int id = 0;
+        bool valid = argc == 3 && std::string_view(argv[1]) == "--scenario";
+        if (valid)
+        {
+            const std::string_view argument(argv[2]);
+            const auto parsed = std::from_chars(argument.data(), argument.data() + argument.size(), id);
+            valid = parsed.ec == std::errc{} && parsed.ptr == argument.data() + argument.size();
+        }
+        if (valid) { startupScenario = scenarioFromLegacyId(id); }
+        if (!startupScenario)
+        {
+            std::cerr << "Usage: civic89.exe [--scenario 1..8]\n";
+            return 2;
+        }
+    }
     setLocale();
 
     std::cout << "Starting Micropolis-SDLPP version " << MicropolisVersion << " originally by Will Wright and Don Hopkins." << std::endl;
@@ -1151,9 +1256,14 @@ int main(int argc, char* argv[])
         initViewParamters();
         initUI();
 
-        gameInit();
-
+#if defined(CIVIC89_MILESTONE_TESTS)
+        void runMilestoneTests(Budget&, CityProperties&, PresentationEvents&);
+        simInit();
+        runMilestoneTests(budget, cityProperties, presentationEvents);
+#else
+        gameInit(startupScenario);
         GameLoop();
+#endif
 
         cleanUp();
 
@@ -1161,6 +1271,9 @@ int main(int argc, char* argv[])
     }
     catch(const std::exception& e)
     {
+#if defined(CIVIC89_MILESTONE_TESTS)
+        std::cerr << e.what() << std::endl;
+#else
         std::string message(std::string(e.what()) + "\n\nMicropolis-SDLPP will now close.");
         
         #if defined(_WIN32)
@@ -1168,6 +1281,8 @@ int main(int argc, char* argv[])
         #else
         std::cout << message << std::endl;
         #endif
+#endif
+        return 1;
     }
 
     return 0;

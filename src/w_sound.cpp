@@ -8,10 +8,9 @@
 // Micropolis-SDLPP is free software; you can redistribute it and/or modify
 // it under the terms of the GNU GPLv3, with additional terms. See the README
 // file, included in this distribution, for details.
-#include "w_tk.h"
+#include "w_sound.h"
 #include "AudioService.h"
 
-#include <string>
 
 
 /* Sound routines */
@@ -51,21 +50,6 @@ void ShutDownSound()
 }
 
 
-void MakeSound(const std::string& channel, const std::string& id)
-{
-    if (!UserSoundOn)
-    {
-        return;
-    }
-    if (!SoundInitialized)
-    {
-        InitializeSound();
-    }
-
-    Eval("UIMakeSound \"" + channel + "\" \"" + id + "\"");
-}
-
-
 void MakeSound(SoundId sound, AudioChannel channel, AudioService& audio)
 {
     if (!UserSoundOn)
@@ -78,24 +62,6 @@ void MakeSound(SoundId sound, AudioChannel channel, AudioService& audio)
     }
 
     audio.playEffect(sound, channel);
-}
-
-
-void MakeSoundOn(const char* channel, const char* id)
-{
-    char buf[256]{};
-
-    if (!UserSoundOn)
-    {
-        return;
-    }
-    if (!SoundInitialized)
-    {
-        InitializeSound();
-    }
-
-    //sprintf(buf, "UIMakeSoundOn %s \"%s\" \"%s\"", /*Tk_PathName(view->tkwin)*/ "window-path", channel, id);
-    Eval(buf);
 }
 
 

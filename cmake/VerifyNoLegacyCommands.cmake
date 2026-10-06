@@ -1,0 +1,12 @@
+# Milestone 1 gate: keep the removed runtime command bridge out of source.
+file(GLOB_RECURSE sources "${SOURCE_DIR}/src/*.cpp" "${SOURCE_DIR}/src/*.h")
+foreach(source IN LISTS sources)
+    file(READ "${source}" content)
+    if(content MATCHES "(^|[^A-Za-z0-9_])Eval[ \t\r\n]*\\(")
+        message(FATAL_ERROR "Legacy command bridge found in ${source}")
+    endif()
+    if(content MATCHES "MakeSound(On)?[ \t\r\n]*\\([ \t\r\n]*\"")
+        message(FATAL_ERROR "String audio command found in ${source}")
+    endif()
+endforeach()
+message(STATUS "No legacy Eval or string audio command remains")

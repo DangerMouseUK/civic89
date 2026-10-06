@@ -2,6 +2,10 @@
 
 This repository is **Civic 89**, a native Windows modernisation of the GPL Micropolis / original SimCity code lineage.
 
+## Delivery scope
+
+Complete one whole milestone from `project/engineering/08_ROADMAP_AND_IMPLEMENTATION_BACKLOG.md` per engineering branch and PR, including its acceptance checks and compatibility notes. Do not stop after one or two backlog items unless the user explicitly requests a narrower scope. Work as a single agent unless the user explicitly approves delegation for the current task.
+
 ## Workspace contract
 
 - Repository root: `C:\Dev\Projects\civic89`

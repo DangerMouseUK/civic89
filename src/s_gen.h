@@ -14,3 +14,4 @@ class Budget;
 class CityProperties;
 
 void GenerateNewCity(CityProperties&, Budget&);
+void GenerateCityFromSeed(int seed, CityProperties&, Budget&);

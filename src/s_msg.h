@@ -14,15 +14,16 @@
 
 #include "Math/Point.h"
 
-#include <memory>
 
 class Budget;
-class InterfaceManager;
+class PresentationEvents;
 
 struct Census;
 
 
-void shareInterfaceManager(std::weak_ptr<InterfaceManager> manager);
+void sharePresentationEvents(PresentationEvents& events);
+void notifyGenerationStarted();
+void DoScenarioScore(int type);
 
 void SendMes(NotificationId);
 void SendMessages(const Budget&, const Census&);

@@ -14,18 +14,10 @@
 #include "w_sound.h"
 
 #include <iostream>
-#include <string>
 
 
 int earthquake_timer_set = 0;
 int earthquake_delay = 3000;
-
-
-bool Eval(const std::string& buf)
-{
-    std::cout << "Eval: " << buf << std::endl;
-    return false;
-}
 
 
 void StopEarthquake()

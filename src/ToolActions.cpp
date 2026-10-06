@@ -864,13 +864,13 @@ void ToolActions::executeTool(const Point<int> location, Budget& budget, ToolMan
     {
         ClearMes();
         SendMes(NotificationId::MustBulldoze);
-        MakeSoundOn("edit", "UhUh");
+        MakeSound(SoundId::MustBulldoze, AudioChannel::Construction);
     }
     else if (result == ToolResult::InsufficientFunds)
     {
         ClearMes();
         SendMes(NotificationId::InsufficientFunds);
-        MakeSoundOn("edit", "Sorry");
+        MakeSound(SoundId::InsufficientFunds, AudioChannel::Construction);
     }
 }
 
