@@ -1,9 +1,9 @@
 // This file is part of Micropolis-SDLPP
 // Micropolis-SDLPP is based on Micropolis
 //
-// Copyright © 2022 - 2026 Leeor Dicker
+// Copyright ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â© 2022 - 2026 Leeor Dicker
 //
-// Portions Copyright © 1989-2007 Electronic Arts Inc.
+// Portions Copyright ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â© 1989-2007 Electronic Arts Inc.
 //
 // Micropolis-SDLPP is free software; you can redistribute it and/or modify
 // it under the terms of the GNU GPLv3, with additional terms. See the README
@@ -57,8 +57,8 @@
 
 #include "Math/Rectangle.h"
 
-#include "UI/InterfaceManager.h"
-#include "UI/MiniMapWindow.h"
+#include "UI/ModernInterface.h"
+#include "UI/FileIoDialog.h"
 
 #include <algorithm>
 #include <cstdint>
@@ -95,10 +95,8 @@ uint32_t MainWindowId{};
 namespace
 {
     constexpr auto TileSize = 16;
-    constexpr auto MiniTileSize = 3;
 
 
-	constexpr Point<int> ToolPaletteDefaultPosition{ 10, 100 };
 
     Camera2D camera;
     QuakeEffect quake;
@@ -110,7 +108,7 @@ namespace
     bool settingsDirty{false};
     bool vsyncActive{false};
     Uint64 settingsChangedAt{};
-    Vector<float> panelDragRemainder{};
+    UiSettings uiSettings = ModernInterface::defaultSettings();
 
     Vector<int> WindowSize{};
     Vector<int> DraggableToolVector{};
@@ -152,30 +150,6 @@ namespace
         audioService->enabled(userSoundOn());
         if (!userSoundOn()) { SoundOff(); }
     }
-    void audioSettings()
-    {
-        const std::array<SDL_MessageBoxButtonData,4> categories{{{0,0,"Master"}, {0,1,"City effects"}, {0,2,"Construction"}, {SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT,3,"Close"}}};
-        const SDL_MessageBoxData categoryBox{SDL_MESSAGEBOX_INFORMATION, MainWindow, "Civic 89 sound", "Choose a volume category.", 4, categories.data(), nullptr};
-        int category = 3;
-        if (!SDL_ShowMessageBox(&categoryBox, &category) || category < 0 || category > 2) { return; }
-        const std::array<SDL_MessageBoxButtonData,6> levels{{{0,0,"Mute"}, {0,1,"25%"}, {0,2,"50%"}, {0,3,"75%"}, {0,4,"100%"}, {SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT,5,"Cancel"}}};
-        const SDL_MessageBoxData volumeBox{SDL_MESSAGEBOX_INFORMATION, MainWindow, "Civic 89 sound", "Choose the volume.", 6, levels.data(), nullptr};
-        int level = 5;
-        if (!SDL_ShowMessageBox(&volumeBox, &level) || level < 0 || level > 4) { return; }
-        const float gain = level * .25f;
-        if (category == 0) { audioService->masterVolume(gain); }
-        else { audioService->channelVolume(category == 1 ? AudioChannel::City : AudioChannel::Construction, gain); }
-        std::ostringstream values;
-        values << audioService->masterVolume() << ' ' << audioService->channelVolume(AudioChannel::City) << ' ' << audioService->channelVolume(AudioChannel::Construction);
-        const auto bytes = values.str();
-        const auto result = fileStorage.write(userDirectory / "audio.cfg", std::span<const char>(bytes.data(), bytes.size()));
-        if (!result)
-        {
-            diagnostics->write(Severity::Error, DiagnosticCode::Settings, result.detail, result.path);
-            SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Civic 89 sound",
-                "Could not save sound settings. They will apply for this session.", MainWindow);
-        }
-    }
     class ApplicationPresentationEvents final : public PresentationEvents
     {
     public:
@@ -190,9 +164,8 @@ namespace
     };
     ApplicationPresentationEvents presentationEvents;
 
-    std::unique_ptr<MiniMapWindow> miniMapWindow;
-
-	std::shared_ptr<InterfaceManager> interfaceManager;
+    std::unique_ptr<FileIoDialog> fileDialog;
+    std::unique_ptr<ModernInterface> interfaceManager;
 	std::shared_ptr<ToolManager> toolManager;
 
 
@@ -205,15 +178,11 @@ namespace
     {
         if (!gameplayOptions().autoBudget && budget.NeedsAttention())
         {
-			interfaceManager->showWindow(InterfaceManager::Window::Budget);
+			interfaceManager->show(ModernInterface::Panel::Budget);
         }
     }
 
-    void positionDashboardWindow()
-    {
-        const Point<int> dashboardPosition{ WindowSize.x / 2 - interfaceManager->dashboardWindow().size().x / 2, 10 };
-        interfaceManager->positionWindow(InterfaceManager::Window::Dashboard, dashboardPosition);
-    }
+
 };
 
 
@@ -233,7 +202,7 @@ Camera2D& applicationCamera() { return camera; }
 
 void showBudgetWindow()
 {
-    interfaceManager->showWindow(InterfaceManager::Window::Budget);
+    interfaceManager->show(ModernInterface::Panel::Budget);
 }
 
 
@@ -256,11 +225,6 @@ void simUpdate()
 {
     updateDate();
 
-    if (newMonth())
-    {
-        interfaceManager->newMonth();
-    }
-
     showBudgetIfNeeded();
 
     refreshCityEvaluation(cityProperties);
@@ -280,14 +244,13 @@ void advancePresentation(Uint64 now)
             simUpdate();
             break;
         case FrameScheduler::Event::Animation:
-            if (!interfaceManager->modalWindowVisible() && !paused()) { animateTiles(); updateSprites(); cityRenderer->invalidate(); }
+            if (!interfaceManager->modalWindowVisible() && !paused() && gameplayOptions().animationEnabled) { animateTiles(); updateSprites(); cityRenderer->invalidate(); }
             break;
         case FrameScheduler::Event::Blink:
             cityRenderer->toggleBlink();
             break;
         case FrameScheduler::Event::Minimap:
-            miniMapWindow->draw();
-            break;
+            break; // The in-window minimap refreshes its own presentation cache.
         }
     }
     if (!ShakeNow) { quake.cancel(); }
@@ -303,20 +266,19 @@ void ApplicationPresentationEvents::toolsReset()
 
 void ApplicationPresentationEvents::budgetRequested()
 {
-    if (interfaceManager) { interfaceManager->showWindow(InterfaceManager::Window::Budget); }
+    if (interfaceManager) { interfaceManager->show(ModernInterface::Panel::Budget); }
 }
 
 
 void ApplicationPresentationEvents::showMessage(const std::string& message)
 {
-    if (interfaceManager) { interfaceManager->dashboardWindow().setMessage(message); }
+    if (interfaceManager) { interfaceManager->message(message); }
 }
 
 void ApplicationPresentationEvents::scenarioStarted(Scenario scenario)
 {
     if (interfaceManager)
     {
-        interfaceManager->dashboardWindow().cityName(cityProperties.CityName());
         showMessage(std::string("Scenario started: ") + scenarioDefinition(scenario)->cityName);
     }
 }
@@ -341,41 +303,12 @@ ScenarioResult doStartScenario(Scenario scenario)
     const auto result = controller.start(scenario);
     if (result == ScenarioResult::Success)
     {
-        interfaceManager->fileIoDialog().clearSaveFilename();
-        interfaceManager->toolPalette().cancelTool();
+        fileDialog->clearSaveFilename();
+        interfaceManager->cancelTool();
+        interfaceManager->invalidateMinimap();
         cityRenderer->invalidate();
     }
     return result;
-}
-
-void selectScenario()
-{
-    std::array<SDL_MessageBoxButtonData, 9> buttons{};
-    buttons[0] = {SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT, 0, "Cancel"};
-    for (size_t i = 0; i < ScenarioDefinitions.size(); ++i)
-    {
-        const auto& definition = ScenarioDefinitions[i];
-        buttons[i + 1] = {0, definition.legacyId, definition.cityName};
-    }
-    const SDL_MessageBoxData dialog{SDL_MESSAGEBOX_INFORMATION, MainWindow, "Civic 89 - Scenarios",
-        "Choose a scenario. Starting one replaces the current city; save it first if needed.",
-        static_cast<int>(buttons.size()), buttons.data(), nullptr};
-    int selected = 0;
-    if (!SDL_ShowMessageBox(&dialog, &selected))
-    {
-        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Civic 89", SDL_GetError(), MainWindow);
-        return;
-    }
-    const auto scenario = scenarioFromLegacyId(selected);
-    if (!scenario) { return; } // Cancel or closed dialog.
-    const auto result = doStartScenario(*scenario);
-    if (result != ScenarioResult::Success)
-    {
-        const auto* error = result == ScenarioResult::MissingFile ?
-            "The scenario file is missing. The current city has been kept." :
-            "The scenario file is invalid or unreadable. The current city has been kept.";
-        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Civic 89 - Scenario", error, MainWindow);
-    }
 }
 
 
@@ -386,7 +319,6 @@ void primeGame(const int startFlag, CityProperties& properties, Budget& cityBudg
     case -2: // Load a city
         if (LoadCity("filename", properties, cityBudget))
         {
-			interfaceManager->dashboardWindow().cityName(properties.CityName());
             break;
         }
         // If load fails, simply create a new city
@@ -395,7 +327,6 @@ void primeGame(const int startFlag, CityProperties& properties, Budget& cityBudg
     case -1:
         properties.GameLevel(0);
         properties.CityName("NoWhere");
-		interfaceManager->dashboardWindow().cityName(properties.CityName());
         doPlayNewCity(properties, cityBudget);
         break;
 
@@ -423,23 +354,24 @@ void resetGame()
 
 void newGame()
 {
-    interfaceManager->fileIoDialog().clearSaveFilename();
+    fileDialog->clearSaveFilename();
     resetGame();
+    interfaceManager->invalidateMinimap();
     cityRenderer->invalidate();
 }
 
 
 void openGame()
 {
-    if (interfaceManager->fileIoDialog().pickOpenFile())
+    if (fileDialog->pickOpenFile())
     {
-        const auto result = LoadCityDetailed(pathFromUtf8(interfaceManager->fileIoDialog().openPath()), cityProperties, budget);
+        const auto result = LoadCityDetailed(pathFromUtf8(fileDialog->openPath()), cityProperties, budget);
         if (!result) { reportCityError(result, DiagnosticCode::CityLoad); return; }
-        interfaceManager->fileIoDialog().clearSaveFilename();
+        fileDialog->clearSaveFilename();
         syncAudioOptions();
-        interfaceManager->toolPalette().cancelTool();
-        interfaceManager->dashboardWindow().cityName(cityProperties.CityName());
+        interfaceManager->cancelTool();
         updateDate();
+        interfaceManager->invalidateMinimap();
         cityRenderer->invalidate();
     }
 }
@@ -447,20 +379,15 @@ void openGame()
 
 void saveGame()
 {
-    if (!interfaceManager->fileIoDialog().filePicked() || SDL_GetModState() & SDL_KMOD_SHIFT)
+    if (!fileDialog->filePicked() || SDL_GetModState() & SDL_KMOD_SHIFT)
     {
-        if (!interfaceManager->fileIoDialog().pickSaveFile())
-        {
-            {
-                return;
-            }
-        }
+        if (!fileDialog->pickSaveFile()) { return; }
     }
 
-    const auto result = SaveCity(pathFromUtf8(interfaceManager->fileIoDialog().fullPath()), cityProperties, budget, fileStorage);
+    const auto result = SaveCity(pathFromUtf8(fileDialog->fullPath()), cityProperties, budget, fileStorage);
     if (!result)
     {
-        interfaceManager->fileIoDialog().clearSaveFilename();
+        fileDialog->clearSaveFilename();
         reportCityError(result, DiagnosticCode::CitySave);
     }
     else { diagnostics->write(Severity::Info, DiagnosticCode::CitySave, "City saved", result.path); }
@@ -472,51 +399,35 @@ void loadGraphics()
     cityRenderer = std::make_unique<MapRenderer>(MainWindowRenderer);
 }
 
-void updateMapDrawParameters()
-{
-    if (!miniMapWindow) { return; }
-    miniMapWindow->updateViewportSize(camera.visibleWorld());
-    miniMapWindow->updateMapViewPosition(camera.position());
-}
 
 void windowSize()
 {
     int width, height;
     if (!SDL_GetRenderOutputSize(MainWindowRenderer, &width, &height)) { throw std::runtime_error(SDL_GetError()); }
     if (width <= 0 || height <= 0) { return; }
-    displayLayout = DisplayLayout::fromPixels(width, height, SDL_GetWindowDisplayScale(MainWindow));
+    displayLayout = DisplayLayout::fromPixels(width, height, SDL_GetWindowDisplayScale(MainWindow) * uiSettings.scale);
     if (!SDL_SetRenderScale(MainWindowRenderer, displayLayout.scale, displayLayout.scale)) { throw std::runtime_error(SDL_GetError()); }
     WindowSize = {static_cast<int>(displayLayout.logical.x), static_cast<int>(displayLayout.logical.y)};
     camera.displayScale(displayLayout.scale);
     camera.viewport(displayLayout.logical);
-    const float windowScale = displayLayout.scale / SDL_GetWindowPixelDensity(MainWindow);
+    const float windowScale = SDL_GetWindowDisplayScale(MainWindow) / SDL_GetWindowPixelDensity(MainWindow);
     SDL_SetWindowMinimumSize(MainWindow, static_cast<int>(800 * windowScale), static_cast<int>(600 * windowScale));
 }
 
-void minimapViewUpdated(const Point<int>& tile)
-{
-    camera.focus({tile.x * 16.f + 8, tile.y * 16.f + 8});
-    updateMapDrawParameters();
-}
 
 void windowResized()
 {
     if (SDL_GetWindowFlags(MainWindow) & SDL_WINDOW_MINIMIZED) { return; }
     windowSize();
-    updateMapDrawParameters();
     if (!interfaceManager) { return; }
-    interfaceManager->centerWindows({ InterfaceManager::Window::Budget,
-        InterfaceManager::Window::Evaluation, InterfaceManager::Window::Graph,
-        InterfaceManager::Window::Options, InterfaceManager::Window::Query});
-    positionDashboardWindow();
-    interfaceManager->positionWindow(InterfaceManager::Window::ToolPalette, ToolPaletteDefaultPosition);
+    interfaceManager->layout(displayLayout.logical, displayLayout.scale);
 }
 
 void calculateMouseToWorld()
 {
     const auto world = camera.screenToWorld(EventHandling::SceneMousePosition - cameraShake);
     TilePointedAt = {static_cast<int>(std::floor(world.x / TileSize)), static_cast<int>(std::floor(world.y / TileSize))};
-    if (miniMapWindow) { miniMapWindow->updateTilePointedAt(TilePointedAt); }
+
 }
 
 
@@ -556,24 +467,16 @@ void TogglePause()
 
 void ToggleMiniMapVisibility()
 {
-    miniMapWindow->hidden() ? miniMapWindow->show() : miniMapWindow->hide();
+    interfaceManager->toggleMinimap();
 }
 
 
 void showEvaluationWindow()
 {
-    interfaceManager->evaluationWindow().setEvaluation(currentEvaluation());
-    interfaceManager->showWindow(InterfaceManager::Window::Evaluation);
+    interfaceManager->show(ModernInterface::Panel::Evaluation);
     currentEvaluationSeen();
 }
-
-
-void showSystemWindow()
-{
-    interfaceManager->hideAllWindows();
-    interfaceManager->optionsWindow().setOptions(gameplayOptions());
-    interfaceManager->optionsWindow().show();
-}
+void showSystemWindow() { interfaceManager->show(ModernInterface::Panel::Settings); }
 
 
 void markDisplaySettingsChanged()
@@ -645,114 +548,45 @@ void applyVSync()
     }
 }
 
-void displayOptions()
+void performUiCommand(UiCommand command)
 {
-    const std::array<SDL_MessageBoxButtonData,6> buttons{{{0,0,"Windowed"}, {0,1,"Maximized"}, {0,2,"Borderless fullscreen"},
-        {0,3,"Toggle VSync"}, {0,4,"Toggle pixel perfect"}, {SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT,5,"Close"}}};
-    const std::string message = std::string("VSync: ") + (displaySettings.vsync ? "on" : "off") +
-        "; pixel perfect: " + (displaySettings.pixelPerfect ? "on" : "off") +
-        "\nMouse wheel: zoom; right-drag or arrow keys: pan; Home: center.\nF11: toggle borderless fullscreen; F12: display settings.";
-    const SDL_MessageBoxData box{SDL_MESSAGEBOX_INFORMATION, MainWindow, "Civic 89 display", message.c_str(),
-        static_cast<int>(buttons.size()), buttons.data(), nullptr};
-    int selected = 5;
-    if (!SDL_ShowMessageBox(&box, &selected)) { diagnostics->write(Severity::Warning, DiagnosticCode::Display, SDL_GetError()); return; }
-    if (selected >= 0 && selected <= 2) { applyDisplayMode(static_cast<WindowMode>(selected)); }
-    else if (selected == 3) { displaySettings.vsync = !displaySettings.vsync; applyVSync(); markDisplaySettingsChanged(); }
-    else if (selected == 4)
+    switch (command)
     {
-        displaySettings.pixelPerfect = !displaySettings.pixelPerfect;
-        camera.pixelPerfect(displaySettings.pixelPerfect);
-        markDisplaySettingsChanged();
+    case UiCommand::Pause: TogglePause(); break;
+    case UiCommand::Save: saveGame(); break;
+    case UiCommand::Open: openGame(); break;
+    case UiCommand::Minimap: ToggleMiniMapVisibility(); break;
+    case UiCommand::Evaluation: showEvaluationWindow(); break;
+    case UiCommand::Scenarios: interfaceManager->show(ModernInterface::Panel::Scenarios); break;
+    case UiCommand::NewCity: interfaceManager->show(ModernInterface::Panel::NewCity); break;
+    case UiCommand::Settings: showSystemWindow(); break;
+    case UiCommand::Graphs: interfaceManager->show(ModernInterface::Panel::Graphs); break;
+    case UiCommand::Budget: showBudgetWindow(); break;
+    case UiCommand::StartNewCity: newGame(); break;
+    default: break;
     }
-    persistDisplaySettings();
 }
-
-
 void handleKeyEvent(SDL_Event& event)
 {
     if (event.key.windowID != MainWindowId || event.key.repeat) { return; }
-    if (interfaceManager->optionsWindow().visible())
+    const auto toolBefore = toolManager->currentTool().type;
+    if (interfaceManager->keyDown(event.key.key, event.key.mod))
     {
-        interfaceManager->optionsWindow().injectKeyDown(event.key.key);
+        if (toolManager->currentTool().type != toolBefore || interfaceManager->modalWindowVisible()) { MapToolGesture = false; }
         return;
     }
-
+    if (event.key.mod & (SDL_KMOD_CTRL | SDL_KMOD_ALT | SDL_KMOD_GUI)) { return; }
     switch (event.key.key)
     {
-    case SDLK_ESCAPE:
-        showSystemWindow();
-        break;
-
-    case SDLK_0:
-    case SDLK_P:
-    case SDLK_SPACE:
-        TogglePause();
-        break;
-
-    case SDLK_1:
-        SetSpeed(SimulationSpeed::Slow);
-        break;
-
-    case SDLK_2:
-        SetSpeed(SimulationSpeed::Normal);
-        break;
-
-    case SDLK_3:
-        SetSpeed(SimulationSpeed::Fast);
-        break;
-
-    case SDLK_4:
-        SetSpeed(SimulationSpeed::AfricanSwallow);
-        break;
-
-    case SDLK_F2:
-        saveGame();
-        break;
-
-    case SDLK_F3:
-        openGame();
-        break;
-
-    case SDLK_F4:
-        ToggleMiniMapVisibility();
-        break;
-
-    case SDLK_F5:
-        showEvaluationWindow();
-        break;
-
-    case SDLK_F6:
-        selectScenario();
-        break;
-
-    case SDLK_F7:
-        newGame();
-        break;
-
-    case SDLK_F8:
-        audioSettings();
-        break;
-
-    case SDLK_F9:
-        interfaceManager->showWindow(InterfaceManager::Window::Graph);
-        break;
-
-    case SDLK_F11:
-        applyDisplayMode(displaySettings.mode == WindowMode::Borderless ? WindowMode::Windowed : WindowMode::Borderless);
-        break;
-    case SDLK_F12:
-        displayOptions();
-        break;
-    case SDLK_HOME:
-        camera.focus({SimWidth * 8.f, SimHeight * 8.f});
-        break;
-    case SDLK_F10:
-		interfaceManager->showWindow(InterfaceManager::Window::Budget);
-        break;
-
-    default:
-        break;
-
+    case SDLK_0: TogglePause(); break;
+    case SDLK_1: SetSpeed(SimulationSpeed::Slow); break;
+    case SDLK_2: SetSpeed(SimulationSpeed::Normal); break;
+    case SDLK_3: SetSpeed(SimulationSpeed::Fast); break;
+    case SDLK_4: SetSpeed(SimulationSpeed::AfricanSwallow); break;
+    case SDLK_F11: applyDisplayMode(displaySettings.mode == WindowMode::Borderless ? WindowMode::Windowed : WindowMode::Borderless); break;
+    case SDLK_F12: showSystemWindow(); break;
+    case SDLK_HOME: camera.focus({SimWidth * 8.f, SimHeight * 8.f}); break;
+    default: break;
     }
 }
 
@@ -776,14 +610,10 @@ void handleMouseEvent(SDL_Event& event)
     {
         EventHandling::SceneMousePosition = {event.motion.x, event.motion.y};
         EventHandling::MousePosition = EventHandling::SceneMousePosition.to<int>();
-        panelDragRemainder += Vector<float>{event.motion.xrel, event.motion.yrel};
-        const auto delta = panelDragRemainder.to<int>();
-        panelDragRemainder -= delta.to<float>();
-        interfaceManager->injectMouseMotion(delta);
-        if ((event.motion.state & SDL_BUTTON_RMASK) && !interfaceManager->modalWindowVisible())
+        interfaceManager->mouseMotion(EventHandling::MousePosition, EventHandling::MouseLeftDown, camera);
+        if ((event.motion.state & SDL_BUTTON_RMASK) && !interfaceManager->pointInWindow(EventHandling::MousePosition))
         {
             camera.pan({-event.motion.xrel, -event.motion.yrel});
-            updateMapDrawParameters();
             RightButtonDrag = true;
         }
         calculateMouseToWorld();
@@ -794,13 +624,13 @@ void handleMouseEvent(SDL_Event& event)
     {
         EventHandling::SceneMousePosition = {event.wheel.mouse_x, event.wheel.mouse_y};
         EventHandling::MousePosition = EventHandling::SceneMousePosition.to<int>();
-        if (interfaceManager->modalWindowVisible() || EventHandling::MouseLeftDown ||
+        if (interfaceManager->wheel(event.wheel.y) || EventHandling::MouseLeftDown ||
             interfaceManager->pointInWindow(EventHandling::MousePosition)) { break; }
-        const float direction = event.wheel.direction == SDL_MOUSEWHEEL_FLIPPED ? -event.wheel.y : event.wheel.y;
+        const float direction = (event.wheel.direction == SDL_MOUSEWHEEL_FLIPPED ? -event.wheel.y : event.wheel.y) * (uiSettings.reverseZoom ? -1.f : 1.f);
         const float zoom = camera.pixelPerfect() ? camera.zoom() + direction / displayLayout.scale :
             camera.zoom() * std::pow(1.125f, direction);
         camera.zoomAt(zoom, {event.wheel.mouse_x, event.wheel.mouse_y});
-        updateMapDrawParameters(); calculateMouseToWorld();
+        calculateMouseToWorld();
         break;
     }
     case SDL_EVENT_MOUSE_BUTTON_DOWN:
@@ -812,7 +642,7 @@ void handleMouseEvent(SDL_Event& event)
             EventHandling::MouseLeftDown = true;
             MapToolGesture = false;
             EventHandling::MouseDownPosition = EventHandling::MousePosition;
-            if (interfaceManager->injectMouseDown(EventHandling::MousePosition) || interfaceManager->modalWindowVisible()) { return; }
+            if (interfaceManager->mouseDown(EventHandling::MousePosition, camera) || interfaceManager->modalWindowVisible()) { return; }
             if (!camera.containsWorld(camera.screenToWorld(EventHandling::SceneMousePosition - cameraShake))) { return; }
             MapToolGesture = true;
             toolManager->dragStart(TilePointedAt); updateDragVector();
@@ -823,8 +653,7 @@ void handleMouseEvent(SDL_Event& event)
             }
             if (toolManager->currentTool().type == Tool::Type::Query)
             {
-                interfaceManager->queryWindow().setQueryResult(toolManager->queryResult());
-                interfaceManager->showWindow(InterfaceManager::Window::Query);
+                interfaceManager->show(ModernInterface::Panel::Query);
             }
         }
         break;
@@ -838,7 +667,7 @@ void handleMouseEvent(SDL_Event& event)
             MapToolGesture = false;
             EventHandling::MouseLeftDown = false;
             EventHandling::MouseClickPosition = EventHandling::MousePosition;
-            interfaceManager->injectMouseUp();
+            interfaceManager->mouseUp();
             if (!gesture || IgnoreToolMouseUp() || interfaceManager->modalWindowVisible()) { return; }
             if (!camera.containsWorld(camera.screenToWorld(EventHandling::SceneMousePosition - cameraShake))) { return; }
             toolManager->dragEnd(TilePointedAt);
@@ -850,7 +679,7 @@ void handleMouseEvent(SDL_Event& event)
         }
         else if (event.button.button == SDL_BUTTON_RIGHT)
         {
-            if (!RightButtonDrag) { toolManager->currentTool(Tool::Type::None); interfaceManager->toolPalette().cancelTool(); }
+            if (!RightButtonDrag) { toolManager->currentTool(Tool::Type::None); interfaceManager->cancelTool(); }
             RightButtonDrag = false;
         }
         break;
@@ -871,8 +700,12 @@ void handleWindowEvent(SDL_Event& event)
         windowResized();
         if (!(SDL_GetWindowFlags(MainWindow) & (SDL_WINDOW_MAXIMIZED | SDL_WINDOW_FULLSCREEN | SDL_WINDOW_MINIMIZED)))
         {
-            displaySettings.width = std::clamp(WindowSize.x, 800, 7680);
-            displaySettings.height = std::clamp(WindowSize.y, 600, 4320);
+            // Window preferences use native logical units, independent of UI magnification.
+            int width{}, height{};
+            SDL_GetRenderOutputSize(MainWindowRenderer, &width, &height);
+            const auto nativeLayout = DisplayLayout::fromPixels(width, height, SDL_GetWindowDisplayScale(MainWindow));
+            displaySettings.width = std::clamp(static_cast<int>(nativeLayout.logical.x), 800, 7680);
+            displaySettings.height = std::clamp(static_cast<int>(nativeLayout.logical.y), 600, 4320);
             markDisplaySettingsChanged();
         }
         break;
@@ -888,7 +721,7 @@ void handleWindowEvent(SDL_Event& event)
         MapToolGesture = false;
         EventHandling::MouseLeftDown = false;
         RightButtonDrag = false;
-        interfaceManager->injectMouseUp();
+        interfaceManager->mouseUp();
         break;
     case SDL_EVENT_WINDOW_CLOSE_REQUESTED: simExit(); break;
     default: break;
@@ -903,7 +736,6 @@ void pumpEvents()
     SDL_Event event;
     while (SDL_PollEvent(&event))
     {
-        miniMapWindow->injectEvent(event);
         if (event.type == SDL_EVENT_RENDER_DEVICE_RESET || event.type == SDL_EVENT_RENDER_TARGETS_RESET)
         {
             rebuildPresentationGraphics();
@@ -998,7 +830,7 @@ std::optional<MapPreview> pendingToolPreview()
     const auto& tool = toolManager->currentTool();
     if (tool.type == Tool::Type::None) { return {}; }
     MapPreview preview{{(TilePointedAt.x - tool.offset) * 16.f, (TilePointedAt.y - tool.offset) * 16.f,
-        tool.size * 16.f, tool.size * 16.f}, &interfaceManager->toolPalette().toolGost()};
+        tool.size * 16.f, tool.size * 16.f}, interfaceManager->ghost()};
     if (tool.draggable && EventHandling::MouseLeftDown)
     {
         const auto start = toolManager->dragStart();
@@ -1026,7 +858,6 @@ void gameInit(std::optional<Scenario> scenario)
     }
     else { primeGame(-1, cityProperties, budget); }
 
-    updateMapDrawParameters();
     scheduler.reset(SDL_GetTicks());
 }
 
@@ -1039,114 +870,67 @@ void optionsChanged(const GameOptions& options)
 }
 
 
-void registerCallbacks()
+void persistUiSettings()
 {
-    registerNewMonthCallback([](int month) { interfaceManager->dashboardWindow().onNewMonth(month); });
-    registerNewYearCallback([](int year) { interfaceManager->dashboardWindow().onNewYear(year); });
-
-	auto& dashboard = interfaceManager->dashboardWindow();
-
-	dashboard.registerButtonHandler(DashboardWindow::ButtonId::Budget, []() { showBudgetWindow(); });
-	dashboard.registerButtonHandler(DashboardWindow::ButtonId::Evaluation, []() { showEvaluationWindow(); });
-	dashboard.registerButtonHandler(DashboardWindow::ButtonId::MiniMap, []() { ToggleMiniMapVisibility(); });
-	dashboard.registerButtonHandler(DashboardWindow::ButtonId::Graph, []() { interfaceManager->showWindow(InterfaceManager::Window::Graph); });
-	dashboard.registerButtonHandler(DashboardWindow::ButtonId::Save, []() { saveGame(); });
-	dashboard.registerButtonHandler(DashboardWindow::ButtonId::System, []() { showSystemWindow(); });
-}
-
-
-MiniMapWindow::EffectMapButtonMapping buildEffectMapMapping()
-{
-    return {
-        { MiniMapWindow::ButtonId::Crime, CrimeMap},
-        { MiniMapWindow::ButtonId::FireProtection, FireProtectionMap},
-        { MiniMapWindow::ButtonId::LandValue, LandValueMap },
-        { MiniMapWindow::ButtonId::PoliceProtection, PoliceProtectionMap },
-        { MiniMapWindow::ButtonId::Pollution, PollutionMap },
-        { MiniMapWindow::ButtonId::PopulationDensity, PopulationDensityMap },
-        { MiniMapWindow::ButtonId::PopulationGrowth, RateOfGrowthMap },
-        { MiniMapWindow::ButtonId::TrafficDensity, TrafficDensityMap }
-    };
-}
-
-
-void initMinimap(const Point<int>& mainWindowPosition, const SDL_DisplayMode* mode)
-{
-    const Point<int> miniMapWindowPosition
+    const auto result = uiSettings.save(userDirectory / "ui.cfg", fileStorage);
+    std::ostringstream values;
+    values << audioService->masterVolume() << ' ' << audioService->channelVolume(AudioChannel::City) << ' ' << audioService->channelVolume(AudioChannel::Construction);
+    const auto bytes = values.str();
+    const auto audioResult = fileStorage.write(userDirectory / "audio.cfg", std::span<const char>(bytes.data(), bytes.size()));
+    if (!result || !audioResult)
     {
-        std::clamp(mainWindowPosition.x - (SimWidth * MiniTileSize) - 10, 10, mode->w),
-        std::clamp(mainWindowPosition.y, 10, mode->h)
-    };
-
-    miniMapWindow = std::make_unique<MiniMapWindow>(miniMapWindowPosition, Vector<int>{ SimWidth, SimHeight });
-    miniMapWindow->updateViewportSize(camera.visibleWorld());
-    miniMapWindow->focusOnMapCoordBind(&minimapViewUpdated);
-    miniMapWindow->linkEffectMaps(buildEffectMapMapping());
-}
-
-
-void assertModeNotNull(const SDL_DisplayMode* mode)
-{
-    if (!mode)
-    {
-        throw std::runtime_error(std::string("initUI(): Unable to get desktop display mode: ") + SDL_GetError());
+        const auto& failure = !result ? result : audioResult;
+        diagnostics->write(Severity::Error, DiagnosticCode::Settings, failure.detail, failure.path);
+        interfaceManager->message("Could not save settings. Changes apply for this session.");
     }
+    windowResized();
 }
-
-
 void initUI()
 {
-    Point<int> mainWindowPosition{};
-    SDL_GetWindowPosition(MainWindow, &mainWindowPosition.x, &mainWindowPosition.y);
-
-    const auto mode = SDL_GetDesktopDisplayMode(SDL_GetPrimaryDisplay());
-    assertModeNotNull(mode);
-
-	initMinimap(mainWindowPosition, mode);
-
-    interfaceManager = std::make_shared<InterfaceManager>(MainWindowRenderer, MainWindow, budget, currentRCI(), *toolManager);
-	sharePresentationEvents(presentationEvents);
-    shareAudioService(*audioService);
-    setEngineClock([]() { return static_cast<int>(SDL_GetTicks()); });
-
-    positionDashboardWindow();
-    interfaceManager->positionWindow(InterfaceManager::Window::ToolPalette, ToolPaletteDefaultPosition);
-
-    interfaceManager->optionsWindow().optionsChangedConnect(optionsChanged);
-    interfaceManager->optionsWindow().newGameCallbackConnect(newGame);
-    interfaceManager->optionsWindow().saveGameCallbackConnect(saveGame);
-    interfaceManager->optionsWindow().openGameCallbackConnect(openGame);
-
-	interfaceManager->toolPalette().toolChangedCallback([]() {
-        interfaceManager->dashboardWindow().onToolChanged(interfaceManager->toolPalette().tool());
+    if (!fileDialog)
+    {
+        fileDialog = std::make_unique<FileIoDialog>(*MainWindow);
+        fileDialog->errorHandler([](const std::string& message) {
+            diagnostics->write(Severity::Error, DiagnosticCode::FileDialog, message);
+            SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Civic 89 file picker", message.c_str(), MainWindow);
         });
-
-    interfaceManager->fileIoDialog().errorHandler([](const std::string& message) {
-        diagnostics->write(Severity::Error, DiagnosticCode::FileDialog, message);
-        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Civic 89 file picker", message.c_str(), MainWindow);
-    });
-    registerCallbacks();
+    }
+    interfaceManager = std::make_unique<ModernInterface>(MainWindowRenderer, budget, currentRCI(), *toolManager, cityProperties, *audioService, uiSettings, displaySettings);
+    interfaceManager->command = performUiCommand;
+    interfaceManager->scenarioSelected = [](int id) {
+        const auto scenario = scenarioFromLegacyId(id);
+        if (!scenario || doStartScenario(*scenario) != ScenarioResult::Success)
+            { interfaceManager->message("Could not start the scenario. The current city is unchanged."); }
+    };
+    interfaceManager->settingsChanged = persistUiSettings;
+    interfaceManager->optionsChanged = [] { optionsChanged(gameplayOptions()); };
+    interfaceManager->displayAction = [](int action) {
+        if (action <= 2) { applyDisplayMode(static_cast<WindowMode>(action)); }
+        else if (action == 3) { displaySettings.vsync = !displaySettings.vsync; applyVSync(); markDisplaySettingsChanged(); }
+        else { displaySettings.pixelPerfect = !displaySettings.pixelPerfect; camera.pixelPerfect(displaySettings.pixelPerfect); markDisplaySettingsChanged(); }
+        persistDisplaySettings();
+    };
+    interfaceManager->layout(displayLayout.logical,displayLayout.scale);
+    sharePresentationEvents(presentationEvents);
+    shareAudioService(*audioService);
+    setEngineClock([] { return static_cast<int>(SDL_GetTicks()); });
 }
-
-
+ModernInterface& applicationInterface() { return *interfaceManager; }
+UiSettings& applicationUiSettings() { return uiSettings; }
+#if defined(CIVIC89_MILESTONE_TESTS)
+DisplaySettings applicationDisplaySettings() { return displaySettings; }
+#endif
 void rebuildPresentationGraphics()
 {
-    const bool minimapVisible = miniMapWindow && !miniMapWindow->hidden();
-    clearNewMonthCallbacks(); clearNewYearCallbacks();
-    interfaceManager.reset();
-    miniMapWindow.reset();
-    cityRenderer.reset();
-    EventHandling::MouseLeftDown = false;
-    MapToolGesture = false;
-    RightButtonDrag = false;
-    toolManager->currentTool(Tool::Type::None);
-    loadGraphics();
-    initUI();
-    interfaceManager->dashboardWindow().cityName(cityProperties.CityName());
-    interfaceManager->dashboardWindow().onNewMonth((CityTime / 4) % 12);
-    interfaceManager->dashboardWindow().onNewYear(CityTime / 48 + StartingYear);
-    interfaceManager->dashboardWindow().setMessage("Graphics restored.");
-    if (minimapVisible) { miniMapWindow->show(); }
+    const auto panel = interfaceManager->currentPanel();
+    const auto overlay = interfaceManager->overlay();
+    const bool minimap = interfaceManager->minimapShown();
+    const auto message = interfaceManager->message();
+    interfaceManager.reset(); cityRenderer.reset();
+    EventHandling::MouseLeftDown = false; MapToolGesture = false; RightButtonDrag = false;
+    loadGraphics(); initUI();
+    interfaceManager->show(panel); interfaceManager->overlay(overlay);
+    interfaceManager->minimapShown(minimap); interfaceManager->message(message);
     diagnostics->write(Severity::Info, DiagnosticCode::Display, "Presentation resources recreated after graphics reset");
 }
 
@@ -1159,12 +943,11 @@ void cleanUp()
     EventHandling::MouseLeftDown = false;
     MapToolGesture = false;
     RightButtonDrag = false;
-    panelDragRemainder = {};
     EventHandling::SceneMousePosition = {};
     EventHandling::MousePosition = {};
     EventHandling::MouseDownPosition = {};
 
-    miniMapWindow.reset(nullptr);
+    fileDialog.reset();
     
     interfaceManager.reset();
     toolManager.reset();
@@ -1186,7 +969,6 @@ void cleanUp()
 
 void GameLoop()
 {
-    miniMapWindow->draw();
     cityRenderer->invalidate();
     FramePacer renderPacer;
     Uint64 previous = SDL_GetTicks();
@@ -1194,18 +976,16 @@ void GameLoop()
     {
         pumpEvents();
         const auto now = SDL_GetTicks();
-        toolManager->currentTool(interfaceManager->toolPalette().tool());
         if (SDL_GetKeyboardFocus() == MainWindow && !interfaceManager->modalWindowVisible())
         {
             const auto* keys = SDL_GetKeyboardState(nullptr);
-            Vector<float> direction{static_cast<float>(keys[SDL_SCANCODE_RIGHT] - keys[SDL_SCANCODE_LEFT]),
-                static_cast<float>(keys[SDL_SCANCODE_DOWN] - keys[SDL_SCANCODE_UP])};
+            Vector<float> direction{static_cast<float>(keys[SDL_GetScancodeFromKey(uiSettings.keys[27], nullptr)] - keys[SDL_GetScancodeFromKey(uiSettings.keys[26], nullptr)]),
+                static_cast<float>(keys[SDL_GetScancodeFromKey(uiSettings.keys[29], nullptr)] - keys[SDL_GetScancodeFromKey(uiSettings.keys[28], nullptr)])};
             const float length = std::hypot(direction.x, direction.y);
-            if (length > 0) { camera.pan(direction / length * (static_cast<float>(std::min<Uint64>(now - previous, 50)) * .5f)); }
+            if (length > 0) { camera.pan(direction / length * (static_cast<float>(std::min<Uint64>(now - previous, 50)) * uiSettings.panSpeed / 1000.f)); }
         }
         previous = now;
         advancePresentation(now);
-        updateMapDrawParameters();
         calculateMouseToWorld(); updateDragVector();
         if (settingsDirty && now - settingsChangedAt >= 1000) { persistDisplaySettings(); }
         if (ScenarioID == 0 && now - lastAutosave >= 300000)
@@ -1214,7 +994,7 @@ void GameLoop()
             const auto result = recovery->save(cityProperties, budget, fileStorage);
             diagnostics->write(result ? Severity::Info : Severity::Error, DiagnosticCode::Autosave,
                 result ? "Recovery city saved" : result.detail, result.path);
-            if (!result) { interfaceManager->dashboardWindow().setMessage("Autosave failed. Please save your city manually."); }
+            if (!result) { interfaceManager->message("Autosave failed. Please save your city manually."); }
         }
         const auto* mode = SDL_GetCurrentDisplayMode(SDL_GetDisplayForWindow(MainWindow));
         const float refresh = vsyncActive && mode && mode->refresh_rate > 0 ? mode->refresh_rate : 60.f;
@@ -1222,15 +1002,13 @@ void GameLoop()
         {
             if (!(SDL_GetWindowFlags(MainWindow) & SDL_WINDOW_MINIMIZED))
             {
-                cityRenderer->render(camera, cameraShake, pendingToolPreview());
+                cityRenderer->render(camera, cameraShake, pendingToolPreview(), interfaceManager->overlay(), uiSettings.overlayOpacity, uiSettings.accessibleColors);
                 if (!interfaceManager->modalWindowVisible() && currentEvaluation().needsAttention)
                 {
-                    interfaceManager->evaluationWindow().setEvaluation(currentEvaluation());
                     currentEvaluationSeen();
                 }
-                interfaceManager->draw();
+                interfaceManager->draw(camera);
                 SDL_RenderPresent(MainWindowRenderer);
-                if (!miniMapWindow->hidden()) { miniMapWindow->drawUI(); }
                 newMap(false);
             }
         }
@@ -1282,6 +1060,15 @@ int main(int argc, char* argv[])
         diagnostics = std::make_unique<DiagnosticLog>(userDirectory / "civic89.log");
         diagnostics->write(Severity::Info, DiagnosticCode::Startup, "Civic 89 starting");
         recovery = std::make_unique<RecoveryStore>(userDirectory);
+        if (const auto settings = UiSettings::load(userDirectory / "ui.cfg"))
+        {
+            bool valid = true;
+            for (const auto key : settings->keys) { if (ModernInterface::reservedKey(key) || !*SDL_GetKeyName(key)) { valid = false; } }
+            if (valid) { uiSettings = *settings; }
+            else { diagnostics->write(Severity::Warning, DiagnosticCode::Settings, "Reserved UI key; using defaults"); }
+        }
+        else if (std::filesystem::exists(userDirectory / "ui.cfg"))
+            { diagnostics->write(Severity::Warning, DiagnosticCode::Settings, "Invalid UI settings; using defaults"); }
         if (const auto settings = DisplaySettings::load(userDirectory / "display.cfg")) { displaySettings = *settings; }
         else if (std::filesystem::exists(userDirectory / "display.cfg"))
             { diagnostics->write(Severity::Warning, DiagnosticCode::Settings, "Invalid display settings; using defaults"); }
@@ -1314,7 +1101,7 @@ int main(int argc, char* argv[])
             {
                 if (std::string_view(error.what()) != "M3 injected startup failure") { throw; }
                 if (SDL_WasInit(0) || TTF_WasInit() || MainWindow || MainWindowRenderer || audioService ||
-                    interfaceManager || miniMapWindow || cityRenderer)
+                    interfaceManager || fileDialog || cityRenderer)
                     { throw std::runtime_error("Partial startup retained resources"); }
             }
         }
@@ -1342,10 +1129,12 @@ int main(int argc, char* argv[])
             initUI();
 #if defined(CIVIC89_MILESTONE_TESTS)
             void runMilestoneTests(Budget&, CityProperties&, PresentationEvents&);
-            void runWindowCameraRenderingTests(Budget&, CityProperties&, PresentationEvents&, ToolManager&, InterfaceManager&, MiniMapWindow&);
+            void runWindowCameraRenderingTests(Budget&, CityProperties&, PresentationEvents&, ToolManager&, ModernInterface&);
+            void runModernUiAcceptance(Budget&, CityProperties&, ToolManager&);
             simInit();
             scheduler.reset(SDL_GetTicks());
-            if (session == 0) { runWindowCameraRenderingTests(budget, cityProperties, presentationEvents, *toolManager, *interfaceManager, *miniMapWindow); }
+            if (session == 0) { runModernUiAcceptance(budget, cityProperties, *toolManager); }
+            if (session == 0) { runWindowCameraRenderingTests(budget, cityProperties, presentationEvents, *toolManager, *interfaceManager); }
             runMilestoneTests(budget, cityProperties, presentationEvents);
             const auto result = recovery->save(cityProperties, budget, fileStorage);
             if (!result || !LoadCityDetailed(recovery->path(), cityProperties, budget)) { throw std::runtime_error("Session save/reload failed"); }
@@ -1360,7 +1149,7 @@ int main(int argc, char* argv[])
                 {
                     const auto result = LoadCityDetailed(recovery->path(), cityProperties, budget);
                     if (!result) { reportCityError(result, DiagnosticCode::CityLoad); }
-                    else { syncAudioOptions(); interfaceManager->dashboardWindow().cityName(cityProperties.CityName()); }
+                    else { syncAudioOptions(); }
                 }
             }
             lastAutosave = SDL_GetTicks();

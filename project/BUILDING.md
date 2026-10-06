@@ -226,7 +226,7 @@ retains nearest tile filtering. Auto-goto messages now move the camera when enab
 Earthquakes shake the map for three seconds while leaving UI steady.
 
 Windows DPI/display/pixel-size changes update per-window logical layout and input.
-The existing 800×600 panel layout scales down to fit smaller high-DPI screens until
+The existing 800Ãƒâ€”600 panel layout scales down to fit smaller high-DPI screens until
 M5's responsive redesign. Render pacing uses checked VSync or a 60 Hz limiter;
 simulation and animation run from separate main-thread deadlines with bounded
 chronological catch-up. Recoverable GPU device/target resets recreate presentation resources while keeping
@@ -240,3 +240,50 @@ appearance and hardware VSync remain release checks.
 
 See [ADR 0005](decisions/0005_M4_WINDOW_CAMERA_RENDERING.md) and
 [M4 evidence](../tests/baseline/M4_2026-10-06.md) for full commands and compatibility.
+
+## M5 single-window interface
+
+The default interface uses one SDL window: dashboard, tool palette, minimap and
+in-window budget/evaluation/history/query/scenario/settings panels. Native file
+pickers remain for Open and Save. All information/settings sheets suspend simulation
+and animation; closing a sheet resumes the previous paused/speed state.
+
+The dashboard shows funds, date, population, numeric RCI and current tool/cost.
+Hover or keyboard-focus a tool for its name, cost and assigned key. Unaffordable
+construction selections are disabled; Query remains available even in debt. A tool
+change cancels an earlier held construction drag. Click or drag the minimap to
+center the camera; F4 toggles it. Home centers the city, wheel zooms, right-drag and
+held pan bindings move the camera.
+
+Choose the data button at top left for overlays. Full map and minimap share traffic,
+crime, value, pollution, population, power, fire/police coverage, growth, transport
+and zone data. The dashboard -/+ changes opacity. Legends and numeric tile probes
+provide information independent of color; Settings offers a blue sequential palette.
+
+Esc, F8 or F12 opens Settings. Tab/Shift+Tab and Enter navigate controls; Esc closes
+or cancels key capture. Readability offers 100/125/150% requested UI scale, larger
+text, high contrast and display/VSync/pixel-perfect controls. Effective scale is
+capped to keep an 800x600 logical layout reachable on smaller screens. Window-size
+preferences use native logical units, so UI scale cannot shrink the next launch.
+Controls offers reverse zoom, pan speed and three pages of 30 unique bindings
+(16 tools, 10 commands, 4 pan directions); the wheel also changes binding pages.
+Reserved keys (Esc, Tab, Enter, modifiers, 0-4, F11/F12/Home) cannot be rebound.
+Default tool keys are R/C/I/F/Q/L/W/B/T/D/S/K/H/O/N/A. Space pauses, 1-4 select
+speed, F2 saves (Shift requests Save As), F3 opens, F4 minimap, F5 evaluation,
+F6 scenarios, F7 new-city confirmation, F8 settings, F9 history and F10 budget.
+F11 remains fullscreen and F12 settings. Sound has Master/City/Construction gains.
+Gameplay exposes existing typed options; animation and disasters are session options,
+while budget/bulldoze/goto/sound retain their existing city-file fields.
+
+`ui.cfg`, `audio.cfg` and `display.cfg` live in the existing Civic89 user-data directory.
+UI preferences are versioned, range/conflict checked and atomically published;
+invalid files fall back to defaults with diagnostics. UI choices never extend `.cty`.
+The interface reuses approved Raleway fonts and inventoried icons/art; no new asset
+or production dependency is required. Inherited panel/minimap implementations remain
+compiled as references for source/build parity, but are not instantiated by the app.
+
+`ui-overlay-preferences` runs without SDL. `milestone-lifecycle` additionally renders
+all panels across 800x600/1366x768/1920x1080/3440x1440 and 100/125/150/200% effective
+scale, drives actual input, saves PNG captures and checks simulation digest invariance.
+Captures are under each application's output directory in `ui-captures/`; selected
+reviewed captures and exact commands are in [M5 evidence](../tests/baseline/M5_2026-10-06.md).

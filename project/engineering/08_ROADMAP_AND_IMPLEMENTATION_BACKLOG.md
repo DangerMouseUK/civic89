@@ -180,7 +180,7 @@ Separate render cadence from simulation tick cadence.
 
 Centralise tile/sprite/overlay rendering and remove map drawing responsibilities from the application loop.
 
-**Completion record (6 October 2026):** M4-01 through M4-05 are implemented together on `codex/m4-window-camera-rendering`: persisted windowed/maximized/borderless modes; per-window DPI/input/layout; Camera2D with pan, cursor zoom, bounds, keyboard and pixel scaling; main-thread simulation/animation scheduling and VSync/frame limiting; centralized map/sprite/tool/quake rendering. Application Debug/Release/ASan pass 42/42 checks; headless Debug/ASan pass 34/34; all 25 M2 goldens and retained Visual Studio Release pass. Native Windows mode APIs and the automated 100–200%/mixed-scale matrix pass. Physical mixed-DPI/visible desktop/hardware refresh remain release checks. [ADR 0005](../decisions/0005_M4_WINDOW_CAMERA_RENDERING.md) and [evidence](../../tests/baseline/M4_2026-10-06.md) record acceptance and compatibility decisions. Hosted CI is tracked on the delivered PR.
+**Completion record (6 October 2026):** M4-01 through M4-05 are implemented together on `codex/m4-window-camera-rendering`: persisted windowed/maximized/borderless modes; per-window DPI/input/layout; Camera2D with pan, cursor zoom, bounds, keyboard and pixel scaling; main-thread simulation/animation scheduling and VSync/frame limiting; centralized map/sprite/tool/quake rendering. Application Debug/Release/ASan pass 42/42 checks; headless Debug/ASan pass 34/34; all 25 M2 goldens and retained Visual Studio Release pass. Native Windows mode APIs and the automated 100â€“200%/mixed-scale matrix pass. Physical mixed-DPI/visible desktop/hardware refresh remain release checks. [ADR 0005](../decisions/0005_M4_WINDOW_CAMERA_RENDERING.md) and [evidence](../../tests/baseline/M4_2026-10-06.md) record acceptance and compatibility decisions. Hosted CI passed all four jobs on [PR #9](https://github.com/DangerMouseUK/civic89/pull/9), merged as `fc0c4f6`.
 
 ## 7. Milestone 5 - Modern UI/UX
 
@@ -214,6 +214,8 @@ Traffic, crime, land value, pollution, population, power/protection data with ad
 - volume categories;
 - camera controls;
 - colour/overlay accessibility considerations.
+
+**Completion record (6 October 2026):** M5-01 through M5-06 are delivered together on `codex/m5-modern-ui`: in-window minimap, responsive dashboard, tool palette/affordability/hotkeys, budget/evaluation/history/query panels, shared full-map data layers and opacity, and persisted readability/key/camera/audio preferences. Native in-window scenario/new-city panels complete the workflow. Application Debug/Release/ASan pass 43/43; headless Debug/ASan pass 35/35; all 25 Classic goldens and retained Visual Studio Release pass. Compact/wide rendered captures were visually reviewed; native software/Direct3D 11 checks pass. Physical mixed-DPI and assistive-technology integration remain release validation. [ADR 0006](../decisions/0006_M5_MODERN_INTERFACE.md) and [evidence](../../tests/baseline/M5_2026-10-06.md) record compatibility and acceptance. Hosted CI is tracked on the delivered PR.
 
 ## 8. Milestone 6 - Release Engineering
 

@@ -1,5 +1,8 @@
 # Exact application ClCompile list from micropolis-cpp.vcxproj, including presentation and application services.
 set(CIVIC89_INHERITED_SOURCES
+    src/UiSettings.cpp
+    src/OverlayModel.cpp
+    src/UI/ModernInterface.cpp
     src/Camera2D.cpp
     src/DisplaySettings.cpp
     src/AudioManager.cpp

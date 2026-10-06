@@ -1,5 +1,6 @@
 // Civic 89 actual SDL rendering/input acceptance. SPDX-License-Identifier: GPL-3.0-or-later
 #include "Camera2D.h"
+#include "Budget.h"
 #include "DisplayLayout.h"
 #include "DisplaySettings.h"
 #include "EngineDigest.h"
@@ -10,8 +11,7 @@
 #include "ToolManager.h"
 #include "main.h"
 #include "w_tk.h"
-#include "UI/InterfaceManager.h"
-#include "UI/MiniMapWindow.h"
+#include "UI/ModernInterface.h"
 #include <SDL3_image/SDL_image.h>
 #include <array>
 #include <cmath>
@@ -51,7 +51,7 @@ namespace
 }
 
 void runWindowCameraRenderingTests(Budget& budget, CityProperties& properties, PresentationEvents& presentation,
-    ToolManager& tools, InterfaceManager& ui, MiniMapWindow& minimap)
+    ToolManager& tools, ModernInterface& ui)
 {
     auto& camera = applicationCamera();
     auto& renderer = applicationMapRenderer();
@@ -79,11 +79,11 @@ void runWindowCameraRenderingTests(Budget& budget, CityProperties& properties, P
         click(center, scale);
         require(tileIsRoad({40, 40}) && budget.CurrentFunds() == 9990, "DPI/zoom construction coordinate or cost mismatch");
         renderer.invalidate(); renderer.render(camera);
-        ui.centerWindow(InterfaceManager::Window::Budget);
-        const auto area = ui.budgetWindow().area();
-        require(std::abs(area.position.x - (static_cast<int>(camera.viewport().x) - area.size.x) / 2) <= 1, "DPI panel centering");
-        minimap.updateViewportSize(camera.visibleWorld()); minimap.updateMapViewPosition(camera.position());
-        minimap.draw(); minimap.drawUI(); // Includes existing data overlay targets.
+        ui.layout(camera.viewport(),scale);
+        const auto area = ui.panelArea();
+        require(std::abs(area.x - (camera.viewport().x - area.w) / 2) <= 1, "DPI panel centering");
+        ui.draw(camera);
+
     }
     ui.hideAllWindows();
     windowResized(); camera.pixelPerfect(false); camera.zoomAt(1, {}); camera.position({400, 300});
@@ -112,7 +112,7 @@ void runWindowCameraRenderingTests(Budget& budget, CityProperties& properties, P
     require(engineStateDigest(properties, budget) == beforeFocus, "Navigation consumed engine RNG/state");
     DoEarthQuake(); require(ShakeNow > 0, "Actual earthquake route");
     // A modal suspends simulation while the presentation deadline still expires.
-    ui.showWindow(InterfaceManager::Window::Budget);
+    ui.show(ModernInterface::Panel::Budget);
     advancePresentation(SDL_GetTicks() + 3100);
     require(ShakeNow == 0, "Actual earthquake must expire after three seconds");
     ui.hideAllWindows();
@@ -143,7 +143,7 @@ void runWindowCameraRenderingTests(Budget& budget, CityProperties& properties, P
     persistDisplaySettings();
     // Events from the detached minimap cannot resize/close the main window.
     const auto viewport = camera.viewport();
-    SDL_Event unrelated{}; unrelated.type = SDL_EVENT_WINDOW_RESIZED; unrelated.window.windowID = minimap.id();
+    SDL_Event unrelated{}; unrelated.type = SDL_EVENT_WINDOW_RESIZED; unrelated.window.windowID = MainWindowId + 100;
     unrelated.window.data1 = 10; unrelated.window.data2 = 10;
     handleWindowEvent(unrelated);
     require(camera.viewport() == viewport, "Minimap event changed main layout");

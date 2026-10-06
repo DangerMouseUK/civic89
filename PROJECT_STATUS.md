@@ -1,6 +1,6 @@
 # Civic 89 - Project Status
 
-**Current phase:** Milestone 4 complete on `codex/m4-window-camera-rendering`; hosted CI is tracked on the delivered PR
+**Current phase:** Milestone 5 complete on `codex/m5-modern-ui`; hosted CI is tracked on the delivered PR
 **Updated:** 6 October 2026
 **Current product name:** Civic 89  
 **Repository root:** `C:\Dev\Projects\civic89`  
@@ -8,9 +8,9 @@
 
 ## Authoritative local repository state
 
-- Engineering branch: `codex/m4-window-camera-rendering`, delivering all five M4 items together. Continue complete milestones per branch/PR.
-- Local and remote `main`: `555b7ba6f5b67cccb5917a05ec991a7aff6a8e87`, user-merged [PR #8](https://github.com/DangerMouseUK/civic89/pull/8) on 6 October 2026. [M3 hosted CI](https://github.com/DangerMouseUK/civic89/actions/runs/37461254193) passed Debug/Release/application ASan 41/41 and headless ASan 33/33 for `39a9399` before merge.
-- Synced with fetch/prune, switch main and ff-only pull. Verified ancestry, deleted `codex/m3-functional-completion` locally; origin had already deleted it. No stale feature branches remain. Upstream refs/tag are preserved.
+- Engineering branch: `codex/m5-modern-ui`, delivering all six M5 items together. Continue complete milestones per branch/PR.
+- Local and remote `main`: `fc0c4f653daa582902ef0db3d329c8e2eff06021`, user-merged [PR #9](https://github.com/DangerMouseUK/civic89/pull/9) on 6 October 2026. [M4 hosted CI](https://github.com/DangerMouseUK/civic89/actions/runs/37466981537) passed Debug/Release/application ASan 42/42 and headless ASan 34/34 for `0e766c9` before merge.
+- Synced with fetch/prune, switch main and ff-only pull. Verified ancestry, deleted `codex/m4-window-camera-rendering` locally; origin had already deleted it. No stale feature branches remain. Upstream refs/tag are preserved.
 - `.git`: confirmed at `C:\Dev\Projects\civic89\.git`.
 - Baseline SHA: `9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad`.
 - Baseline tag: `upstream-sdlpp-baseline` (annotated; verified locally and on origin).
@@ -53,24 +53,25 @@
 
 ## Current engineering task
 
-**M4 - Window, Camera and Rendering is complete.** The branch contains all M4 work,
-acceptance checks and explicit compatibility decisions; M5 is next after review/merge.
+**M5 - Modern UI/UX is complete.** The branch contains M5-01 through M5-06,
+acceptance checks and compatibility notes. M6 follows after review/merge.
 
-- [x] **M4-01:** Windowed/maximized/desktop borderless modes, F11/F12 controls, validated atomic display preferences and remembered normal logical size.
-- [x] **M4-02:** High-density windows, per-window logical layout/input transforms, pixel-size/display-scale event handling, centered panels, small-screen fit and independent minimap DPI. Automated 100/125/150/200% and mixed-scale rendering/input checks pass.
-- [x] **M4-03:** Fractional Camera2D, right-drag/arrow pan, cursor wheel zoom, bounds, Home, physical-pixel scaling option, tool/sprite alignment, minimap navigation and typed auto-goto. Earthquake presentation expires after three seconds without engine RNG.
-- [x] **M4-04:** Main-thread simulation/animation/blink/minimap deadlines replace timer threads. Chronological bounded catch-up and modal suspension are explicit runtime policy; checked VSync and a 60 Hz frame limiter keep rendering independent.
-- [x] **M4-05:** MapRenderer owns atlas/map/sprite caches and centralized tiles/sprites/tool overlays/quake offsets; application invokes rendering without map drawing code. Existing minimap overlays remain in their renderer pending M5.
-- [x] Application Debug/Release and application ASan pass **42/42** checks each; independent headless Debug/ASan pass **34/34** each. All 25 M2 golden cases remain unchanged. Final camera/lifecycle refinements pass 2/2 targeted checks in all three application configurations. No sanitizer findings.
-- [x] Native Windows software/Direct3D 11 hidden-window checks verify all three modes, restore, monitor enumeration/layout, graphics reconstruction and twelve sessions. This workstation exposes one display at 100%; physical mixed-DPI and visible desktop/hardware refresh checks remain release validation.
-- [x] Retained Visual Studio Release builds all **61** source entries. No engine algorithm changes, source-tree moves, new dependencies or assets.
+- [x] **M5-01:** In-window minimap on the main renderer, shared overlay colors/sources, camera viewport and click/drag navigation. No detached window is created.
+- [x] **M5-02:** Responsive dashboard with funds, date, population, numeric RCI, active tool/cost and status/tooltip messages.
+- [x] **M5-03:** Existing tool icons/ghosts, scalable palette, keyboard selection and tooltips, live affordability, free inspection during debt, and cancellation of pending drags when tools change.
+- [x] **M5-04:** New budget, evaluation, short/long history and query panels retain engine data and typed actions. In-window scenarios and new-city confirmation complete the interface.
+- [x] **M5-05:** Fourteen data choices including traffic, crime, land value, pollution, population, power, protection, growth, transport and zones. Full map and minimap share the read-only model; opacity, legends, numeric probes and a blue sequential palette are available.
+- [x] **M5-06:** Atomic validated UI preferences; 100/125/150% requested scale, large text, high contrast, 30 configurable unique tool/command/pan bindings, keyboard traversal, camera speed/reverse zoom, three volume categories and display/gameplay controls.
+- [x] Application Debug/Release and application ASan pass **43/43** checks each; independent headless Debug/ASan pass **35/35** each. All 25 M2 goldens remain unchanged. Final UI refinements pass 2/2 targeted checks in each application configuration; no sanitizer findings.
+- [x] Native hidden-window Windows software and Direct3D 11 UI/camera/mode/reset/twelve-session checks pass. Render captures visually reviewed at compact/wide layouts and accessibility settings. Physical mixed-DPI monitors and assistive-technology integration remain release validation.
+- [x] Retained Visual Studio Release builds all **64** production source entries (31 engine / 33 application). No source moves, new dependencies, simulation algorithm changes, runtime assets or city-format changes.
 - [ ] Hosted Debug/Release/headless ASan/application ASan verification is recorded on the delivered PR after completion; this file is the pre-publication snapshot.
 
-[ADR 0005](project/decisions/0005_M4_WINDOW_CAMERA_RENDERING.md) records compatibility
-and limits. [M4 evidence](tests/baseline/M4_2026-10-06.md) records exact commands,
-results, paths, warnings and inherited differences. [BUILDING.md](project/BUILDING.md)
-documents camera/display controls and user data. M3's [ADR](project/decisions/0004_M3_FUNCTIONAL_COMPLETION.md)
-and [evidence](tests/baseline/M3_2026-10-06.md) retain audio/save/lifecycle decisions.
+[ADR 0006](project/decisions/0006_M5_MODERN_INTERFACE.md) records UI/runtime compatibility
+and limits. [M5 evidence](tests/baseline/M5_2026-10-06.md) records commands,
+results, rendered captures, paths and inherited differences. [BUILDING.md](project/BUILDING.md)
+documents controls and preferences. Earlier [M4 evidence](tests/baseline/M4_2026-10-06.md)
+and [M3 evidence](tests/baseline/M3_2026-10-06.md) retain the preceding decisions.
 
 ## Verified environment and dependency baseline
 
@@ -82,8 +83,8 @@ and [evidence](tests/baseline/M3_2026-10-06.md) retain audio/save/lifecycle deci
 
 Exact commands/target mapping: [project/BUILDING.md](project/BUILDING.md). Local evidence: [tests/baseline/BOOTSTRAP_2026-10-05.md](tests/baseline/BOOTSTRAP_2026-10-05.md). Asset provenance and replacement decision: [project/reference/RUNTIME_ASSETS.md](project/reference/RUNTIME_ASSETS.md), `assets/runtime-assets.json`, `assets/ASSET-LICENSES.yml`.
 
-M0–M3 are merged. This branch completes M4 with two new camera/settings
-implementations and renderer/timing integration. The engine remains platform-free. All 122 staged
+M0–M4 are merged. This branch completes M5 with a single-window native interface,
+shared overlays and validated UI preferences. The engine remains platform-free. All 122 staged
 assets/notices are retained; new audio is original GPL source-generated PCM.
 No upstream push, history rewrite or tag modification occurred.
 
@@ -97,4 +98,4 @@ No upstream push, history rewrite or tag modification occurred.
 - Historical bootstrap `/W4` capture exposed **50 inherited warnings per configuration**: 40 C4100, one C4189, two C4389, one C4456, six C4459. The inherited `/W3` comparison build reported none. No warning-as-error policy introduced.
 - A final inherited MSBuild rerun passed after the manifest change with four CS1668 environment warnings: two missing `LIB` search directories reported twice by Roslyn inline tasks (Enterprise ATL/MFC and `lib\um\x64`). These are workstation/global-integration warnings, not C++ errors; no unrelated environment repair was made.
 - The main window and new dialogs identify Civic 89; inherited UI art/resources remain for comparison. `civic89.exe` is the new target name; public product branding/packaging remains later work.
-- Retained `.sln`/`.vcxproj` build with the M2 split/support files and M3/M4 services. Engine extraction, deterministic digests and ASan are verified. Exhaustive desktop/DPI/resource/asset compliance testing remains later work; automated native tests use SDL dummy/software rendering.
+- Retained `.sln`/`.vcxproj` build with the M2 split/support files and M3/M4/M5 services. Engine extraction, deterministic digests and ASan are verified. Exhaustive desktop/DPI/resource/asset compliance testing remains later work; automated native tests use SDL dummy/software rendering.
