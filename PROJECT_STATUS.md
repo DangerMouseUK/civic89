@@ -1,6 +1,6 @@
 # Civic 89 - Project Status
 
-**Current phase:** Milestone 1 complete on `codex/m1-remove-legacy-plumbing`; publication/CI pending
+**Current phase:** Milestone 1 complete on `codex/m1-remove-legacy-plumbing`; published for PR review; hosted CI pending
 **Updated:** 6 October 2026
 **Current product name:** Civic 89  
 **Repository root:** `C:\Dev\Projects\civic89`  
@@ -8,7 +8,7 @@
 
 ## Authoritative local repository state
 
-- Branch: `codex/m1-remove-legacy-plumbing`, created from synchronized `main` to complete all of M1 in one PR. The user has authorized milestone-sized branches/PRs going forward.
+- Branch: `codex/m1-remove-legacy-plumbing`, published and tracking origin. Commits `1f49500` / `c51174d` complete M1. The user has authorized complete milestones per branch/PR going forward.
 - Local and remote `main`: merge commit `d2b278a357293d35fb1d4f21efcaa990cfc54c93` from [PR #5](https://github.com/DangerMouseUK/civic89/pull/5), merged by the user on 6 October 2026. Bootstrap and earlier typed routes remain in its history.
 - The merged local `codex/typed-earthquake-presentation` was safely deleted with `git branch -d`; its deleted remote reference was pruned. At cleanup, origin had only `main`; no stale feature branches remained. Upstream refs and the baseline tag are preserved.
 - `.git`: confirmed at `C:\Dev\Projects\civic89\.git`.
@@ -66,7 +66,8 @@ Earlier typed increments are merged through PRs #2-#5. PR #5's [CI](https://gith
 - [x] Verify message/focus order, message expiry, dormant audio, generation-before-map ordering, all scoring boundaries and actual won/lost dispatch.
 - [x] Pass **7/7 CTests in Debug and Release**, including actual application lifecycle under SDL dummy video/software rendering. Retained Visual Studio Release also builds.
 - [x] Source comparisons reproduce complete sprite/tool/generation files by reversing only typed replacements. Simulation, disaster/RNG, existing city load/save functions, 47-source list, dependencies and inherited project files are unchanged (`out/audit/m1-source-parity.log`).
-- [ ] Publish this whole milestone as one PR and verify hosted Debug/Release CI.
+- [x] Publish the entire milestone branch for one PR at the user's request.
+- [ ] Verify hosted Debug/Release CI.
 
 [ADR 0002](project/decisions/0002_M1_COMPLETION.md) records deliberate startup repairs: validate before committing data, reset arrays before restoring histories, catalog difficulty before initialization, and emit the formerly absent win notification. Script speed modifiers are retired without guessing a multiplier; typed `ShipHorn` and `Monster` identities retain intent for the future backend. Existing sound setting/serialization behavior is preserved.
 
@@ -82,7 +83,7 @@ Exact commands and paths are in [BUILDING.md](project/BUILDING.md). [Milestone e
 
 Exact commands/target mapping: [project/BUILDING.md](project/BUILDING.md). Local evidence: [tests/baseline/BOOTSTRAP_2026-10-05.md](tests/baseline/BOOTSTRAP_2026-10-05.md). Asset provenance and replacement decision: [project/reference/RUNTIME_ASSETS.md](project/reference/RUNTIME_ASSETS.md), `assets/runtime-assets.json`, `assets/ASSET-LICENSES.yml`.
 
-Bootstrap and earlier typed increments are merged. This branch completes M1 without source moves, new production translation units or new dependencies. Hosted milestone CI is pending publication. No upstream push or history/tag rewrite occurred.
+Bootstrap and earlier typed increments are merged. This branch completes M1 without source moves, new production translation units or new dependencies. Hosted milestone CI is pending PR verification. No upstream push or history/tag rewrite occurred.
 
 ## Inherited limitations and release gates
 

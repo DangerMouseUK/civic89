@@ -90,7 +90,7 @@ Only after tests prove no remaining functional dependency.
 
 **Acceptance:** repository search contains no runtime `Eval("UI...`) path.
 
-**Completion record (6 October 2026):** M1-01 through M1-04 are implemented on `codex/m1-remove-legacy-plumbing`. All eight scenarios load and advance through native code; F6 and startup selection use the typed controller. No runtime `Eval` or string audio API remains. Debug/Release pass 7/7 checks and the inherited Release build passes. Publication/hosted CI is pending; [ADR 0002](../decisions/0002_M1_COMPLETION.md) and [milestone evidence](../../tests/baseline/M1_2026-10-06.md) record compatibility decisions and interactive UI limits.
+**Completion record (6 October 2026):** M1-01 through M1-04 are implemented on `codex/m1-remove-legacy-plumbing`. All eight scenarios load and advance through native code; F6 and startup selection use the typed controller. No runtime `Eval` or string audio API remains. Debug/Release pass 7/7 checks and the inherited Release build passes. Branch is published for PR review; hosted CI is pending; [ADR 0002](../decisions/0002_M1_COMPLETION.md) and [milestone evidence](../../tests/baseline/M1_2026-10-06.md) record compatibility decisions and interactive UI limits.
 
 ## 4. Milestone 2 - Engine Boundary and Testability
 
