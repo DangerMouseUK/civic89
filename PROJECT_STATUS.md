@@ -1,6 +1,6 @@
 # Civic 89 - Project Status
 
-**Current phase:** M6 release engineering and root README on `codex/m6-release-engineering`; package/native ARM64 acceptance in progress
+**Current phase:** M6 release engineering and root README complete on `codex/m6-release-engineering`; final checks tracked on PR #11
 **Updated:** 6 October 2026
 **Current product name:** Civic 89  
 **Repository root:** `C:\Dev\Projects\civic89`  
@@ -9,6 +9,7 @@
 ## Authoritative local repository state
 
 - Engineering branch: `codex/m6-release-engineering`, delivering M6-01 through M6-05 plus the root README together.
+- Delivery: [PR #11](https://github.com/DangerMouseUK/civic89/pull/11). Hosted [run 37484465857](https://github.com/DangerMouseUK/civic89/actions/runs/37484465857) passes all five jobs on `3bbea9a`, including complete native ARM64/x64 delivery acceptance and candidate upload. Final documentation/signing-history checks are tracked on the PR.
 - Local and remote `main`: `8db4b1e51e40f35764edb7566b098f96dcedfaf6`, user-merged [PR #10](https://github.com/DangerMouseUK/civic89/pull/10). M5 hosted CI passed all four jobs on `b781fd7` ([run](https://github.com/DangerMouseUK/civic89/actions/runs/37474183236)): application 43/43, headless ASan 35/35.
 - Synced with fetch/prune and ff-only pull; verified ancestry and deleted the merged `codex/m5-modern-ui` branch. Origin had already deleted it. No stale feature branches remain; upstream refs/tag are preserved.
 - `.git`: confirmed at `C:\Dev\Projects\civic89\.git`.
@@ -60,15 +61,17 @@
 - [x] Per-user Inno Setup installer, uninstall/user-data preservation and install/upgrade/removal acceptance harness.
 - [x] Separate protected manual signing integration. Public gates fail closed; no signing key/certificate is created or exported.
 - [x] Offline portable update staging, flushed atomic selection, previous-version retention and rollback; no automatic network updater before stable releases exist.
-- [x] ARM64 Release preset and native build/test/package CI. Native execution must pass before final delivery.
+- [x] ARM64 Release preset and native build/test/package CI. Native 43/43 tests, ZIP launch, update/rollback and installer acceptance pass.
 - [x] Initial local Debug/Release builds and **43/43** tests in each, including all 25 Classic goldens.
-- [ ] Final package, transaction, installer, source-archive, sanitizer and hosted native ARM64 acceptance in progress.
+- [x] Complete x64/ARM64 packages, transaction and installer acceptance; source-archive build 35/35; application ASan 43/43; all five hosted CI jobs pass, including 25 unchanged Classic goldens.
 
 [ADR 0007](project/decisions/0007_M6_RELEASE_ENGINEERING.md),
 [M6 evidence](tests/baseline/M6_2026-10-06.md), [RELEASING.md](project/RELEASING.md)
 and [BUILDING.md](project/BUILDING.md) record acceptance and compatibility.
-M0–M5 are merged. Public release rights, brand/physical acceptance and trusted
-signing provisioning remain explicit gates; engineering candidates are unsigned.
+M0–M5 are merged; M6 is delivered in PR #11. Public release rights, brand/physical
+acceptance and trusted signing provisioning remain explicit gates; engineering
+candidates are unsigned. M7 is the remaining planned milestone and requires a
+supported Classic contract before Enhanced Mode work starts.
 
 ## Verified environment and dependency baseline
 

@@ -105,8 +105,8 @@ Set its `SIGNING_THUMBPRINT`, `SIGNTOOL_PATH` and `INNO_ISCC_PATH` variables. Do
 put certificate exports/passwords in this repository or build artifacts.
 
 Dispatch with a successful **main** `windows-ci` run ID. The workflow authenticates
-the repository, workflow path, event, head branch, success and main ancestry before
-downloading the selected architecture's artifact. PR runs cannot reach the signer.
+the repository, workflow path, event, head branch, success and main ancestry against
+complete Git history before downloading the selected architecture's artifact. PR runs cannot reach the signer.
 Trusted main scripts verify candidate/source checksums, expected immutable commit,
 per-file inventory, executable identity and clean state before signing.
 

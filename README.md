@@ -26,8 +26,8 @@ Public publication remains gated on asset rights, brand review, signing and phys
 desktop acceptance. See [release instructions](project/RELEASING.md) and
 [current engineering status](PROJECT_STATUS.md).
 
-Windows 11 x64 is the primary target. Windows ARM64 has a separate build/test path;
-its desktop/hardware support must be validated before release. Other platforms are unsupported.
+Windows 11 x64 is the primary target. Native Windows ARM64 builds, tests and packaging
+also pass CI; desktop/hardware support must be validated before release. Other platforms are unsupported.
 
 **Save compatibility:** current 51,360-byte `.cty` files and the supplied scenarios are
 tested. Older 27,120-byte city files are unsupported. RNG, sprites and scenario progress

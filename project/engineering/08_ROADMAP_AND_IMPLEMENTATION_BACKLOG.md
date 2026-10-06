@@ -239,6 +239,8 @@ Only after stable versioning and release hosting exist.
 
 Compile/test after the engine/platform boundary is clean.
 
+**Completion record (6 October 2026):** M6-01 through M6-05 and the root README are delivered together on `codex/m6-release-engineering` in [PR #11](https://github.com/DangerMouseUK/civic89/pull/11). Clean versioned portable ZIPs, per-user installers, matching source/checksums, complete notices, separate protected signing integration and native ARM64 Release CI are implemented. M6-04 supplies verified offline whole-version staging/atomic selection/rollback; automatic network updates remain conditional on stable release hosting. All five hosted jobs pass on `3bbea9a`: application x64/ARM64 configurations 43/43 and headless ASan 35/35, with all Classic goldens unchanged. Both architectures pass ZIP launch, DLL closure, update/failure/rollback and install/upgrade/uninstall retention. Source-export build 35/35 and retained Visual Studio Release pass locally. [ADR 0007](../decisions/0007_M6_RELEASE_ENGINEERING.md), [evidence](../../tests/baseline/M6_2026-10-06.md) and [release instructions](../RELEASING.md) record checks and compatibility limits. Trusted signer provisioning and public asset/brand/physical acceptance remain external gates; no public release or tag is created.
+
 ## 9. Milestone 7 - Enhanced Mode foundation
 
 Do not start until Classic Mode has a supported contract.
