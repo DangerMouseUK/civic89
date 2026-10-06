@@ -26,8 +26,6 @@
 #include <map>
 #include <string>
 
-#include <SDL3/SDL.h>
-
 
 int absDist;
 int Cycle;
@@ -38,33 +36,7 @@ std::vector<SimSprite> Sprites;
 
 namespace
 {
-    const std::map<SimSprite::Type, std::string> SpriteTypeToId
-    {
-        { SimSprite::Type::Train, "1" },
-        { SimSprite::Type::Helicopter, "2" },
-        { SimSprite::Type::Airplane, "3" },
-        { SimSprite::Type::Ship, "4" },
-        { SimSprite::Type::Monster, "5" },
-        { SimSprite::Type::Tornado, "6" },
-        { SimSprite::Type::Explosion, "7" }
-    };
-
     Point<int> CrashPosition{};
-
-
-    void loadSpriteImages(SimSprite::Type type, int frames, std::vector<Texture>& frameList)
-    {
-        if(!frameList.empty())
-        {
-            return;
-        }
-
-        for (int i = 0; i < frames; i++)
-        {
-            std::string name = std::string("images/obj") + SpriteTypeToId.at(type) + "-" + std::to_string(i) + ".xpm";
-            frameList.push_back(loadTexture(MainWindowRenderer, name));
-        }
-    }
 
 
     void initSprite(SimSprite& sprite, const Point<int>& position)
@@ -94,7 +66,7 @@ namespace
             sprite.hot = { 40, -8 };
             sprite.frame = 1;
             sprite.dir = 4;
-            loadSpriteImages(SimSprite::Type::Train, 5, sprite.frames);
+            sprite.frameCount = 5;
             break;
 
         case SimSprite::Type::Ship:
@@ -126,7 +98,7 @@ namespace
             sprite.new_dir = sprite.frame;
             sprite.dir = 0;
             sprite.count = 1;
-            loadSpriteImages(SimSprite::Type::Ship, 9, sprite.frames);
+            sprite.frameCount = 9;
             break;
 
         case SimSprite::Type::Monster:
@@ -150,7 +122,7 @@ namespace
                 sprite.frame = 4;
             }
             sprite.count = 1000;
-            loadSpriteImages(SimSprite::Type::Monster, 17, sprite.frames);
+            sprite.frameCount = 17;
             break;
 
         case SimSprite::Type::Helicopter:
@@ -161,7 +133,7 @@ namespace
             sprite.origin = position + Vector<int>{ -30, 0 };
             sprite.frame = 5;
             sprite.count = 1500;
-            loadSpriteImages(SimSprite::Type::Helicopter, 9, sprite.frames);
+            sprite.frameCount = 9;
             break;
 
         case SimSprite::Type::Airplane:
@@ -175,7 +147,7 @@ namespace
                 randomRange(0, (SimHeight * 16) + 100) - 50
             };
 
-            loadSpriteImages(SimSprite::Type::Airplane, 12, sprite.frames);
+            sprite.frameCount = 12;
             break;
 
         case SimSprite::Type::Tornado:
@@ -184,7 +156,7 @@ namespace
             sprite.hot = { 40, 36 };
             sprite.frame = 0;
             sprite.count = 200;
-            loadSpriteImages(SimSprite::Type::Tornado, 3, sprite.frames);
+            sprite.frameCount = 3;
             break;
 
         case SimSprite::Type::Explosion:
@@ -192,7 +164,7 @@ namespace
             sprite.offset = { 24, 0 };
             sprite.hot = { 40, 16 };
             sprite.frame = 0;
-            loadSpriteImages(SimSprite::Type::Explosion, 6, sprite.frames);
+            sprite.frameCount = 6;
             break;
 
         default:
@@ -221,20 +193,6 @@ namespace
     }
 
 
-    void drawSprite(SimSprite& sprite)
-    {
-        const auto& spriteFrame = sprite.frames[sprite.frame];
-
-        const auto dstRect = fRectFromRect({
-            sprite.position.x - viewOffset().x + sprite.offset.x,
-            sprite.position.y - viewOffset().y + sprite.offset.y,
-            spriteFrame.dimensions.x,
-            spriteFrame.dimensions.y
-            });
-
-        SDL_RenderTexture(MainWindowRenderer, spriteFrame.texture, &spriteFrame.area, &dstRect);
-    }
-
 };
 
 
@@ -261,20 +219,6 @@ SimSprite* getSprite(SimSprite::Type type)
     }
 
     return nullptr;
-}
-
-
-void drawSprites()
-{
-    for (auto& sprite : Sprites)
-    {
-        if (!sprite.active)
-        {
-            continue;
-        }
-
-        drawSprite(sprite);
-    }
 }
 
 
@@ -369,9 +313,12 @@ bool tryOther(int Tpoo, int Told, int Tnew)
 int spritePositionValid(SimSprite& sprite)
 {
     const Point<int> adjustedPoint{ sprite.position + Vector<int>{sprite.hot.x, sprite.hot.y} };
-    constexpr SDL_Rect worldArea{ 0, 0, ValidMapCoordinates.w * 16, ValidMapCoordinates.h * 16 };
+    // Preserve the inherited exclusive final row/column.
+    constexpr int width = (SimWidth - 1) * 16;
+    constexpr int height = (SimHeight - 1) * 16;
 
-    return pointInRect(adjustedPoint, worldArea);
+    return adjustedPoint.x >= 0 && adjustedPoint.x < width &&
+        adjustedPoint.y >= 0 && adjustedPoint.y < height;
 }
 
 
@@ -1070,7 +1017,7 @@ void updateTornado(SimSprite& sprite)
     static int CDy[9] = { -2,  0,  2,  3,  2,  0 };
 
     ++sprite.frame;
-    if (sprite.frame >= sprite.frames.size())
+    if (sprite.frame >= sprite.frameCount)
     {
         sprite.frame = 0;
     }
@@ -1351,4 +1298,9 @@ void generateExplosion(const Point<int>& position)
     {
         makeExplosionAt(position.skewBy({ 16, 16 }) + Vector<int>{ 8, 8 });
     }
+}
+
+const std::vector<SimSprite>& simulationSprites()
+{
+    return Sprites;
 }

@@ -8,7 +8,7 @@
 // Micropolis-SDLPP is free software; you can redistribute it and/or modify
 // it under the terms of the GNU GPLv3, with additional terms. See the README
 // file, included in this distribution, for details.
-#include "main.h"
+#include "EngineState.h"
 
 #include "PresentationEvents.h"
 #include "w_sound.h"

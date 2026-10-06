@@ -1,4 +1,6 @@
 // Civic 89 native lifecycle tests. SPDX-License-Identifier: GPL-3.0-or-later
+#include "Sprite.h"
+#include "SpriteRenderer.h"
 #include "Budget.h"
 #include "CityProperties.h"
 #include "Evaluation.h"
@@ -314,5 +316,11 @@ void runMilestoneTests(Budget& budget, CityProperties& properties, PresentationE
         "Application scenario entry point failed");
     require(doStartScenario(static_cast<Scenario>(8)) == ScenarioResult::InvalidScenario && ScenarioID == 8,
         "Application entry point must retain session on invalid selection");
+    generateExplosion({300,300});
+    drawSprites();
+    clearSpriteImages();
+    drawSprites(); // Renderer-owned images can be reconstructed independently of engine state.
+    clearSpriteImages();
+    clearSpriteImages(); // Empty cache teardown is safe.
     std::cout << "All eight native scenarios, simulation startup, failures, messages, generation and outcomes passed\n";
 }

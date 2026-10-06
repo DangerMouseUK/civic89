@@ -19,7 +19,8 @@
 class ToolManager
 {
 public:
-    ToolManager();
+    ToolManager(); // Application JSON loader.
+    explicit ToolManager(std::vector<Tool> tools);
 
     const Tool& tool(Tool::Type type) const;
     const Tool& currentTool() const;

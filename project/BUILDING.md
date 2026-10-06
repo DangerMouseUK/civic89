@@ -1,4 +1,4 @@
-# Civic 89 Windows bootstrap build
+# Civic 89 Windows application and headless engine build
 
 Use Windows x64, Visual Studio 2026 C++ tools and CMake **4.2+**. The committed presets reproduce the inherited application using C++20/MSVC and explicit vcpkg manifest mode. Visual Studio can open the repository folder and use these presets. The primary workstation's bundled CMake is 4.3.1-msvc1; it selects the installed VS 2026 BuildTools instance without needing a developer shell.
 
@@ -63,7 +63,7 @@ Installation includes only the application, pinned dependency DLLs, inventoried 
 
 ## Inherited comparison
 
-The retained solution/project are **micropolis-sdlpp.sln** and **micropolis-cpp.vcxproj**, without modifications:
+The retained solution/project are **micropolis-sdlpp.sln** and **micropolis-cpp.vcxproj**. M2 adds eight split/support implementation entries while preserving all 47 original source paths:
 
 ```powershell
 & 'C:\Program Files\Microsoft Visual Studio\18\Enterprise\MSBuild\Current\Bin\MSBuild.exe' micropolis-sdlpp.sln /m /p:Configuration=Release /p:Platform=x64 /verbosity:minimal /nologo
@@ -76,45 +76,103 @@ Global MSBuild vcpkg integration remains available for that inherited comparison
 
 | Inherited project | CMake |
 |---|---|
-| 47 `ClCompile` entries | Explicit `cmake/InheritedSources.cmake` list, directly in `civic89` |
+| 55 `ClCompile` entries (47 original + 8 support/splits) | Explicit source parity list; 31 engine units in `civic89_engine`, 24 application units in `civic89` |
 | `micropolis-sdlpp.rc` | Same embedded PNG/icon and notices |
 | C++20 / WINDOWS / Unicode | C++20 / WINDOWS / UNICODE / _UNICODE |
 | `/W3`, `/sdl`, conformance | `/W4`, `/sdl`, `/permissive-`; warning debt recorded |
 | Debug console, Release Windows subsystem | Same configuration-specific subsystems |
-| Release `/fp:fast`, whole-program optimization | Same `/fp:fast`, link-time optimization, debug symbols |
+| Release `/fp:fast`, whole-program optimization | `/fp:fast` in engine/app, app link-time optimization and debug symbols; original golden results verified |
 | Global auto-link/restore | Explicit vcpkg package targets/toolchain |
 | Debug forces Release dependencies | Normal matching Debug CRT/dependency DLLs |
 | Repository cwd / no asset staging | Inventoried assets beside executable, explicit debugger/run cwd |
 | Unrelated OGG DLL post-build copy | Actual dependency DLL deployment by vcpkg; audio still stubbed |
 
-## Tests and limits
+## Headless build and runner
 
-The presets run seven CTest checks:
-
-- `runtime-assets-and-data`: `civic89_tests` uses inherited `Font.cpp`/`GameDataLoader.cpp`, a small C++ runner, SDL dummy video and software rendering. It decodes, uploads and renders all 82 required textures, constructs every startup font size and validates months/tool data.
-- `inherited-source-list`: compares all application sources with the retained `.vcxproj`.
-- `legacy-audio-and-earthquake`: actual `w_sound.cpp` / `w_tk.cpp` with recording/null adapters; all typed effects, loop controls, sound initialization and earthquake audio/presentation ordering.
-- `milestone-lifecycle`: the same 47 application sources with a test entry path and SDL dummy video/software rendering. Checks all eight packaged scenario digests/decoded data, native startup/deadlines, 64 frames per scenario, missing/invalid/truncated/oversized/corrupt inputs and preserved session state; also checks message/focus/expiry, generation timing, score boundaries and the application startup adapter.
-- `no-legacy-command-bridge`: rejects `Eval` or string sound calls anywhere in production headers/sources.
-- `invalid-scenario-argument` and `malformed-scenario-argument`: the actual application rejects out-of-range IDs and trailing argument text with a failing exit status before initializing SDL.
-
-To run just the new characterization check in either configuration:
+These presets need only CMake and the MSVC C++ toolchain. No vcpkg toolchain,
+SDL packages, JSON assets, window/renderer initialization, fonts or images are
+required. Simulation sources are linked once into `civic89_engine` (a static
+library); `civic89_runner` and `civic89_tests` link only that library.
 
 ```powershell
-ctest --preset windows-x64-debug -R '^legacy-audio-and-earthquake$' --output-on-failure
-ctest --preset windows-x64-release -R '^legacy-audio-and-earthquake$' --output-on-failure
+cmake --preset windows-x64-headless
+cmake --build --preset windows-x64-headless -- /m
+ctest --preset windows-x64-headless --output-on-failure
+
+# Relative fixture paths below assume the repository working directory.
+./out/build/windows-x64-headless/bin/Debug/civic89_runner.exe --scenario 6 --scenario-dir scenarios --seed 12345 --ticks 1024
+./out/build/windows-x64-headless/bin/Debug/civic89_runner.exe --city 'path/to/current-format.cty' --seed 12345 --speed 2 --ticks 1024
+./out/build/windows-x64-headless/bin/Debug/civic89_runner.exe --generate --seed 2468 --ticks 1024
 ```
 
-`civic89_legacy_tests.exe` is beside the corresponding `civic89.exe` in the paths above. New audio/test code compiles without warnings; recompiling inherited `w_sound.cpp` for this target repeats two existing C4100 warnings. Typed default effects, earthquake audio and loop/stop controls use a header-only interface and application-owned null adapter; both build paths still compile the same 47 translation units. Default effects reuse configured presets; configure commands remain above. Caller verification restores the 12 mapped sound operands and compares `Sprite.cpp` / `ToolActions.cpp` exactly with merged `main` (`out/audit/typed-city-callsite-check.log`). This supplements helper tests without claiming a simulation digest. Build/test logs are `out/audit/typed-city-*`. Catch2/engine extraction, deterministic simulation digests, historical file parsing, ASan and exhaustive UI tests are deferred.
+Output includes city clock, funds, population, score, RCI and `digest_v1`.
+A tick is one inherited simulation phase; 16 phases advance the city clock once.
+Animation remains independently scheduled. `--seed` is optional and explicitly
+controls the existing RNG; without it, normal random initialization applies.
+`--speed 1..4` optionally overrides the city's stored speed (Slow/Normal/Fast/
+African Swallow); without it, a saved pause/speed is respected. `--ticks` defaults
+to zero and accepts 0..1,000,000. Exactly one of `--city`, `--scenario` or
+`--generate` is required. Argument errors return 2; load/runtime errors return 1.
 
-See `tests/baseline/BOOTSTRAP_2026-10-05.md` for checkpoint results; raw local configure/build/test/run logs are in ignored `out/audit/`. See `project/reference/RUNTIME_ASSETS.md` for complete resource and licence details.
+The library retains inherited process-global single-threaded state: initialize
+before loading/editing/stepping. It does not support concurrent independent cities.
+The tool manager accepts explicit tool definitions in headless code; its existing
+JSON-loading default constructor is an application adapter.
 
-Earthquake presentation also uses a header-only interface and application-owned null adapter. The configured Debug/Release presets and retained Visual Studio Release build pass after migration; build/test logs are `out/audit/typed-presentation-*`. Reversing only the presentation include, parameter and dispatch restores `w_tk.cpp` exactly from merged `main` (`out/audit/typed-presentation-source-check.log`). Recording tests observe state at event dispatch; real renderer timing/cancellation remains deferred. No new translation unit or dependency is added.
+## AddressSanitizer
 
-## Milestone 1 completion
+Install the MSVC AddressSanitizer component with the C++ toolchain. The preset
+uses RelWithDebInfo and the independent headless build, instruments engine,
+runner and tests, and stages the matching compiler-supplied runtime DLL.
+
+```powershell
+cmake --preset windows-x64-asan
+cmake --build --preset windows-x64-asan -- /m
+ctest --preset windows-x64-asan --output-on-failure
+```
+
+GitHub Actions runs application Debug/Release and headless ASan. Only application
+jobs bootstrap the existing pinned external vcpkg checkout.
+
+## Tests and limits
+
+Application presets run **39** CTests; separate headless/ASan presets run **32**:
+
+- `civic89_tests` covers headless load/step/pause/edit/save-byte-layout/reload,
+  transactional invalid-file rejection, seeded terrain generation and sprites.
+- Twenty-five golden checks compare fixed seeded city runs with results captured
+  from merged M1 before extraction. Bern at 1,024 phases retains separate Debug
+  and Release `/fp:fast` references. Every case uses a fresh process; the long
+  case runs Detroit for 16,384 simulation phases.
+- Runner checks exercise scenario/current-format city load, terrain generation,
+  missing files and strict arguments.
+- `engine-boundary` follows transitive local includes and inspects direct binary
+  imports, rejecting engine SDL/Win32/UI/texture/JSON-loader dependencies.
+- Application-only checks retain M1's runtime assets/data test
+  (`civic89_runtime_tests`), source-list parity, typed audio/earthquake helpers,
+  native lifecycle under SDL dummy/software rendering, legacy-command gate and
+  invalid startup arguments. Lifecycle checks also draw, clear and reconstruct
+  renderer-owned sprite images.
+
+All 47 original translation-unit paths remain; the split/support entries also
+build in the retained Visual Studio project. No new production dependency or
+asset is added. Tests do not establish historical 27,120-byte city import,
+complete save-state restoration, atomic save safety, interactive desktop/DPI
+compatibility or the wider M3 audio/resource work. The city reader rejects
+wrong-size/corrupt data; its valid-city initialization order and the writer's
+51,360-byte array layout remain inherited behavior.
+
+See [ADR 0003](decisions/0003_M2_ENGINE_BOUNDARY.md),
+[dependency audit](reference/ENGINE_DEPENDENCIES.md) and
+[M2 evidence](../tests/baseline/M2_2026-10-06.md) for exact references, local results,
+warning debt and compatibility decisions. Raw logs remain in ignored `out/audit/`.
+Earlier [bootstrap](../tests/baseline/BOOTSTRAP_2026-10-05.md) and
+[M1](../tests/baseline/M1_2026-10-06.md) records describe their historical checkpoints.
+
+## Milestone 1 checkpoint (merged)
 
 Use **F6** during play for the native scenario selector, or start with `civic89.exe --scenario 1` through `--scenario 8` from the executable's asset directory. Selection replaces the current city on success; save it first if needed. Cancel or missing/invalid scenario data preserves the current session. A successful start clears the old save filename. Scenario win/loss appears on the dashboard; play continues. Invalid startup arguments return exit code 2; startup exceptions return 1.
 
-M1 retains all 47 production translation units, project files, dependencies, simulation/disaster/RNG algorithms and city-file writer. It adds header-only typed interfaces/validated scenario data and compiles the same sources again for the native lifecycle test, using `CIVIC89_MILESTONE_TESTS` only in that test target. This is not the future headless engine target.
+M1 retains all 47 production translation units, project files, dependencies, simulation/disaster/RNG algorithms and city-file writer. It adds header-only typed interfaces/validated scenario data and compiles the same sources again for the native lifecycle test, using `CIVIC89_MILESTONE_TESTS` only in that test target. M2 subsequently extracts the engine; the statements in this section record the M1 checkpoint.
 
 Both preset builds pass 7/7 tests, and the retained Visual Studio Release build passes. Baseline characterization and final results are in [M1_2026-10-06.md](../tests/baseline/M1_2026-10-06.md); logs use `out/audit/m1-*`. Source comparisons verify mechanical call-site changes and unchanged existing city load/save functions. Audio remains silent, focus/shake remain no-ops, and deterministic simulation/historical file compatibility are not claimed. Interactive selector verification was unavailable due to monitor capture/access errors; the automated tests cover native lifecycle under dummy/software SDL, not desktop layout/DPI.

@@ -11,6 +11,14 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\EngineState.cpp" />
+    <ClCompile Include="src\EngineServices.cpp" />
+    <ClCompile Include="src\EngineStep.cpp" />
+    <ClCompile Include="src\EngineDigest.cpp" />
+    <ClCompile Include="src\MapRenderer.cpp" />
+    <ClCompile Include="src\SpriteRenderer.cpp" />
+    <ClCompile Include="src\PresentationUtil.cpp" />
+    <ClCompile Include="src\PresentationTools.cpp" />
     <ClCompile Include="src\Budget.cpp" />
     <ClCompile Include="src\Connection.cpp" />
     <ClCompile Include="src\Evaluation.cpp" />

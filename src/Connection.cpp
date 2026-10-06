@@ -18,7 +18,7 @@
 #include "Util.h"
 
 
-#include "main.h"
+#include "EngineState.h"
 
 
 namespace

@@ -1,0 +1,34 @@
+# Platform-free inherited simulation plus narrow state/service adapters.
+set(CIVIC89_ENGINE_SOURCES
+    src/Budget.cpp
+    src/Connection.cpp
+    src/Evaluation.cpp
+    src/FileIo.cpp
+    src/g_ani.cpp
+    src/Map.cpp
+    src/Math/IsZero.cpp
+    src/Math/Point.cpp
+    src/Math/Rectangle.cpp
+    src/RCI.cpp
+    src/Scan.cpp
+    src/Sprite.cpp
+    src/s_alloc.cpp
+    src/s_disast.cpp
+    src/s_gen.cpp
+    src/s_msg.cpp
+    src/Power.cpp
+    src/s_sim.cpp
+    src/ToolActions.cpp
+    src/ToolManager.cpp
+    src/Traffic.cpp
+    src/Util.cpp
+    src/w_resrc.cpp
+    src/w_sound.cpp
+    src/w_tk.cpp
+    src/w_update.cpp
+    src/Zone.cpp
+    src/EngineState.cpp
+    src/EngineServices.cpp
+    src/EngineStep.cpp
+    src/EngineDigest.cpp
+)

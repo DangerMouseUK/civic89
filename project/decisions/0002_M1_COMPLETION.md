@@ -1,6 +1,6 @@
 # ADR 0002: Complete Milestone 1
 
-**Status:** Implemented and locally verified on `codex/m1-remove-legacy-plumbing`; published for PR review; hosted CI pending.
+**Status:** Merged in [PR #6](https://github.com/DangerMouseUK/civic89/pull/6), `de424f3`; [hosted Debug/Release CI](https://github.com/DangerMouseUK/civic89/actions/runs/37432056603) passed 7/7 checks each. Remaining statements record the M1 checkpoint.
 **Date:** 6 October 2026
 
 The user now requires complete milestones per branch/PR. M1 includes the remaining typed presentation/audio routes, native scenario selection/load/start, all eight fixture checks, and deletion of the command bridge. M2 engine extraction and M3 audio/rendering backends retain their roadmap scope.

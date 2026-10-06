@@ -11,6 +11,8 @@ class PresentationEvents
 {
 public:
     virtual ~PresentationEvents() = default;
+    virtual void toolsReset() {}
+    virtual void budgetRequested() {}
     virtual void earthquakeStarted() = 0;
     virtual void showMessage(const std::string& message) = 0;
     virtual void focusMap(Point<int> location) = 0;

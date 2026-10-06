@@ -9,17 +9,5 @@
 // it under the terms of the GNU GPLv3, with additional terms. See the README
 // file, included in this distribution, for details.
 #pragma once
-
-#include "GameOptions.h"
-#include "Texture.h"
-
-#include "Math/Point.h"
-
-#include <string>
-
-#include <SDL3/SDL.h>
-
-#include "EngineState.h"
-
-extern SDL_Renderer* MainWindowRenderer;
-const Point<int>& viewOffset();
+void drawSprites();
+void clearSpriteImages();

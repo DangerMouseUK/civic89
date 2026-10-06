@@ -13,7 +13,8 @@
 #include "Budget.h"
 #include "Census.h"
 #include "Evaluation.h"
-#include "main.h"
+#include "EngineState.h"
+#include "EngineServices.h"
 #include "s_sim.h"
 #include "w_resrc.h"
 #include "w_sound.h"
@@ -52,7 +53,7 @@ namespace
 
     int TickCount()
     {
-        return static_cast<int>(SDL_GetTicks());
+        return engineMilliseconds();
     }
 
 };
@@ -507,4 +508,9 @@ void doMessage()
         }
     }
 
+}
+
+PresentationEvents& currentPresentationEvents()
+{
+    return *presentation;
 }

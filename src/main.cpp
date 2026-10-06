@@ -8,6 +8,10 @@
 // Micropolis-SDLPP is free software; you can redistribute it and/or modify
 // it under the terms of the GNU GPLv3, with additional terms. See the README
 // file, included in this distribution, for details.
+#include "PresentationUtil.h"
+#include "SpriteRenderer.h"
+#include "MapRenderer.h"
+#include "EngineServices.h"
 #include "main.h"
 
 #include "AudioService.h"
@@ -88,10 +92,6 @@ Texture MainMapTexture{};
 Texture BigTileset{};
 
 
-int InitSimLoad;
-int ScenarioID;
-
-
 namespace
 {
     constexpr auto TileSize = 16;
@@ -114,7 +114,6 @@ namespace
     bool AnimationStep{ false };
     bool RightButtonDrag{ false };
 
-    GameOptions gameOptions;
 
     constexpr unsigned int SimStepDefaultTime{ 100 };
     constexpr unsigned int AnimationStepDefaultTime{ 150 };
@@ -131,6 +130,8 @@ namespace
     class ApplicationPresentationEvents final : public PresentationEvents
     {
     public:
+        void toolsReset() override;
+        void budgetRequested() override;
         void earthquakeStarted() override {} // Visual backend remains M3 work.
         void focusMap(Point<int>) override {} // Preserve the inherited no-op navigation.
         void generationStarted() override {} // Notification precedes GenerateMap.
@@ -193,7 +194,7 @@ namespace
 
     void showBudgetIfNeeded()
     {
-        if (!gameOptions.autoBudget && budget.NeedsAttention())
+        if (!gameplayOptions().autoBudget && budget.NeedsAttention())
         {
 			interfaceManager->showWindow(InterfaceManager::Window::Budget);
         }
@@ -228,6 +229,12 @@ void showBudgetWindow()
     interfaceManager->showWindow(InterfaceManager::Window::Budget);
 }
 
+
+void simInit()
+{
+    initializeEngine(cityProperties, budget);
+    Exit = false;
+}
 
 void simExit()
 {
@@ -288,27 +295,14 @@ void simLoop(bool doSim)
 }
 
 
-void initWillStuff()
+void ApplicationPresentationEvents::toolsReset()
 {
-    RoadEffect = 32;
-    PoliceEffect = 1000;
-    FireEffect = 1000;
-    cityScore(500);
-    cityPopulation(-1);
-    lastCityTime(-1);
-    lastCityYear(1);
-    lastCityMonth(Month::Enum::Jan);
-	toolManager->currentTool(Tool::Type::None);
-    MessageId(NotificationId::None);
-    destroyAllSprites();
-    DisasterEvent = 0;
-    initMapArrays();
+    if (toolManager) { toolManager->currentTool(Tool::Type::None); }
 }
 
-
-GameOptions& gameplayOptions()
+void ApplicationPresentationEvents::budgetRequested()
 {
-    return gameOptions;
+    if (interfaceManager) { interfaceManager->showWindow(InterfaceManager::Window::Budget); }
 }
 
 
@@ -329,65 +323,6 @@ void ApplicationPresentationEvents::scenarioStarted(Scenario scenario)
 void ApplicationPresentationEvents::scenarioFinished(ScenarioOutcome outcome)
 {
     showMessage(outcome == ScenarioOutcome::Won ? "Scenario won." : "Scenario lost.");
-}
-
-
-void MakeSound(SoundId sound, AudioChannel channel)
-{
-    MakeSound(sound, channel, audioService);
-}
-
-
-// Keep service ownership in the application while the disaster API migrates.
-void DoEarthQuake()
-{
-    DoEarthQuake(audioService, presentationEvents);
-}
-
-
-void StartBulldozer()
-{
-    StartBulldozer(audioService);
-}
-
-
-void StopBulldozer()
-{
-    StopBulldozer(audioService);
-}
-
-
-void SoundOff()
-{
-    SoundOff(audioService);
-}
-
-
-void simInit()
-{
-    userSoundOn(true);
-
-    ScenarioID = 0;
-    StartingYear = 1900;
-    AutoGotoMessageLocation(true);
-    CityTime = 50;
-    gameOptions = GameOptions{};
-    MessageId(NotificationId::None);
-    ClearMes();
-    simSpeed(SimulationSpeed::Normal);
-    ChangeEval();
-    MessageLocation({ 0, 0 });
-    
-    InitSimLoad = 2;
-    Exit = false;
-
-    InitializeSound();
-    StopEarthquake();
-    ResetMap();
-    initWillStuff();
-    budget.CurrentFunds(5000);
-    setGameLevelFunds(0, cityProperties, budget);
-    simSpeed(SimulationSpeed::Paused);
 }
 
 
@@ -689,7 +624,7 @@ void showEvaluationWindow()
 void showSystemWindow()
 {
     interfaceManager->hideAllWindows();
-    interfaceManager->optionsWindow().setOptions(gameOptions);
+    interfaceManager->optionsWindow().setOptions(gameplayOptions());
     interfaceManager->optionsWindow().show();
 }
 
@@ -1065,7 +1000,7 @@ void gameInit(std::optional<Scenario> scenario)
 
 void optionsChanged(const GameOptions& options)
 {
-	gameOptions = options;
+	gameplayOptions() = options;
 }
 
 
@@ -1136,6 +1071,8 @@ void initUI()
 
     interfaceManager = std::make_shared<InterfaceManager>(MainWindowRenderer, MainWindow, budget, currentRCI(), *toolManager);
 	sharePresentationEvents(presentationEvents);
+    shareAudioService(audioService);
+    setEngineClock([]() { return static_cast<int>(SDL_GetTicks()); });
 
     positionDashboardWindow();
     interfaceManager->positionWindow(InterfaceManager::Window::ToolPalette, ToolPaletteDefaultPosition);
@@ -1164,6 +1101,7 @@ void cleanUp()
 
     SDL_DestroyTexture(BigTileset.texture);
 
+    clearSpriteImages();
     SDL_DestroyRenderer(MainWindowRenderer);
     SDL_DestroyWindow(MainWindow);
 

@@ -1,5 +1,13 @@
-# Exact ClCompile list from micropolis-cpp.vcxproj; no source moves or engine extraction.
+# Exact application ClCompile list from micropolis-cpp.vcxproj, including M2 adapter splits.
 set(CIVIC89_INHERITED_SOURCES
+    src/EngineState.cpp
+    src/EngineServices.cpp
+    src/EngineStep.cpp
+    src/EngineDigest.cpp
+    src/MapRenderer.cpp
+    src/SpriteRenderer.cpp
+    src/PresentationUtil.cpp
+    src/PresentationTools.cpp
     src/Budget.cpp
     src/Connection.cpp
     src/Evaluation.cpp
