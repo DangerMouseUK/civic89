@@ -4,6 +4,12 @@ This is the supported **development engine/data contract**, established from mer
 M6 `fa3534b`. It does not declare a stable public release or clear the asset, brand,
 signing and physical desktop gates in `packaging/release-gates.json`.
 
+**Scope update (6 October 2026):** [ADR 0009](decisions/0009_FAITHFUL_MODERNISATION_AND_GRAPHICS.md)
+requires faithful original gameplay throughout the project. Optional graphics are an
+application preference, not a new simulation contract. The M7 identities and file
+workflows below describe the delivered version; M8 will adjust their presentation
+while retaining existing saves and recovery support.
+
 ## Rules and execution
 
 `classic/1` preserves the inherited simulation, costs, RCI/economy/disaster rules,
@@ -34,23 +40,26 @@ mixed-DPI, audio-device or assistive-technology acceptance.
   existing destination. The Windows adapter publishes a flushed temporary file
   in the destination directory. This is not a storage/power-loss guarantee.
 - The engine retains its existing integer limits and exclusive construction-edge
-  behavior. Larger maps, widened finances/population and changed mechanics require
-  an Enhanced ruleset and their own acceptance tests.
+  behavior. Larger maps, widened finances/population and changed mechanics are outside
+  scope. Record fidelity discrepancies before any outcome-changing fix; obtain explicit
+  user direction and compatibility evidence rather than treating tests as permission.
 
 ## Enhanced boundary
 
 `enhanced/1` is the M7 foundation: it uses the same map and simulation mechanics,
-with an explicit identity and a separate versioned `.c89` container. It does not
-claim the later gameplay candidates are implemented. New behavior or incompatible
-data requires a new supported ruleset version; unknown versions fail before mutation.
+with an explicit identity and a separate versioned `.c89` container. This remains
+a supported save compatibility boundary; there is no future gameplay-expansion plan.
+Unknown versions fail before mutation. A graphics preference cannot retag either identity
+or change city state, RNG, simulation/animation timing or city-file bytes.
 
 Opening a `.cty` selects Classic v1. Importing it into Enhanced requires the explicit
 import action and leaves the original file untouched. Ordinary Enhanced saves never
 overwrite `.cty`; exporting a Classic copy is explicit and never retags the active
 Enhanced city. Enhanced v1 can import/export the Classic payload without changing
 its layout or mechanics; existing load scans can recompute fields, so byte-for-byte
-replay of the original file is not promised. The snapshot limitations still apply. Later
-features must declare whether they preserve that export capability.
+replay of the original file is not promised. The snapshot limitations still apply.
+M8's interface adjustment retains supported save/export/recovery paths; it must not
+force conversion, rewriting or deletion of existing files.
 
 Enhanced containers identify their schema, exact ruleset, dimensions and bounded
 UTF-8 city name, and checksum the header/metadata/payload. They do not serialize RNG

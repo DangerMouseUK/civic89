@@ -2,8 +2,10 @@
 
 M7 adds `.c89` for `enhanced/1`. Classic v1 keeps the inherited 51,360-byte `.cty`
 layout. Enhanced v1 uses the same simulation and 120 by 100 map; the container
-provides explicit versioning, name retention and corruption detection for future
-ruleset work. This is an ordinary-city snapshot, not an exact replay checkpoint.
+provides explicit versioning, name retention and corruption detection. This is an
+ordinary-city snapshot, not an exact replay checkpoint. The format remains supported
+under the [faithful modernisation decision](decisions/0009_FAITHFUL_MODERNISATION_AND_GRAPHICS.md);
+optional graphics are application settings independent of this file and its identity.
 
 ## Schema 1
 
@@ -70,7 +72,10 @@ them. Portable rollback preserves both formats without converting either one.
 
 RNG, sprites, scenario objectives/timers and transient state remain unserialized;
 load scans can recompute fields. Scenario exports remain ordinary cities and
-automatic scenario recovery is disabled. Larger maps, wider values or new mechanics
-must receive a new ruleset/data compatibility decision and tests before implementation.
+automatic scenario recovery is disabled. Larger maps, wider values and new mechanics
+are outside the agreed scope. M8 will adjust the city-mode interface while retaining
+known M7 saves, supported export/recovery and unknown-input rejection. No forced
+conversion or file rewrite is required. M9's optional graphics must not change this
+schema, city state, ruleset identity, RNG, simulation/animation timing or save bytes.
 See [Classic contract](CLASSIC_COMPATIBILITY.md) and
 [ADR 0008](decisions/0008_M7_ENHANCED_FOUNDATION.md).

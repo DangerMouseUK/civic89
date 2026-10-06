@@ -243,7 +243,7 @@ Keep original `.cty` read/write logic isolated and tested. Do not add arbitrary 
 
 ### 11.2 Modern metadata
 
-If thumbnails, play time, autosave information or Enhanced Mode data are needed, prefer a sidecar/container format rather than silently modifying legacy `.cty` layout.
+If thumbnails, play time or autosave information are needed, prefer a sidecar/container format rather than silently modifying legacy `.cty` layout. M7 already supplies the versioned `.c89` snapshot container; retain compatibility with it. A graphics preference belongs in application settings, never in city state or its save identity.
 
 Possible approach:
 
@@ -253,7 +253,7 @@ My City.citymeta.json    # optional modern metadata
 My City.png              # optional thumbnail, or embed in future container
 ```
 
-A future new container format can wrap classic state once requirements are known, but legacy import/export should remain available.
+M7's existing container wraps classic state; keep legacy import/export available. Do not introduce another city format for graphics selection.
 
 ### 11.3 Safe save strategy
 
@@ -286,18 +286,23 @@ Potential later parallel work can include:
 
 - asset decoding;
 - screenshot encoding;
-- autosave serialization if proven safe;
-- expensive Enhanced Mode analytics.
+- autosave serialization if proven safe.
 
 Do not parallelise the simulation until determinism and shared-state assumptions are understood.
 
-## 14. Enhanced Mode extension points
+## 14. Graphics and gameplay boundary
 
-Prepare interfaces for future expansion without implementing features early:
+The user's 6 October 2026 scope decision is one faithful simulation and optional
+graphics, recorded in [ADR 0009](../decisions/0009_FAITHFUL_MODERNISATION_AND_GRAPHICS.md).
+M8 adjusts the merged M7 interface; M9 may add improved graphics after art direction
+is agreed. Keep these boundaries:
 
-- map dimensions supplied through configuration instead of constants where practical;
-- typed building/tool identifiers;
-- versioned rule sets;
-- new save metadata/versioning;
-- renderer layers independent of simulation arrays;
-- mod/data hooks only after security/versioning requirements are defined.
+- existing map dimensions, gameplay limits, typed tool/building identities and mechanics;
+- known M7 ruleset identities retained for existing save compatibility;
+- renderer resources/layers independent of simulation arrays and RNG;
+- graphics selection in application preferences, switchable without city reload/conversion;
+- existing tile/sprite footprints, states and animation sequences/timing;
+- unchanged `.cty` output and supported `.c89` reading/saving/export/recovery.
+
+Do not add map expansion, new gameplay rulesets, tools/buildings/scenarios or mod hooks.
+Resource loading/toggling must preserve city state and recover safely to Classic graphics.

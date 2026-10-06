@@ -17,7 +17,14 @@ C++20 / SDL3 desktop interface. It is an independent project, unaffiliated with 
 - Classic v1 and Enhanced v1 city modes, versioned Enhanced saves and explicit Classic import/export.
 
 Enhanced v1 establishes the mode and save foundation and currently uses Classic
-mechanics and map dimensions. Larger maps and other Enhanced gameplay remain future work.
+mechanics and map dimensions. Civic 89's agreed scope is faithful original gameplay
+with modern Windows presentation; gameplay expansion is outside scope.
+
+The next [roadmap milestones](project/engineering/08_ROADMAP_AND_IMPLEMENTATION_BACKLOG.md)
+are **M8**, faithfulness/Windows polish including simplifying the merged M7 city-mode
+interface, and optional **M9**, improved graphics selectable in Settings during play.
+Graphics will use the same city and mechanics without changing saves. These are plans;
+the current M7 interface and save workflows described below remain in place.
 
 ## Status and compatibility
 
@@ -86,7 +93,9 @@ startup offers the newest valid recovery and identifies its mode.
 ## Development and licensing
 
 Deliver one complete [roadmap milestone](project/engineering/08_ROADMAP_AND_IMPLEMENTATION_BACKLOG.md)
-per branch/PR. Keep simulation changes separate and prove compatibility with tests.
+per branch/PR. Preserve original gameplay and mechanics, and prove compatibility with tests.
+The [scope decision](project/decisions/0009_FAITHFUL_MODERNISATION_AND_GRAPHICS.md)
+records the graphics-only enhancement boundary and retained M7 save compatibility.
 The exact upstream baseline and full history are preserved under `upstream-sdlpp-baseline`.
 
 Civic 89 inherits GNU GPL v3 and the additional terms in [__README_OG](__README_OG).

@@ -11,6 +11,8 @@ The milestones are ordered to reduce risk. Do not begin the visible remaster wor
 
 As requested by the user on 6 October 2026, deliver complete milestones on one engineering branch and PR. Separate implementation/test commits within that branch are encouraged; do not publish one- or two-item increments unless explicitly requested.
 
+**Product scope update (6 October 2026):** preserve the original gameplay and mechanics throughout. Modernise Windows presentation and usability; the only optional enhancement is a graphics toggle. Larger maps, wider gameplay limits, new buildings/tools/scenarios, changed traffic/utilities/balance, mods and achievements/challenges are excluded. Day/night and seasonal additions are outside the graphics milestone. [ADR 0009](../decisions/0009_FAITHFUL_MODERNISATION_AND_GRAPHICS.md) supersedes the earlier expansion direction without undoing merged M7.
+
 Effort labels are relative only:
 
 - **S** - contained change;
@@ -291,20 +293,170 @@ and [evidence](../../tests/baseline/M7_2026-10-06.md) state compatibility and ac
 Enhanced v1 still uses Classic mechanics/map size; public-release gates remain unresolved.
 Final compatibility/evidence commit checks are tracked on the PR.
 
-Future Enhanced candidate backlog (outside the M7 foundation):
+**Merged record:** PR #12 is merged as `eb73f64230e35c2f0aaf8134c4cd5e6100ed155d`.
+The final branch head `6d73e53` passed all five jobs in
+[run 37494533588](https://github.com/DangerMouseUK/civic89/actions/runs/37494533588).
+The earlier Enhanced gameplay candidate backlog is withdrawn by the scope update
+above. M7 remains complete; its interface adjustment is M8-02 below.
 
-- larger maps;
-- expanded finance/population types;
-- additional buildings/tools;
-- new scenarios;
-- mod/data definition exploration;
-- richer traffic simulation;
-- day/night and seasonal rendering;
-- achievements/challenges.
+## 10. Milestone 8 - Faithfulness and Windows polish
 
-Every Enhanced feature must declare whether it can import/export a Classic city unchanged.
+**Status:** in progress on `codex/m8-faithfulness-windows-polish`.
 
-## 10. First implementation sequence for a coding agent
+**Goal:** finish fidelity and desktop acceptance work around the original game, and
+align the merged M7 interface with the single gameplay contract.
+
+### M8-01 Faithfulness audit and regression coverage - L
+
+- Check inherited map dimensions, tools/footprints/costs, construction behaviour,
+  budget/tax/funding, RCI/economy, traffic/utilities, disasters and all eight scenarios.
+- Preserve the 25 M2 goldens and four generated-city parity cases. Add targeted
+  regressions for uncovered behaviour using provenance-backed references.
+- Distinguish parity with the inherited SDLPP baseline from evidence about original
+  retail behaviour; record disagreements before proposing outcome-changing fixes.
+
+**Acceptance:** a traceable audit records what was checked, sources, gaps and any
+discrepancies. Existing parity references stay unchanged. No new or rebalanced mechanics;
+an outcome-changing fidelity fix requires explicit user direction and compatibility evidence.
+
+### M8-02 Adjust the merged M7 interface - L
+
+- Present one faithful new-city/gameplay path; remove the suggestion that choosing
+  Enhanced changes the simulation. Update new-city, status, recovery and help text.
+- Keep existing `.cty` and `.c89` opening, saving, explicit export and recovery
+  working. Retain known M7 identities as save compatibility data where required;
+  preserve existing CLI compatibility or document compatible aliases clearly.
+- Keep graphics out of city creation, conversion and save identity. M9 will add the
+  optional graphics preference in Settings; M8 must not advertise an implemented toggle.
+- Retain M7's merged implementation/evidence as history and update current product docs.
+
+**Acceptance:** new-city and all eight scenario workflows expose the same mechanics.
+Existing M7 `.c89` files and recovery slots still load; save/export/recovery errors
+preserve the active city and destination. No forced conversion, retagging or deletion
+of existing files; unknown/corrupt inputs still fail before mutation. UI and CLI
+acceptance verifies the revised wording and supported workflows.
+
+### M8-03 Historical city compatibility investigation - M
+
+- Investigate the known unsupported 27,120-byte `.cty` variant using verified format
+  references and legally usable fixtures; document which historical variants are tested.
+- Add an isolated import decoder only if the format and faithful interpretation are
+  established. Preserve the existing 51,360-byte writer and validation/publication path.
+- Keep ordinary-city snapshot, RNG, sprite and scenario-progress limitations explicit.
+
+**Acceptance:** evidence either establishes a tested import path for a specific variant,
+including malformed-input isolation, or records the unresolved limitation without a
+compatibility claim. Current `.cty`/`.c89` round trips and failure preservation pass;
+no speculative decoder or casual legacy format change.
+
+### M8-04 Windows display, input and accessibility polish - L
+
+- Validate 1080p/1440p/4K and supported ultrawide layouts, 100–200% scaling and
+  physical mixed-DPI transitions; fix clipping, hit targets, camera and readability issues.
+- Exercise windowed/maximised/borderless modes, resizing, Alt+Tab, minimise/restore,
+  keyboard focus/navigation and configurable keys on the visible desktop.
+- Check existing high-contrast/larger-text controls and assistive-technology limits.
+
+**Acceptance:** an evidence matrix records actual displays/scales/backends and visible
+results. Panels remain readable and operable; focus and input recover correctly.
+Required physical checks need actual hardware evidence; automated dummy/software tests
+do not substitute for it. Unavailable configurations stay explicitly pending.
+
+### M8-05 Desktop audio, dialogs and lifecycle - M
+
+- Verify actual device audibility, category volumes/mute, device failure fallback,
+  native open/save cancellation/errors and Unicode paths.
+- Exercise repeated new/load/scenario/quit sessions, display transitions and recovery
+  prompts; fix application lifecycle issues without changing simulation timing or RNG.
+
+**Acceptance:** visible desktop/device checks and targeted regressions cover these
+workflows. Dialog cancellation/failure preserves the session, audio failures remain
+non-fatal and teardown is clean. Record hardware and any unresolved acceptance limits.
+
+### M8-06 Complete milestone validation and documentation - M
+
+- Update README, compatibility contract, status, controls/help and milestone evidence
+  to describe the delivered single gameplay contract and retained save support.
+- Run Debug/Release, application/headless ASan, native ARM64, retained Visual Studio
+  and relevant portable/installer/update/rollback acceptance, with parity unchanged.
+- Keep asset/brand clearance, trusted signer provisioning and remaining physical
+  release acceptance visible; do not declare a public release from automated checks.
+
+**Acceptance:** one branch/PR delivers all M8 items with compatibility notes, CI and
+manual evidence. Outstanding required desktop checks prevent claiming complete acceptance;
+external rights/brand/signing gates remain separately recorded until cleared.
+
+## 11. Milestone 9 - Optional enhanced graphics
+
+**Status:** planned, optional, after M8; graphics adoption/art direction must be agreed
+before implementation.
+
+**Goal:** offer improved graphics for the same game, selectable during play in Settings.
+
+### M9-01 Faithful visual specification and asset rights - L
+
+- Agree the art style and define a one-to-one mapping for existing tiles, buildings,
+  sprites, overlays and animation frames. Preserve identities, footprints and states.
+- Create/use appropriately licensed assets, with attribution and per-asset provenance.
+- Retain the Classic graphics option. No additional buildings/tools/scenarios,
+  visual day/night or seasons, or mechanics hidden behind the graphics toggle.
+
+**Acceptance:** the approved specification covers the existing visual catalogue;
+asset rights and mappings are complete before the new art is distributed.
+
+### M9-02 Settings-only graphics selection - M
+
+- Add Classic/Enhanced graphics to application preferences, independent of the city
+  and its save format, switchable during play without reload or conversion.
+- Make renderer resource switching safe and recover to Classic graphics if enhanced
+  resources cannot be loaded; report the failure clearly.
+
+**Acceptance:** either graphics option works with the same new, scenario and loaded
+`.cty`/`.c89` cities. Switching preserves city/ruleset state, RNG consumption, simulation
+and animation cadence, save destination and payload bytes. Preferences persist outside
+city files; failure leaves the session usable.
+
+### M9-03 Complete graphics integration - XL
+
+- Integrate the approved replacement tile/sprite resources and existing effects,
+  overlays, minimap and tool previews across camera zoom and display scaling.
+- Preserve all existing visual states, selection/query information and animation
+  sequences/timing; ensure the game remains legible in both graphics options.
+
+**Acceptance:** catalogue coverage and reviewed captures show no missing/misidentified
+tiles or sprites, changed footprints, misleading overlays or altered animation timing.
+
+### M9-04 Rendering performance and desktop acceptance - L
+
+- Measure resource use and frame pacing at the supported display sizes/backends;
+  verify switching, resizing, fullscreen transitions and renderer recovery.
+- Check 4K, mixed DPI and accessibility/readability with the complete graphics set.
+
+**Acceptance:** a recorded before/after performance and visible-desktop matrix meets
+agreed rendering targets without affecting simulation speed. Resource failure/recovery
+and repeated toggling do not leak resources or damage the city.
+
+### M9-05 Parity, saves and delivery - M
+
+- Compare the same deterministic city/inputs under both graphics options, including
+  switching mid-session; check state digests, RNG, tick/animation counts and save output.
+- Retain all existing baseline goldens and validate both save formats, preferences,
+  native build/ASan/ARM64 and complete package/update/installer asset delivery.
+- Document the graphics preference, asset attribution and complete milestone evidence.
+
+**Acceptance:** one branch/PR completes the graphics milestone with unchanged gameplay,
+save compatibility and original graphics available. Public release still requires the
+remaining rights/brand/signing/physical gates. If graphics are declined, redefine M9
+only through a separate user decision; do not substitute gameplay expansion.
+
+### Release readiness alongside M8/M9
+
+Resolve the per-asset rights audit and brand review, provision the trusted signer and
+perform physical clean-machine desktop/install/update acceptance before public
+publication. Keep [release gates](../RELEASING.md) and status accurate. Completing a
+milestone does not itself authorise publication or clear an external gate.
+
+## 12. Historical first implementation sequence for a coding agent
 
 The safest first sequence is:
 
