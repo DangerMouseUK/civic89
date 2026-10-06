@@ -2,11 +2,14 @@
 
 ## Version, compatibility and publication boundary
 
-M6 supplies the complete packaging/signing/update/ARM64 engineering path.
-`0.6.0-dev` identifies development candidates; it is not a stable Classic release
+M6 supplies the complete packaging/signing/update/ARM64 engineering path; M7 adds
+mode-aware save acceptance to that delivery.
+`0.7.0-dev` identifies development candidates; it is not a stable Classic release
 or a city-format version. The current 51,360-byte save layout and all Classic
 goldens are retained. Older 27,120-byte saves and exact RNG/scenario replay remain
-unsupported. See [BUILDING.md](BUILDING.md) for runtime controls and limitations.
+unsupported. Enhanced v1 stores the same ordinary-city payload in a versioned
+`.c89` container. See [Classic compatibility](CLASSIC_COMPATIBILITY.md),
+[Enhanced format](ENHANCED_CITY_FORMAT.md) and [BUILDING.md](BUILDING.md).
 
 Update the CMake project version, `vcpkg.json`, `src/BuildInfo.h` comparison fallback,
 README and CHANGELOG together for a version change. CMake records full commit,
@@ -39,7 +42,7 @@ destination, or reuse that verified `ISCC.exe` without re-running bootstrap.
 The pinned download comes from the [official release](https://github.com/jrsoftware/issrc/releases/tag/is-6_7_3).
 Inno Setup is build tooling, not a game dependency.
 
-`out/releases/civic89-0.6.0-dev-windows-x64/` contains:
+`out/releases/civic89-0.7.0-dev-windows-x64/` contains:
 
 - Portable ZIP and per-user installer EXE.
 - Matching source ZIP from the exact build commit, with `source-provenance.json`
@@ -65,11 +68,12 @@ Git working-tree comparison is available. Official packaging requires a clean Gi
 Verification launches both staging and extracted ZIPs with developer DLL paths
 removed and an unrelated working directory. `--smoke-test` uses dummy SDL drivers
 and a unique temporary user-data directory: it loads Detroit, renders the modern
-UI, saves/reloads a city and tears down. It does not modify real preferences or saves.
+UI, saves/reloads Classic, explicitly imports Enhanced, saves/reloads its tagged
+container, exports a Classic copy and tears down. It does not modify real preferences or saves.
 This is not a substitute for clean-machine visible/audio/DPI acceptance.
 
 ```powershell
-$delivery = 'out/releases/civic89-0.6.0-dev-windows-x64'
+$delivery = 'out/releases/civic89-0.7.0-dev-windows-x64'
 ./tools/release/Test-Release.ps1 -Directory "$delivery/portable"
 ./tools/release/Test-ReleaseTransactions.ps1 -DeliveryDirectory $delivery
 ./tools/release/Test-Installer.ps1 -DeliveryDirectory $delivery
@@ -77,7 +81,7 @@ $delivery = 'out/releases/civic89-0.6.0-dev-windows-x64'
 
 Installer acceptance requires no existing Civic 89 installer registration. It
 tests a dedicated directory, install/reinstall, actual installed launch, uninstall
-and retention of a user-created city file. It never adopts a user's installation.
+and retention of user-created Classic and Enhanced city files. It never adopts a user's installation.
 
 ## Installer behaviour
 
@@ -136,7 +140,7 @@ the extracted package or corresponding source tree:
 
 ```powershell
 ./tools/release/Update-Portable.ps1 -InstallRoot "$env:LOCALAPPDATA\Civic89Portable" `
-  -Archive 'C:\Downloads\civic89-0.6.0-dev-windows-x64.zip' -ExpectedSha256 '<64 hex digits from trusted SHA256SUMS>'
+  -Archive 'C:\Downloads\civic89-0.7.0-dev-windows-x64.zip' -ExpectedSha256 '<64 hex digits from trusted SHA256SUMS>'
 ./tools/release/Launch-Portable.ps1 -InstallRoot "$env:LOCALAPPDATA\Civic89Portable"
 ./tools/release/Update-Portable.ps1 -InstallRoot "$env:LOCALAPPDATA\Civic89Portable" -Rollback
 ```
@@ -154,7 +158,7 @@ and older directories are retained for inspection; no automatic cleanup deletes 
 
 Automated acceptance repeats a real delivery to exercise distinct generations,
 rollback, a locked pointer during publication, wrong checksum, tampered content,
-ZIP traversal/device/ADS/case-duplicate paths and preservation of a user city.
+ZIP traversal/device/ADS/case-duplicate paths and preservation of Classic and Enhanced user cities.
 
 ## ARM64 and CI
 
@@ -184,4 +188,4 @@ build/sign the exact reviewed commit; inspect packages and matching source; obta
 release approval. Then create the reviewed tag and a draft GitHub Release containing
 the signed architecture packages, source and SHA256SUMS. Review and publish the draft
 as a separate authorised release action. No tag, release, purchase or signing identity
-is created by the M6 engineering PR.
+is created by the M6 or M7 engineering PRs.

@@ -214,6 +214,7 @@ void ModernInterface::minimap(const Camera2D& camera)
 }
 void ModernInterface::show(Panel value)
 {
+    if (value==Panel::NewCity) { selectedRuleset=city.rulesetId(); }
     panel = value; focus = -1; binding = -1; minimapDragging = false; controls.clear();
 }
 void ModernInterface::budgetPanel(SDL_FRect area)
@@ -369,7 +370,7 @@ void ModernInterface::sheet()
     case Panel::Settings: settingsPanel(content); break;
     case Panel::Overlays: overlaysPanel(content); break;
     case Panel::Scenarios:
-        text("Starting a scenario replaces this city. Save first if needed.",{content.x,content.y,content.w,32},false,muted);
+        text("Classic v1 scenarios replace this city. Save first if needed.",{content.x,content.y,content.w,32},false,muted);
         for (size_t i=0;i<ScenarioDefinitions.size();++i)
         {
             const auto& scenario=ScenarioDefinitions[i];
@@ -380,9 +381,17 @@ void ModernInterface::sheet()
         }
         break;
     case Panel::NewCity:
-        text("Starting a new city replaces this city. Save first if needed.",{content.x,content.y,content.w,40},false,muted);
-        button("Start new city",{content.x,content.y+64,200,36},[this] {if(command) command(UiCommand::StartNewCity);show(Panel::None);});
+    {
+        const float row=std::min(44.f,content.h/6), height=row-4;
+        text("New city/import replaces this city. Save first.",{content.x,content.y,content.w,height},false,muted);
+        button("Classic mode",{content.x,content.y+row,content.w/2-4,height},[this] {selectedRuleset=RulesetId::ClassicV1;},selectedRuleset==RulesetId::ClassicV1);
+        button("Enhanced mode",{content.x+content.w/2,content.y+row,content.w/2-4,height},[this] {selectedRuleset=RulesetId::EnhancedV1;},selectedRuleset==RulesetId::EnhancedV1);
+        text("Enhanced v1 uses Classic mechanics; saves use .c89.",{content.x,content.y+row*2,content.w,height},false,muted);
+        button("Start new city",{content.x,content.y+row*3,content.w,height},[this] {if(command) command(UiCommand::StartNewCity);show(Panel::None);});
+        button("Import Classic to Enhanced",{content.x,content.y+row*4,content.w,height},[this] {if(command) command(UiCommand::ImportClassic);});
+        button("Export Classic copy",{content.x,content.y+row*5,content.w,height},[this] {if(command) command(UiCommand::ExportClassic);});
         break;
+    }
     case Panel::Query:
     {
         const auto& q=tools.queryResult();
@@ -415,7 +424,8 @@ void ModernInterface::draw(const Camera2D& camera)
     }
     fill({0,size.y-32,size.x,32},settings.highContrast ? SDL_Color{0,0,0,255} : SDL_Color{20,30,43,255});
     const bool showStatus = tooltip.empty() || SDL_GetTicks() < statusUntil;
-    text(showStatus ? status : tooltip,{14,size.y-29,size.x-28,25},false,showStatus ? ink : accent);
+    text(showStatus ? status : tooltip,{14,size.y-29,size.x-180,25},false,showStatus ? ink : accent);
+    text(findRuleset(city.rulesetId())->label,{size.x-150,size.y-29,136,25},true,accent);
 }
 bool ModernInterface::pointInWindow(Point<int> point) const
 {

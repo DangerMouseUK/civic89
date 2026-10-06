@@ -76,7 +76,7 @@ Global MSBuild vcpkg integration remains available for that inherited comparison
 
 | Inherited project | CMake |
 |---|---|
-| 64 `ClCompile` entries (47 original + 8 M2 + 4 M3 + 2 M4 + 3 M5 implementations) | Explicit source parity list; 31 engine units in `civic89_engine`, 33 application units in `civic89` |
+| 65 `ClCompile` entries (47 original + 8 M2 + 4 M3 + 2 M4 + 3 M5 + 1 M7 implementations) | Explicit source parity list; 32 engine units in `civic89_engine`, 33 application units in `civic89` |
 | `micropolis-sdlpp.rc` | Civic 89 original icon and generated version resource; inherited comparison retains its resource |
 | C++20 / WINDOWS / Unicode | C++20 / WINDOWS / UNICODE / _UNICODE |
 | `/W3`, `/sdl`, conformance | `/W4`, `/sdl`, `/permissive-`; warning debt recorded |
@@ -103,9 +103,11 @@ ctest --preset windows-x64-headless --output-on-failure
 ./out/build/windows-x64-headless/bin/Debug/civic89_runner.exe --scenario 6 --scenario-dir scenarios --seed 12345 --ticks 1024
 ./out/build/windows-x64-headless/bin/Debug/civic89_runner.exe --city 'path/to/current-format.cty' --seed 12345 --speed 2 --ticks 1024
 ./out/build/windows-x64-headless/bin/Debug/civic89_runner.exe --generate --seed 2468 --ticks 1024
+./out/build/windows-x64-headless/bin/Debug/civic89_runner.exe --generate --mode enhanced --seed 2468 --ticks 1024
+./out/build/windows-x64-headless/bin/Debug/civic89_runner.exe --city 'path/to/enhanced.c89' --seed 12345 --ticks 1024
 ```
 
-Output includes city clock, funds, population, score, RCI and `digest_v1`.
+Output includes exact ruleset identity, city clock, funds, population, score, RCI and `digest_v1`.
 A tick is one inherited simulation phase; 16 phases advance the city clock once.
 Animation remains independently scheduled. `--seed` is optional and explicitly
 controls the existing RNG; without it, normal random initialization applies.
@@ -113,6 +115,9 @@ controls the existing RNG; without it, normal random initialization applies.
 African Swallow); without it, a saved pause/speed is respected. `--ticks` defaults
 to zero and accepts 0..1,000,000. Exactly one of `--city`, `--scenario` or
 `--generate` is required. Argument errors return 2; load/runtime errors return 1.
+`--mode classic|enhanced` selects generated-city rules, defaulting to Classic.
+City input uses its stored mode; an explicitly conflicting `--mode` is an error.
+Inherited scenarios require Classic. Unknown modes and duplicate arguments are rejected.
 
 The library retains inherited process-global single-threaded state: initialize
 before loading/editing/stepping. It does not support concurrent independent cities.
@@ -136,7 +141,7 @@ jobs bootstrap the existing pinned external vcpkg checkout.
 
 ## Tests and limits
 
-Application presets run **43** CTests; separate headless/ASan presets run **35**:
+Application presets run **53** CTests; separate headless/ASan presets run **43**:
 
 - `civic89_tests` covers headless load/step/pause/edit/save-byte-layout/reload,
   transactional invalid-file rejection, seeded terrain generation and sprites.
@@ -144,6 +149,10 @@ Application presets run **43** CTests; separate headless/ASan presets run **35**
   from merged M1 before extraction. Bern at 1,024 phases retains separate Debug
   and Release `/fp:fast` references. Every case uses a fresh process; the long
   case runs Detroit for 16,384 simulation phases.
+- Four fresh-process checks compare both modes' generated cities at 1,024 and
+  16,384 phases against merged M6 values. `ruleset-save-compatibility` checks the
+  Classic/Enhanced boundary, malformed/unknown-version rejection, explicit
+  import/export, Unicode paths, locked destinations and separate recovery slots.
 - Runner checks exercise scenario/current-format city load, terrain generation,
   missing files and strict arguments.
 - `engine-boundary` follows transitive local includes and inspects direct binary
@@ -155,8 +164,9 @@ Application presets run **43** CTests; separate headless/ASan presets run **35**
   renderer-owned sprite images.
 
 All 47 original translation-unit paths remain. M2 adds eight support/split files;
-M3 adds four services and M4 adds two camera/settings implementations, for **61** entries shared with the retained
-Visual Studio project. The engine retains 31 files, with 28 application files.
+M3 adds four services, M4 adds two camera/settings implementations, M5 adds three
+interface implementations and M7 adds the Enhanced container codec, for **65**
+entries shared with the retained Visual Studio project: **32** engine and **33** application.
 `civic89_storage` implements the Windows atomic writer for persistence tests;
 the engine consumes only the platform-free writer interface.
 
@@ -183,7 +193,7 @@ are synthesised/loaded at startup; inherited WAV files are not shipped. Device
 failure leaves a playable silent session and records the reason.
 
 User files use `SDL_GetPrefPath("Civic89", "Civic89")`, normally
-`%APPDATA%\Civic89\Civic89` on Windows: `audio.cfg`, `autosave.cty`, `civic89.log`.
+`%APPDATA%\Civic89\Civic89` on Windows: `audio.cfg`, `autosave.cty`, `autosave.c89`, `civic89.log`.
 Ordinary cities autosave every five minutes. Startup offers the last valid
 recovery. Scenario autosave is skipped because the retained city format does
 not store scenario progress; explicit scenario exports remain ordinary cities.
@@ -291,15 +301,16 @@ reviewed captures and exact commands are in [M5 evidence](../tests/baseline/M5_2
 ## M6 release and ARM64 paths
 
 The root README now describes Civic 89 rather than upstream SDLPP. Release builds
-identify version `0.6.0-dev`, full/short Git revision, architecture and dirty state.
+identify version `0.7.0-dev`, full/short Git revision, architecture and dirty state.
 `civic89.exe --version` does not initialise SDL or user files. CMake executables
 find assets beside themselves, so a shortcut or an unrelated working directory
 works. The retained comparison executable still permits repository-relative assets.
 CMake uses an original Civic 89 icon; the inherited `.rc` is preserved for comparison.
-All **64** production source entries remain, with **31** engine / **33** application units.
+All **65** production source entries remain, with **32** engine / **33** application units.
 
 `--smoke-test` launches the real game hidden with an isolated temporary user directory,
-loads Detroit, renders, saves/reloads and exits. Release tooling supplies dummy SDL
+loads Detroit, renders, saves/reloads, imports an Enhanced city, saves/reloads its
+tagged container, exports a Classic copy and exits. Release tooling supplies dummy SDL
 and removes developer PATH DLLs. This mode does not touch real preferences/recovery.
 
 On native ARM64 Windows, install the VS 2026 ARM64 toolchain and use
@@ -312,3 +323,25 @@ See [RELEASING.md](RELEASING.md) for portable ZIPs, installers, corresponding so
 signing, release gates and crash-safe offline updates. `cmake --install` remains
 an intermediate development stage; complete release tooling adds CRT and manifest
 verification. No simulation algorithm, golden digest or city format changes in M6.
+
+## M7 modes and save compatibility
+
+F7 opens the city panel. Choose Classic v1 or Enhanced v1 before starting a new
+city; selecting a button or cancelling never retags the current city. The status
+bar shows the active mode. `civic89.exe --mode enhanced` starts an Enhanced city;
+`--scenario 1..8` requires Classic. All inherited scenarios remain Classic v1.
+
+Enhanced v1 intentionally shares Classic mechanics and map size. Ordinary Enhanced
+saves require `.c89`; Classic saves keep the existing 51,360-byte `.cty` layout.
+The native Open picker accepts both, and successful load selects the file's ruleset.
+The city panel's **Import Classic to Enhanced** preserves the original `.cty` and
+requires Save As for the Enhanced city. **Export Classic copy** preserves the active
+mode and ordinary save destination. Classic import names must fit 1–255 UTF-8 bytes.
+
+Autosave uses separate `autosave.cty` and `autosave.c89` slots. Startup offers the
+newest valid slot with its mode; a corrupt slot does not hide the other valid slot.
+Both formats retain ordinary-city snapshot/replay limitations. Unknown versions,
+dimensions, invalid metadata and corrupt payloads fail before city/mode mutation.
+See [Classic compatibility](CLASSIC_COMPATIBILITY.md),
+[Enhanced format](ENHANCED_CITY_FORMAT.md), [ADR 0008](decisions/0008_M7_ENHANCED_FOUNDATION.md)
+and [M7 evidence](../tests/baseline/M7_2026-10-06.md).

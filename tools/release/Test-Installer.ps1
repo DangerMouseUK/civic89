@@ -17,13 +17,20 @@ try {
         if ($process.ExitCode -ne 0) { throw "Installer failed: $($process.ExitCode)" }
         $null=Test-ReleaseTree -Root $destination -Installed $true
         Invoke-PackagedSmoke $destination
-        if ($iteration -eq 1) { [IO.File]::WriteAllText((Join-Path $destination 'user-save.cty'),'preserve me') }
-        if ((Get-Content -LiteralPath (Join-Path $destination 'user-save.cty') -Raw) -ne 'preserve me') { throw 'Upgrade changed the user city.' }
+        foreach ($extension in 'cty','c89') {
+            $userCity=Join-Path $destination "user-save.$extension"
+            if ($iteration -eq 1) { [IO.File]::WriteAllText($userCity,'preserve me') }
+            if ((Get-Content -LiteralPath $userCity -Raw) -ne 'preserve me') { throw 'Upgrade changed the user city.' }
+        }
     }
     $uninstaller=Join-Path $destination 'unins000.exe'
     $process=Start-Process -FilePath $uninstaller -ArgumentList @('/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART',"/LOG=`"$(Join-Path $root 'uninstall.log')`"") -WindowStyle Hidden -Wait -PassThru
     if ($process.ExitCode -ne 0 -or (Test-Path -LiteralPath (Join-Path $destination 'civic89.exe')) -or
-        !(Test-Path -LiteralPath (Join-Path $destination 'user-save.cty')) -or (Test-Path -LiteralPath $key)) { throw 'Uninstall did not remove binaries/preserve the user file.' }
+        !(Test-Path -LiteralPath (Join-Path $destination 'user-save.cty')) -or
+        !(Test-Path -LiteralPath (Join-Path $destination 'user-save.c89')) -or (Test-Path -LiteralPath $key)) { throw 'Uninstall did not remove binaries/preserve the user files.' }
+    foreach ($extension in 'cty','c89') {
+        if ((Get-Content -LiteralPath (Join-Path $destination "user-save.$extension") -Raw) -ne 'preserve me') { throw 'Uninstall changed a user city.' }
+    }
     Write-Output 'Per-user install, upgrade, installed-app launch and uninstall/user-file retention passed.'
 } finally {
     # On failure remove only this acceptance installation through its uninstaller.

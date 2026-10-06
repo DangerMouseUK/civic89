@@ -11,6 +11,7 @@
 #pragma once
 
 #include "GameOptions.h"
+#include "Ruleset.h"
 
  /* Constants */
 extern int CurrentTile; // unmasked tile value
@@ -48,5 +49,5 @@ class CityProperties;
 void initWillStuff();
 // Initializes the inherited process-global session; call before load/edit/step.
 // Concurrent independent cities and simulation threads are not supported.
-void initializeEngine(CityProperties&, Budget&);
+void initializeEngine(CityProperties&, Budget&, RulesetId = RulesetId::ClassicV1);
 GameOptions& gameplayOptions();

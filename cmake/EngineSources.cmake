@@ -4,6 +4,7 @@ set(CIVIC89_ENGINE_SOURCES
     src/Connection.cpp
     src/Evaluation.cpp
     src/FileIo.cpp
+    src/CityDocument.cpp
     src/g_ani.cpp
     src/Map.cpp
     src/Math/IsZero.cpp

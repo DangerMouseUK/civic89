@@ -9,6 +9,8 @@
 #include <bit>
 #include <fstream>
 #include <optional>
+#include <cstring>
+#include <span>
 
 struct ScenarioDefinition
 {
@@ -59,6 +61,25 @@ struct ScenarioData
 
 inline constexpr std::streamoff ScenarioFileSize = (7 * HistoryLength + SimWidth * SimHeight) * 4;
 
+inline bool validScenarioData(const ScenarioData& candidate)
+{
+    for (int tile : candidate.tiles)
+        { if (tile < 0 || tile > 0xffff || (tile & LowerMask) >= TILE_COUNT) { return false; } }
+    return candidate.histories[6][15] >= 0 && candidate.histories[6][15] <= 2;
+}
+
+inline ScenarioResult decodeScenarioData(std::span<const char> bytes, ScenarioData& output)
+{
+    static_assert(sizeof(int)==4 && std::endian::native==std::endian::little);
+    static_assert(sizeof(ScenarioData)==ScenarioFileSize);
+    if (bytes.size()!=static_cast<size_t>(ScenarioFileSize)) { return ScenarioResult::InvalidFile; }
+    ScenarioData candidate;
+    std::memcpy(&candidate,bytes.data(),sizeof(candidate));
+    if (!validScenarioData(candidate)) { return ScenarioResult::InvalidFile; }
+    output=candidate;
+    return ScenarioResult::Success;
+}
+
 inline ScenarioResult readScenarioData(const std::filesystem::path& path, ScenarioData& output)
 {
     static_assert(sizeof(int) == 4 && std::endian::native == std::endian::little);
@@ -78,18 +99,8 @@ inline ScenarioResult readScenarioData(const std::filesystem::path& path, Scenar
     }
     input.read(reinterpret_cast<char*>(candidate.tiles.data()), sizeof(candidate.tiles));
     if (!input || input.peek() != std::char_traits<char>::eof()) { return ScenarioResult::InvalidFile; }
-    for (int tile : candidate.tiles)
-    {
-        if (tile < 0 || tile > 0xffff || (tile & LowerMask) >= TILE_COUNT)
-        {
-            return ScenarioResult::InvalidFile;
-        }
-    }
     // SimLoadInit uses the serialized game level to index simulation tables.
-    if (candidate.histories[6][15] < 0 || candidate.histories[6][15] > 2)
-    {
-        return ScenarioResult::InvalidFile;
-    }
+    if (!validScenarioData(candidate)) { return ScenarioResult::InvalidFile; }
     output = candidate;
     return ScenarioResult::Success;
 }

@@ -18,15 +18,17 @@ $install=Join-Path $root 'portable'
 $update=Join-Path $PSScriptRoot 'Update-Portable.ps1'
 & $update -InstallRoot $install -Archive $archive -ExpectedSha256 $hash
 $first=Read-PortablePointer $install
-$sentinel=Join-Path $install 'User city.cty'
-[IO.File]::WriteAllText($sentinel,'user city must survive')
+$sentinels=@('User city.cty','User city.c89') | ForEach-Object { Join-Path $install $_ }
+foreach ($sentinel in $sentinels) { [IO.File]::WriteAllText($sentinel,'user city must survive') }
 & $update -InstallRoot $install -Archive $archive -ExpectedSha256 $hash
 $second=Read-PortablePointer $install
 Require ($second.target -ne $first.target -and $second.previous -eq $first.target) 'Second install lost rollback state.'
 & $update -InstallRoot $install -Rollback
 $rolled=Read-PortablePointer $install
 Require ($rolled.target -eq $first.target -and $rolled.previous -eq $second.target) 'Rollback did not restore the earlier complete package.'
-Require ((Get-Content -LiteralPath $sentinel -Raw) -eq 'user city must survive') 'Update touched user data.'
+foreach ($sentinel in $sentinels) {
+    Require ((Get-Content -LiteralPath $sentinel -Raw) -eq 'user city must survive') 'Update touched user data.'
+}
 $before=Get-Content -LiteralPath (Join-Path $install 'current.json') -Raw
 Require-Failure { & $update -InstallRoot $install -Archive $archive -ExpectedSha256 ('0' * 64) }
 Require ((Get-Content -LiteralPath (Join-Path $install 'current.json') -Raw) -eq $before) 'Hash rejection altered the active pointer.'
@@ -63,4 +65,7 @@ $duplicate=Join-Path $root 'duplicate.zip'
 $zip=[IO.Compression.ZipFile]::Open($duplicate,[IO.Compression.ZipArchiveMode]::Create)
 try { $null=$zip.CreateEntry('COPYING'); $null=$zip.CreateEntry('copying') } finally { $zip.Dispose() }
 Require-Failure { Expand-ReleaseArchive $duplicate (Join-Path $root 'duplicate-extract') }
+foreach ($sentinel in $sentinels) {
+    Require ((Get-Content -LiteralPath $sentinel -Raw) -eq 'user city must survive') 'Failed update touched user data.'
+}
 Write-Output 'Portable install, repeated delivery, rollback, locked publication, bad checksum, tampering and hostile ZIP paths passed.'

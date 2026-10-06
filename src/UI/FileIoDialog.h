@@ -15,6 +15,7 @@
 
 #include <string>
 #include <functional>
+#include "../Ruleset.h"
 
 class FileIoDialog
 {
@@ -32,20 +33,24 @@ public:
 
     void clearSaveFilename();
     const std::string& openPath() const { return mOpenPath; }
+    const std::string& exportPath() const { return mExportPath; }
     void errorHandler(std::function<void(const std::string&)> handler) { mErrorHandler = std::move(handler); }
     
-	bool pickSaveFile();
+	bool pickSaveFile(RulesetId = RulesetId::ClassicV1);
 	bool pickOpenFile();
+    bool pickImportFile();
+    bool pickExportFile();
 
 	bool filePicked() const;
 
 private:
-	enum class FileOperation { Open, Save };
+	enum class FileOperation { Open, Save, Import, Export };
 
-	bool showFileDialog(FileOperation);
+	bool showFileDialog(FileOperation, RulesetId = RulesetId::ClassicV1);
 
 	std::string mSavePath;
     std::string mOpenPath;
+    std::string mExportPath;
     std::function<void(const std::string&)> mErrorHandler;
 	std::string mFileName;
     std::string mSeparator;

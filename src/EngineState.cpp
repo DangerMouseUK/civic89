@@ -21,6 +21,7 @@
 #include "w_sound.h"
 #include "w_tk.h"
 #include "w_update.h"
+#include <stdexcept>
 
 int InitSimLoad;
 int ScenarioID;
@@ -44,8 +45,13 @@ void initWillStuff()
     initMapArrays();
 }
 
-void initializeEngine(CityProperties& cityProperties, Budget& budget)
+void initializeEngine(CityProperties& cityProperties, Budget& budget, RulesetId ruleset)
 {
+    static_assert(Rulesets[0].mapWidth==SimWidth && Rulesets[0].mapHeight==SimHeight);
+    const auto* definition=findRuleset(ruleset);
+    if (!definition || definition->mapWidth!=SimWidth || definition->mapHeight!=SimHeight)
+        { throw std::invalid_argument("Unsupported engine ruleset/dimensions"); }
+    cityProperties.rulesetId(ruleset);
     SoundOff(); // A new city must release the previous session's loops.
     userSoundOn(true);
 

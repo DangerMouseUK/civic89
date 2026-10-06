@@ -21,6 +21,7 @@ set(CIVIC89_INHERITED_SOURCES
     src/Connection.cpp
     src/Evaluation.cpp
     src/FileIo.cpp
+    src/CityDocument.cpp
     src/Font.cpp
     src/GameDataLoader.cpp
     src/Graphics.cpp

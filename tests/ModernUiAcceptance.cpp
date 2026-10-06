@@ -167,6 +167,28 @@ void runModernUiAcceptance(Budget& budget,CityProperties& city,ToolManager& tool
     event.type=SDL_EVENT_MOUSE_BUTTON_UP;handleMouseEvent(event);
     require(restored.currentPanel()==ModernInterface::Panel::Query,"Query tool did not open inspection");snapshot("wide-query");restored.hideAllWindows();
     control("New city");require(restored.currentPanel()==ModernInterface::Panel::NewCity,"New city confirmation missing");snapshot("wide-new-city");control("Close");
+    const auto modeBefore=city.rulesetId(); const auto stateBeforeMode=engineStateDigest(city,budget);
+    control("New city");control("Enhanced mode");
+    require(restored.newCityRuleset()==RulesetId::EnhancedV1 && city.rulesetId()==modeBefore &&
+        engineStateDigest(city,budget)==stateBeforeMode,"Pending new-city choice retagged the live city");
+    for (const auto pixels : {Vector<int>{800,600},Vector<int>{1366,768}})
+    {
+        require(SDL_SetWindowSize(MainWindow,pixels.x,pixels.y),"M7 mode UI resize");windowResized();render();
+        const auto area=restored.panelArea();
+        for (const auto* label : {"Classic mode","Enhanced mode","Start new city","Import Classic to Enhanced","Export Classic copy"})
+        {
+            const auto controlArea=restored.controlArea(label);
+            require(controlArea.w>0 && controlArea.h>0 && controlArea.y>=area.y &&
+                controlArea.y+controlArea.h<=area.y+area.h,"Mode/import/export control escaped the panel");
+        }
+        snapshot(pixels.x==800 ? "m7-compact-mode" : "m7-wide-mode");
+    }
+    control("Close");require(city.rulesetId()==modeBefore && engineStateDigest(city,budget)==stateBeforeMode,"Cancelling mode selection changed the city");
+    control("New city");control("Enhanced mode");control("Start new city");
+    require(city.rulesetId()==RulesetId::EnhancedV1 && restored.currentPanel()==ModernInterface::Panel::None,"New Enhanced city did not start");
+    snapshot("m7-enhanced-city");
+    control("New city");control("Classic mode");control("Start new city");
+    require(city.rulesetId()==RulesetId::ClassicV1,"Explicit Classic restart retained Enhanced identity");
     // Exercise the animation option against actual scheduler/tile behavior, with no
     // simulation deadline between the 100 ms and 150 ms observations.
     gameInit(std::nullopt);simSpeed(SimulationSpeed::Slow);

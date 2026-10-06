@@ -11,6 +11,7 @@
 #pragma once
 
 #include <string>
+#include "Ruleset.h"
 
 class CityProperties
 {
@@ -24,7 +25,17 @@ public:
 	int GameLevel() const { return mGameLevel; }
 	void GameLevel(const int level) { mGameLevel = level; }
 
+    RulesetId rulesetId() const { return mRuleset; }
+    // Session setup/load/import only; changing presentation preferences must not retag a city.
+    bool rulesetId(RulesetId value)
+    {
+        if (!findRuleset(value)) { return false; }
+        mRuleset=value;
+        return true;
+    }
+
 private:
 	int mGameLevel{};
 	std::string mCityName{};
+    RulesetId mRuleset{RulesetId::ClassicV1};
 };

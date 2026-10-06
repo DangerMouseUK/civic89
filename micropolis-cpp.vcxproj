@@ -32,6 +32,7 @@
     <ClCompile Include="src\Connection.cpp" />
     <ClCompile Include="src\Evaluation.cpp" />
     <ClCompile Include="src\FileIo.cpp" />
+    <ClCompile Include="src\CityDocument.cpp" />
     <ClCompile Include="src\Font.cpp" />
     <ClCompile Include="src\GameDataLoader.cpp" />
     <ClCompile Include="src\Graphics.cpp" />
@@ -81,6 +82,8 @@
     <ClInclude Include="src\Budget.h" />
     <ClInclude Include="src\Census.h" />
     <ClInclude Include="src\CityProperties.h" />
+    <ClInclude Include="src\Ruleset.h" />
+    <ClInclude Include="src\CityDocument.h" />
     <ClInclude Include="src\Colors.h" />
     <ClInclude Include="src\Connection.h" />
     <ClInclude Include="src\CycleCounter.h" />

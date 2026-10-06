@@ -69,7 +69,7 @@ function Test-ReleaseTree([string]$Root, [bool]$Installed = $false) {
         # Inno owns its generated uninstaller. A top-level user save is not an
         # application input; all original package members remain verified.
         $actual = @($actual | Where-Object {
-            $expected.ContainsKey($_.path) -or ($_.path -notmatch '^unins\d{3}\.(exe|dat|msg)$' -and $_.path -notmatch '^[^/]+\.cty$')
+            $expected.ContainsKey($_.path) -or ($_.path -notmatch '^unins\d{3}\.(exe|dat|msg)$' -and $_.path -notmatch '^[^/]+\.(cty|c89)$')
         })
     }
     if ($expected.Count -ne $actual.Count) { throw 'Package file count does not match manifest.' }
@@ -81,7 +81,7 @@ function Test-ReleaseTree([string]$Root, [bool]$Installed = $false) {
             if ($actualArchitecture -ne $manifest.architecture) { throw "Mixed package architectures: $($entry.path) is $actualArchitecture; expected $($manifest.architecture)." }
             if ([IO.Path]::GetFileName($entry.path) -match '(_tests|runner|asan|140d|debug)') { throw 'Development binary in package.' }
         }
-        if ($entry.path -match '(?i)(\.pdb$|\.cty\.tmp|(^|/)(audio\.cfg|ui\.cfg|display\.cfg|autosave\.cty|civic89\.log)$)') {
+        if ($entry.path -match '(?i)(\.pdb$|\.(cty|c89)\.tmp|(^|/)(audio\.cfg|ui\.cfg|display\.cfg|autosave\.(cty|c89)|civic89\.log)$)') {
             throw 'Private/development files in package.'
         }
     }
@@ -115,7 +115,8 @@ function Invoke-PackagedSmoke([string]$Root) {
             if (!$process.WaitForExit(60000)) { $process.Kill(); throw 'Packaged smoke test timed out.' }
             $process.WaitForExit()
             $output = Get-Content -LiteralPath (Join-Path $testDirectory 'stdout.txt') -Raw
-            if ($process.ExitCode -ne 0 -or $output -notmatch 'Packaged startup, scenario, render, save/reload and shutdown passed') {
+            if ($process.ExitCode -ne 0 -or $output -notmatch 'Packaged startup, scenario, render, save/reload and shutdown passed' -or
+                $output -notmatch 'Enhanced ruleset, tagged save/load and Classic export passed') {
                 $errors = Get-Content -LiteralPath (Join-Path $testDirectory 'stderr.txt') -Raw
                 throw "Packaged smoke failed ($($process.ExitCode)): $errors"
             }

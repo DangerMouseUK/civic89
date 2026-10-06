@@ -48,7 +48,8 @@ Opening a `.cty` selects Classic v1. Importing it into Enhanced requires the exp
 import action and leaves the original file untouched. Ordinary Enhanced saves never
 overwrite `.cty`; exporting a Classic copy is explicit and never retags the active
 Enhanced city. Enhanced v1 can import/export the Classic payload without changing
-its layout or mechanics; the existing snapshot limitations still apply. Later
+its layout or mechanics; existing load scans can recompute fields, so byte-for-byte
+replay of the original file is not promised. The snapshot limitations still apply. Later
 features must declare whether they preserve that export capability.
 
 Enhanced containers identify their schema, exact ruleset, dimensions and bounded

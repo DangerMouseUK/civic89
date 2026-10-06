@@ -14,13 +14,14 @@ C++20 / SDL3 desktop interface. It is an independent project, unaffiliated with 
 - Adjustable UI scale, larger text, high contrast, configurable keys and audio volumes.
 - Eight inherited scenarios, native file pickers, atomic city saves and ordinary-city autosave recovery.
 - A separate SDL-free engine, headless runner and Classic simulation regression tests.
+- Classic v1 and Enhanced v1 city modes, versioned Enhanced saves and explicit Classic import/export.
 
-Enhanced gameplay is a later milestone. Classic simulation rules, map dimensions and
-the current inherited city-file layout remain unchanged.
+Enhanced v1 establishes the mode and save foundation and currently uses Classic
+mechanics and map dimensions. Larger maps and other Enhanced gameplay remain future work.
 
 ## Status and compatibility
 
-This is development software (`0.6.0-dev`), with no public release yet. Release tooling
+This is development software (`0.7.0-dev`), with no public release yet. Release tooling
 produces portable ZIPs, per-user installers, matching source archives and checksums.
 Public publication remains gated on asset rights, brand review, signing and physical
 desktop acceptance. See [release instructions](project/RELEASING.md) and
@@ -33,6 +34,15 @@ also pass CI; desktop/hardware support must be validated before release. Other p
 tested. Older 27,120-byte city files are unsupported. RNG, sprites and scenario progress
 are not serialised, so loading is not an exact replay checkpoint. Automatic recovery
 covers ordinary cities; explicit scenario exports reload as ordinary cities.
+
+Classic v1 saves remain `.cty`. Enhanced v1 uses a checksummed `.c89` container that
+records the ruleset and city name around the same ordinary-city snapshot. Opening
+a save selects its recorded mode. F7 offers new-city mode selection, explicit
+**Import Classic to Enhanced**, and **Export Classic copy**; import preserves the
+source and export leaves the active mode unchanged. Unknown versions and corrupt
+files are rejected before replacing the current city. See the
+[Classic contract](project/CLASSIC_COMPATIBILITY.md) and
+[Enhanced format](project/ENHANCED_CITY_FORMAT.md).
 
 ## Build and run
 
@@ -63,10 +73,15 @@ minimap, F5 evaluation, F6 scenarios, F7 new city, F8/F12 settings, F9 history,
 F10 budget and F11 borderless fullscreen. Tab/Shift+Tab and Enter navigate panels.
 Tool and command keys can be reassigned in Settings.
 
+The status bar identifies the active ruleset. To start in Enhanced mode from the
+command line, add `--mode enhanced`; `--mode classic` is the default. The eight
+inherited scenarios always use Classic mode.
+
 Preferences, diagnostics and ordinary-city recovery live in
 `%APPDATA%\Civic89\Civic89`. User-selected saves stay where you chose them.
 Installer removal and portable updates preserve these files. Save As is required
-after opening a packaged city fixture.
+after opening a city. Classic and Enhanced autosaves occupy separate slots;
+startup offers the newest valid recovery and identifies its mode.
 
 ## Development and licensing
 

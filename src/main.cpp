@@ -130,6 +130,7 @@ namespace
 
     Budget budget{};
     CityProperties cityProperties{};
+    RulesetId startupRuleset{RulesetId::ClassicV1};
     NullAudioService silentAudio;
     NullPresentationEvents silentPresentation;
     std::unique_ptr<AudioManager> audioService;
@@ -208,9 +209,9 @@ void showBudgetWindow()
 }
 
 
-void simInit()
+void simInit(RulesetId ruleset = RulesetId::ClassicV1)
 {
-    initializeEngine(cityProperties, budget);
+    initializeEngine(cityProperties, budget, ruleset);
     quake.cancel();
     cameraShake = {};
     syncAudioOptions();
@@ -347,9 +348,9 @@ void primeGame(const int startFlag, CityProperties& properties, Budget& cityBudg
 }
 
 
-void resetGame()
+void resetGame(RulesetId ruleset)
 {
-    simInit();
+    simInit(ruleset);
     primeGame(-1, cityProperties, budget);
 }
 
@@ -357,7 +358,7 @@ void resetGame()
 void newGame()
 {
     fileDialog->clearSaveFilename();
-    resetGame();
+    resetGame(interfaceManager->newCityRuleset());
     interfaceManager->invalidateMinimap();
     cityRenderer->invalidate();
 }
@@ -383,7 +384,7 @@ void saveGame()
 {
     if (!fileDialog->filePicked() || SDL_GetModState() & SDL_KMOD_SHIFT)
     {
-        if (!fileDialog->pickSaveFile()) { return; }
+        if (!fileDialog->pickSaveFile(cityProperties.rulesetId())) { return; }
     }
 
     const auto result = SaveCity(pathFromUtf8(fileDialog->fullPath()), cityProperties, budget, fileStorage);
@@ -393,6 +394,27 @@ void saveGame()
         reportCityError(result, DiagnosticCode::CitySave);
     }
     else { diagnostics->write(Severity::Info, DiagnosticCode::CitySave, "City saved", result.path); }
+}
+
+void importClassicGame()
+{
+    if (!fileDialog->pickImportFile()) { return; }
+    const auto result=ImportClassicCity(pathFromUtf8(fileDialog->openPath()),cityProperties,budget);
+    if (!result) { reportCityError(result,DiagnosticCode::CityLoad); return; }
+    fileDialog->clearSaveFilename();
+    syncAudioOptions(); updateDate();
+    interfaceManager->cancelTool(); interfaceManager->hideAllWindows();
+    interfaceManager->invalidateMinimap(); cityRenderer->invalidate();
+    interfaceManager->message("Imported as Enhanced v1. Save As .c89; the original Classic file is unchanged.");
+}
+
+void exportClassicGame()
+{
+    if (!fileDialog->pickExportFile()) { return; }
+    const auto result=ExportClassicCity(pathFromUtf8(fileDialog->exportPath()),cityProperties,budget,fileStorage);
+    if (!result) { reportCityError(result,DiagnosticCode::CitySave); return; }
+    diagnostics->write(Severity::Info,DiagnosticCode::CitySave,"Classic copy exported",result.path);
+    interfaceManager->message("Classic copy exported. The active city mode is unchanged.");
 }
 
 
@@ -565,6 +587,8 @@ void performUiCommand(UiCommand command)
     case UiCommand::Graphs: interfaceManager->show(ModernInterface::Panel::Graphs); break;
     case UiCommand::Budget: showBudgetWindow(); break;
     case UiCommand::StartNewCity: newGame(); break;
+    case UiCommand::ImportClassic: importClassicGame(); break;
+    case UiCommand::ExportClassic: exportClassicGame(); break;
     default: break;
     }
 }
@@ -850,7 +874,7 @@ std::optional<MapPreview> pendingToolPreview()
 
 void gameInit(std::optional<Scenario> scenario)
 {
-    simInit();
+    simInit(startupRuleset);
 
     if (scenario)
     {
@@ -1036,20 +1060,34 @@ int main(int argc, char* argv[])
         packageSmokeTest = true;
         startupScenario = Scenario::Detroit;
     }
-    else if (argc != 1)
+    else
     {
-        int id = 0;
-        bool valid = argc == 3 && std::string_view(argv[1]) == "--scenario";
-        if (valid)
+        bool valid=true, modeSet=false;
+        for (int i=1;i<argc && valid;++i)
         {
-            const std::string_view argument(argv[2]);
-            const auto parsed = std::from_chars(argument.data(), argument.data() + argument.size(), id);
-            valid = parsed.ec == std::errc{} && parsed.ptr == argument.data() + argument.size();
+            const std::string_view option(argv[i]);
+            if (i+1==argc) { valid=false; break; }
+            const std::string_view value(argv[++i]);
+            if (option=="--mode" && !modeSet)
+            {
+                const auto ruleset=rulesetFromMode(value);
+                valid=ruleset.has_value();
+                if (ruleset) { startupRuleset=*ruleset; }
+                modeSet=true;
+            }
+            else if (option=="--scenario" && !startupScenario)
+            {
+                int id=0;
+                const auto parsed=std::from_chars(value.data(),value.data()+value.size(),id);
+                valid=parsed.ec==std::errc{} && parsed.ptr==value.data()+value.size();
+                if (valid) { startupScenario=scenarioFromLegacyId(id); valid=startupScenario.has_value(); }
+            }
+            else { valid=false; }
         }
-        if (valid) { startupScenario = scenarioFromLegacyId(id); }
-        if (!startupScenario)
+        if (!valid || (startupScenario && startupRuleset!=RulesetId::ClassicV1))
         {
-            std::cerr << "Usage: civic89.exe [--scenario 1..8 | --version | --smoke-test]\n";
+            std::cerr << "Usage: civic89.exe [--mode classic|enhanced] [--scenario 1..8]\n"
+                "       civic89.exe --version | --smoke-test\nScenarios require Classic mode.\n";
             return 2;
         }
     }
@@ -1194,17 +1232,37 @@ int main(int argc, char* argv[])
                 if (!saved || !LoadCityDetailed(saved.path, cityProperties, budget))
                     { throw std::runtime_error("Packaged city save/reload failed"); }
                 std::cout << "Packaged startup, scenario, render, save/reload and shutdown passed\n";
+                const auto imported=ImportClassicCity(saved.path,cityProperties,budget);
+                const auto enhancedPath=userDirectory/"smoke.c89";
+                if (!imported || !SaveCity(enhancedPath,cityProperties,budget,fileStorage) ||
+                    !LoadCityDetailed(enhancedPath,cityProperties,budget) || cityProperties.rulesetId()!=RulesetId::EnhancedV1 ||
+                    !ExportClassicCity(userDirectory/"export.cty",cityProperties,budget,fileStorage))
+                    { throw std::runtime_error("Packaged Enhanced import/save/reload/export failed"); }
+                cityRenderer->render(camera); interfaceManager->draw(camera);
+                if (!SDL_RenderPresent(MainWindowRenderer)) { throw std::runtime_error(SDL_GetError()); }
+                std::cout << "Enhanced ruleset, tagged save/load and Classic export passed\n";
             }
-            else if (!startupScenario && recovery->available())
+            else if (!startupScenario)
             {
-                const std::array<SDL_MessageBoxButtonData,2> buttons{{{SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT,1,"Recover"}, {SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT,0,"Start new city"}}};
-                const SDL_MessageBoxData box{SDL_MESSAGEBOX_INFORMATION, MainWindow, "Civic 89 recovery", "A previous autosave is available. Recover it?", 2, buttons.data(), nullptr};
-                int selected = 0;
-                if (SDL_ShowMessageBox(&box, &selected) && selected == 1)
+                const auto candidate=recovery->latest();
+                if (candidate)
                 {
-                    const auto result = LoadCityDetailed(recovery->path(), cityProperties, budget);
-                    if (!result) { reportCityError(result, DiagnosticCode::CityLoad); }
-                    else { syncAudioOptions(); }
+                    RulesetId identity{};
+                    const auto inspected=InspectCity(*candidate,identity);
+                    if (!inspected) { diagnostics->write(Severity::Warning,DiagnosticCode::CityLoad,inspected.detail,inspected.path); }
+                    else
+                    {
+                        const std::string prompt="A " + std::string(findRuleset(identity)->label) + " autosave is available. Recover it?";
+                        const std::array<SDL_MessageBoxButtonData,2> buttons{{{SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT,1,"Recover"}, {SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT,0,"Start new city"}}};
+                        const SDL_MessageBoxData box{SDL_MESSAGEBOX_INFORMATION, MainWindow, "Civic 89 recovery", prompt.c_str(), 2, buttons.data(), nullptr};
+                        int selected = 0;
+                        if (SDL_ShowMessageBox(&box, &selected) && selected == 1)
+                        {
+                            const auto result = LoadCityDetailed(*candidate, cityProperties, budget);
+                            if (!result) { reportCityError(result, DiagnosticCode::CityLoad); }
+                            else { syncAudioOptions(); }
+                        }
+                    }
                 }
             }
             lastAutosave = SDL_GetTicks();

@@ -6,6 +6,7 @@
 #include "../OverlayModel.h"
 #include "../Camera2D.h"
 #include "../SdlResources.h"
+#include "../Ruleset.h"
 #include <SDL3_ttf/SDL_ttf.h>
 #include <functional>
 #include <unordered_map>
@@ -17,7 +18,7 @@ class ToolManager;
 class CityProperties;
 class AudioManager;
 struct ZoneStats;
-enum class UiCommand { Pause, Save, Open, Minimap, Evaluation, Scenarios, NewCity, Settings, Graphs, Budget, StartNewCity };
+enum class UiCommand { Pause, Save, Open, Minimap, Evaluation, Scenarios, NewCity, Settings, Graphs, Budget, StartNewCity, ImportClassic, ExportClassic };
 
 class ModernInterface
 {
@@ -36,6 +37,7 @@ public:
     void show(Panel value);
     void hideAllWindows() { show(Panel::None); }
     Panel currentPanel() const { return panel; }
+    RulesetId newCityRuleset() const { return selectedRuleset; }
     SDL_FRect panelArea() const;
     SDL_FRect minimapArea() const;
     void toggleMinimap() { minimapVisible = !minimapVisible; }
@@ -71,6 +73,7 @@ private:
     float density{1};
     float sidebar{184};
     Panel panel{Panel::None};
+    RulesetId selectedRuleset{RulesetId::ClassicV1};
     DataOverlay selectedOverlay{DataOverlay::None};
     bool minimapVisible{true};
     bool minimapDragging{false};
