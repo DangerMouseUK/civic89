@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 4.2)
-project(Civic89 VERSION 0.1.0 LANGUAGES CXX)
+project(Civic89 VERSION 0.6.0 LANGUAGES CXX)
 
 if(NOT WIN32 OR NOT MSVC OR NOT CMAKE_SIZEOF_VOID_P EQUAL 8)
-    message(FATAL_ERROR "Civic 89 currently supports Windows x64 with MSVC.")
+    message(FATAL_ERROR "Civic 89 supports Windows x64/ARM64 with MSVC.")
 endif()
 option(CIVIC89_BUILD_APPLICATION "Build the native SDL application and presentation tests" ON)
 option(CIVIC89_ENABLE_ASAN "Instrument engine tests with AddressSanitizer" OFF)
@@ -14,7 +14,11 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/$<CONFIG>")
 set(CMAKE_VS_GLOBALS "VcpkgEnabled=false;VcpkgEnableManifest=false")
+include(cmake/BuildProvenance.cmake)
 if(CIVIC89_ENABLE_ASAN)
+    if(NOT CIVIC89_ARCH STREQUAL "x64")
+        message(FATAL_ERROR "The current MSVC AddressSanitizer presets are x64 only.")
+    endif()
     add_compile_options(/fsanitize=address /Zi)
     add_link_options(/INCREMENTAL:NO /DEBUG)
 endif()
@@ -89,7 +93,10 @@ if(CIVIC89_BUILD_APPLICATION)
     find_package(nlohmann_json CONFIG REQUIRED)
     set(CIVIC89_APPLICATION_SOURCES ${CIVIC89_INHERITED_SOURCES})
     list(REMOVE_ITEM CIVIC89_APPLICATION_SOURCES ${CIVIC89_ENGINE_SOURCES})
-    add_executable(civic89 ${CIVIC89_APPLICATION_SOURCES} micropolis-sdlpp.rc)
+    configure_file(packaging/civic89.rc.in "${CMAKE_BINARY_DIR}/generated/civic89.rc" @ONLY)
+    add_executable(civic89 ${CIVIC89_APPLICATION_SOURCES} "${CMAKE_BINARY_DIR}/generated/civic89.rc")
+    target_include_directories(civic89 PRIVATE "${CMAKE_BINARY_DIR}/generated")
+    target_compile_definitions(civic89 PRIVATE CIVIC89_CMAKE_BUILD)
     target_link_libraries(civic89 PRIVATE civic89_engine
         SDL3::SDL3 SDL3_image::SDL3_image SDL3_ttf::SDL3_ttf SDL3_mixer::SDL3_mixer
         nfd::nfd nlohmann_json::nlohmann_json Shlwapi)
@@ -163,6 +170,8 @@ if(CIVIC89_BUILD_APPLICATION)
         # Exercise native lifecycle code with the same application sources and dummy SDL.
         add_executable(civic89_milestone_tests ${CIVIC89_APPLICATION_SOURCES} tests/MilestoneLifecycle.cpp tests/WindowCameraRendering.cpp tests/ModernUiAcceptance.cpp)
         target_include_directories(civic89_milestone_tests PRIVATE src)
+        target_include_directories(civic89_milestone_tests PRIVATE "${CMAKE_BINARY_DIR}/generated")
+        target_compile_definitions(civic89_milestone_tests PRIVATE CIVIC89_CMAKE_BUILD)
         target_compile_definitions(civic89_milestone_tests PRIVATE CIVIC89_MILESTONE_TESTS WINDOWS UNICODE _UNICODE)
         target_link_libraries(civic89_milestone_tests PRIVATE civic89_engine
             SDL3::SDL3 SDL3_image::SDL3_image SDL3_ttf::SDL3_ttf SDL3_mixer::SDL3_mixer
@@ -189,6 +198,7 @@ if(CIVIC89_BUILD_APPLICATION)
 
     # Install only the application, pinned dependencies and inventoried assets.
     install(TARGETS civic89 RUNTIME DESTINATION .)
+    install(FILES "${CMAKE_BINARY_DIR}/build-info.json" DESTINATION .)
     install(DIRECTORY "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/$<$<CONFIG:Debug>:debug/>bin/"
         DESTINATION . FILES_MATCHING PATTERN "*.dll"
     )

@@ -1,0 +1,8 @@
+{
+  "schema": 1,
+  "gates": [
+    {"id": "asset-rights", "passed": false, "detail": "Inherited OpenSVG icon atlas terms and per-asset rights review remain unresolved; see assets/ASSET-LICENSES.yml."},
+    {"id": "brand-review", "passed": false, "detail": "The engineering name decision is not formal trademark clearance for public distribution."},
+    {"id": "clean-machine-desktop", "passed": false, "detail": "Validate visible Windows launch, audio/native dialogs and mixed-DPI hardware before public release."}
+  ]
+}

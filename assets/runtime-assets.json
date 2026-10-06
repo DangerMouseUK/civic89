@@ -283,6 +283,7 @@
       "licence_group": "inherited-icons",
       "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/icons/buttons.png",
       "referenced_by": [
+        "src/UI/ModernInterface.cpp",
         "src/UI/ToolPalette.cpp"
       ]
     },
@@ -1163,7 +1164,7 @@
       "licence_group": "inherited-sdlpp",
       "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/images/tiles.xpm",
       "referenced_by": [
-        "src/main.cpp"
+        "src/MapRenderer.cpp"
       ]
     },
     {
@@ -1174,7 +1175,8 @@
       "licence_group": "inherited-sdlpp",
       "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/images/tilessm.xpm",
       "referenced_by": [
-        "src/UI/MiniMapWindow.cpp"
+        "src/UI/MiniMapWindow.cpp",
+        "src/UI/ModernInterface.cpp"
       ]
     },
     {
@@ -1186,6 +1188,7 @@
       "source": "https://raw.githubusercontent.com/impallari/Raleway/6c67ab1f7aa65c442bd2745bb9d4ef1cd7bc01fa/fonts/v3.000%20Fontlab/TTF/Raleway-Bold.ttf",
       "referenced_by": [
         "src/UI/EvaluationWindow.cpp",
+        "src/UI/ModernInterface.cpp",
         "src/UI/QueryWindow.cpp"
       ]
     },
@@ -1212,6 +1215,7 @@
         "src/UI/BudgetWindow.cpp",
         "src/UI/DashboardWindow.cpp",
         "src/UI/EvaluationWindow.cpp",
+        "src/UI/ModernInterface.cpp",
         "src/UI/QueryWindow.cpp"
       ]
     },
@@ -1367,6 +1371,17 @@
       "source": "https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/micropolis.ico",
       "referenced_by": [
         "micropolis-sdlpp.rc"
+      ]
+    },
+    {
+      "path": "assets/branding/civic89.ico",
+      "sha256": "bf18687572925c2520e3ef17c05aced3447c03224405cf8253a5df3b0960381a",
+      "bytes": 3028,
+      "hash_mode": "raw",
+      "licence_group": "civic89-branding",
+      "source": "Original Civic 89 source: tools/create-branding-icon.py and assets/branding/civic89.svg",
+      "referenced_by": [
+        "packaging/civic89.rc.in"
       ]
     }
   ]

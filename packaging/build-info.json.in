@@ -1,0 +1,10 @@
+{
+  "schema": 1,
+  "product": "Civic 89",
+  "version": "@CIVIC89_VERSION@",
+  "commit": "@CIVIC89_COMMIT@",
+  "dirty": @CIVIC89_DIRTY_JSON@,
+  "architecture": "@CIVIC89_ARCH@",
+  "compiler": "@CMAKE_CXX_COMPILER_ID@ @CMAKE_CXX_COMPILER_VERSION@",
+  "vcpkgBaseline": "@CIVIC89_VCPKG_BASELINE@"
+}

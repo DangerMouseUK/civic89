@@ -1,5 +1,15 @@
 # Group ledger; runtime-assets.json records each staged file, pinned origin and SHA-256.
 assets:
+  - id: civic89-branding
+    paths: [assets/branding/civic89.svg, assets/branding/civic89.ico, tools/create-branding-icon.py]
+    name: Original geometric city application mark
+    source: Civic 89 M6 source; tools/create-branding-icon.py
+    author: Civic 89 contributors (2026)
+    licence: GPL-3.0-or-later
+    redistribution: conditional on GPL terms
+    modification: conditional on GPL terms
+    requirements: Include corresponding source and GPL notices.
+    notes: Drawn from original geometric rectangles. No inherited/third-party image is read or modified. CMake embeds this icon; retained Visual Studio comparison keeps its inherited resources. Not a trademark clearance claim.
   - id: raleway
     paths: [res/Raleway-Medium.ttf, res/Raleway-Bold.ttf, res/Raleway-BoldItalic.ttf, res/virtue.ttf]
     name: Raleway static fonts and dashboard compatibility alias

@@ -68,6 +68,14 @@ def main():
             "source": f"https://github.com/ldicker83/Micropolis-SDLPP/blob/{BASELINE}/{path}",
             "referenced_by": ["micropolis-sdlpp.rc"],
         })
+    path = "assets/branding/civic89.ico"
+    data = (ROOT / path).read_bytes()
+    embedded.append({
+        "path": path, "sha256": hashlib.sha256(data).hexdigest(), "bytes": len(data),
+        "hash_mode": "raw", "licence_group": "civic89-branding",
+        "source": "Original Civic 89 source: tools/create-branding-icon.py and assets/branding/civic89.svg",
+        "referenced_by": ["packaging/civic89.rc.in"],
+    })
     inventory = {"baseline": BASELINE, "font_commit": FONT_COMMIT, "files": records, "embedded_files": embedded}
     (ROOT / "assets" / "runtime-assets.json").write_text(json.dumps(inventory, indent=2) + "\n", encoding="utf-8")
     print(f"Inventoried {len(records)} files; review hashes and licence records before committing.")

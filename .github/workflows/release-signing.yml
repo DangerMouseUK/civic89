@@ -1,0 +1,77 @@
+name: release-signing
+
+# No PR or workflow_run trigger ever reaches the signing host.
+on:
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: Successful windows-ci run on main containing unsigned candidates
+        required: true
+      architecture:
+        type: choice
+        options: [x64, arm64]
+        default: x64
+        required: true
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  sign:
+    if: github.ref == 'refs/heads/main'
+    # Provision this dedicated host and protect this environment before dispatch.
+    runs-on: [self-hosted, Windows, "${{ inputs.architecture == 'arm64' && 'ARM64' || 'X64' }}", civic89-signing]
+    environment: release-signing
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Authenticate the candidate run
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ inputs.run_id }}
+        run: |
+          $ErrorActionPreference='Stop'
+          $PSNativeCommandUseErrorActionPreference=$true
+          if ($env:RUN_ID -notmatch '^\d+$') { throw 'Invalid run ID.' }
+          $run=gh api "repos/$env:GITHUB_REPOSITORY/actions/runs/$env:RUN_ID" | ConvertFrom-Json
+          if ($run.conclusion -ne 'success' -or $run.head_branch -ne 'main' -or $run.event -notin @('push','workflow_dispatch') -or
+              $run.path -ne '.github/workflows/windows-ci.yml' -or $run.head_repository.full_name -ne $env:GITHUB_REPOSITORY) {
+            throw 'Only successful main-branch candidates from this repository can be signed.'
+          }
+          git fetch origin main --no-tags
+          git merge-base --is-ancestor $run.head_sha origin/main
+          if ($LASTEXITCODE -ne 0) { throw 'Candidate is not reviewed main history.' }
+          "CANDIDATE_COMMIT=$($run.head_sha)" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+      - name: Download and seal authenticated artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ inputs.run_id }}
+          RELEASE_ARCH: ${{ inputs.architecture }}
+          SIGNING_THUMBPRINT: ${{ vars.SIGNING_THUMBPRINT }}
+          SIGNTOOL_PATH: ${{ vars.SIGNTOOL_PATH }}
+          INNO_ISCC_PATH: ${{ vars.INNO_ISCC_PATH }}
+        run: |
+          $ErrorActionPreference='Stop'
+          $PSNativeCommandUseErrorActionPreference=$true
+          $download=Join-Path $env:RUNNER_TEMP ('civic89-input-' + [guid]::NewGuid())
+          gh run download $env:RUN_ID --name "candidate-$env:RELEASE_ARCH" --dir $download
+          $output=Join-Path $env:RUNNER_TEMP ('civic89-signed-' + [guid]::NewGuid())
+          ./tools/release/Seal-Candidate.ps1 -DeliveryDirectory $download -ExpectedCommit $env:CANDIDATE_COMMIT `
+            -OutputDirectory $output -Iscc $env:INNO_ISCC_PATH -SignTool $env:SIGNTOOL_PATH -Thumbprint $env:SIGNING_THUMBPRINT
+          "SIGNED_OUTPUT=$output" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+      - name: Upload signed development candidate
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: signed-candidate-${{ inputs.architecture }}
+          path: |
+            ${{ env.SIGNED_OUTPUT }}/*.zip
+            ${{ env.SIGNED_OUTPUT }}/*-setup.exe
+            ${{ env.SIGNED_OUTPUT }}/SHA256SUMS.txt
+            ${{ env.SIGNED_OUTPUT }}/delivery.json
+          if-no-files-found: error
