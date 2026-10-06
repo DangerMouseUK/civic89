@@ -90,7 +90,7 @@ Only after tests prove no remaining functional dependency.
 
 **Acceptance:** repository search contains no runtime `Eval("UI...`) path.
 
-**Completion record (6 October 2026):** M1-01 through M1-04 are implemented on `codex/m1-remove-legacy-plumbing`. All eight scenarios load and advance through native code; F6 and startup selection use the typed controller. No runtime `Eval` or string audio API remains. Debug/Release pass 7/7 checks and the inherited Release build passes. Branch is published for PR review; hosted CI is pending; [ADR 0002](../decisions/0002_M1_COMPLETION.md) and [milestone evidence](../../tests/baseline/M1_2026-10-06.md) record compatibility decisions and interactive UI limits.
+**Completion record (6 October 2026):** M1-01 through M1-04 are implemented on `codex/m1-remove-legacy-plumbing`. All eight scenarios load and advance through native code; F6 and startup selection use the typed controller. No runtime `Eval` or string audio API remains. Debug/Release pass 7/7 checks and the inherited Release build passes. Merged in PR #6 (`de424f3`); hosted Debug/Release CI passed; [ADR 0002](../decisions/0002_M1_COMPLETION.md) and [milestone evidence](../../tests/baseline/M1_2026-10-06.md) record compatibility decisions and interactive UI limits.
 
 ## 4. Milestone 2 - Engine Boundary and Testability
 
@@ -115,6 +115,8 @@ Provide explicit test seeding/control without changing normal play semantics.
 ### M2-05 Parity fixtures - L
 
 Golden state digests for known city/tick counts.
+
+**Completion record (6 October 2026):** M2-01 through M2-05 are implemented on `codex/m2-engine-boundary`. The native app links a platform-free engine; a standalone headless runner, explicit deterministic control and 25 pre-extraction golden cases are verified. Application Debug/Release pass 39/39 checks each; headless and ASan pass 32/32 each; retained Visual Studio Release builds. [ADR 0003](../decisions/0003_M2_ENGINE_BOUNDARY.md), [dependency audit](../reference/ENGINE_DEPENDENCIES.md) and [evidence](../../tests/baseline/M2_2026-10-06.md) record the complete milestone and limits. Hosted CI is tracked on its delivered PR.
 
 ## 5. Milestone 3 - Functional Completion
 

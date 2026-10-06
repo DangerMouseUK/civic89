@@ -1,6 +1,6 @@
 # Civic 89 - Project Status
 
-**Current phase:** Milestone 1 complete on `codex/m1-remove-legacy-plumbing`; published for PR review; hosted CI pending
+**Current phase:** Milestone 2 complete on `codex/m2-engine-boundary`; PR delivery and hosted verification follow local gates
 **Updated:** 6 October 2026
 **Current product name:** Civic 89  
 **Repository root:** `C:\Dev\Projects\civic89`  
@@ -8,9 +8,9 @@
 
 ## Authoritative local repository state
 
-- Branch: `codex/m1-remove-legacy-plumbing`, published and tracking origin. Commits `1f49500` / `c51174d` complete M1. The user has authorized complete milestones per branch/PR going forward.
-- Local and remote `main`: merge commit `d2b278a357293d35fb1d4f21efcaa990cfc54c93` from [PR #5](https://github.com/DangerMouseUK/civic89/pull/5), merged by the user on 6 October 2026. Bootstrap and earlier typed routes remain in its history.
-- The merged local `codex/typed-earthquake-presentation` was safely deleted with `git branch -d`; its deleted remote reference was pruned. At cleanup, origin had only `main`; no stale feature branches remained. Upstream refs and the baseline tag are preserved.
+- Engineering branch: `codex/m2-engine-boundary`, completing all M2 items in one PR. Continue using complete milestones per branch/PR.
+- Local and remote `main`: `de424f37959ca9864ffdebb5f4517a1dc5998e4f`, user-merged [PR #6](https://github.com/DangerMouseUK/civic89/pull/6) on 6 October 2026. M1's [hosted CI](https://github.com/DangerMouseUK/civic89/actions/runs/37432056603) passed Debug/Release 7/7 checks on `810b859` before merge.
+- Synced main with `git fetch origin --prune`, `git switch main`, `git pull --ff-only origin main`. Verified the M1 branch was an ancestor and deleted it with `git branch -d`; origin had already deleted it. No stale feature branches remain. Upstream refs/tag are preserved.
 - `.git`: confirmed at `C:\Dev\Projects\civic89\.git`.
 - Baseline SHA: `9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad`.
 - Baseline tag: `upstream-sdlpp-baseline` (annotated; verified locally and on origin).
@@ -53,25 +53,20 @@
 
 ## Current engineering task
 
-**M1 - Remove Legacy Command Plumbing is complete.** The user's delivery unit is now one whole milestone per branch/PR, recorded in `AGENTS.md` and the roadmap. M2 engine extraction is the next milestone and is not mixed into this PR.
+**M2 - Engine Boundary and Testability is complete locally.** This branch includes the entire milestone, its baseline capture, compatibility decisions, runner, tests and CI gates. M3 functional completion is the next milestone after this PR is reviewed/merged.
 
-Earlier typed increments are merged through PRs #2-#5. PR #5's [CI](https://github.com/DangerMouseUK/civic89/actions/runs/37428051380) and [merged-main CI](https://github.com/DangerMouseUK/civic89/actions/runs/37429117027) passed both configurations for `4f12745` and `d2b278a`.
+- [x] **M2-01:** Audit direct and transitive platform/presentation dependencies in [ENGINE_DEPENDENCIES.md](project/reference/ENGINE_DEPENDENCIES.md).
+- [x] **M2-02:** Compile the platform-free simulation once into `civic89_engine`; native application and headless tools link it. Engine-only presets need no vcpkg, SDL, Win32/RC, JSON assets, textures or fonts. The include/import gate enforces the boundary. Retained Visual Studio project includes eight support/split files, with all 47 original source paths preserved.
+- [x] **M2-03:** `civic89_runner` loads a current-format city or packaged scenario, generates terrain, steps N inherited phases and reports summary/digest. Strict arguments, optional seed/speed control, missing/invalid file errors and clock-range checks are included.
+- [x] **M2-04:** Opt-in seeding of the existing RNG, without changing normal-play seeding/distributions. GUI scheduling and independent animation remain intact; injectable message clock and silent typed defaults allow headless operation.
+- [x] **M2-05:** Capture 25 golden cases from merged M1 **before extraction** (all eight scenarios at 0/16/1,024 phases and Detroit at 16,384). Extracted Debug/Release/ASan results match their original references; preserve Bern's existing `/fp:fast` difference.
+- [x] Final Debug and Release configure/build plus **39/39 CTests** each. Final engine-only Debug and ASan RelWithDebInfo configure/build plus **32/32 CTests** each, including long-run parity and no sanitizer findings.
+- [x] Native dummy/software SDL tests retain all M1 lifecycle checks and exercise sprite cache draw/release/recreation. Inherited Visual Studio Release build passes.
+- [x] Current-format byte-size/tile-order/own-save-load tests and transactional rejection of truncated, oversized, corrupt-tile or unsafe-speed city inputs. No writer format change; valid-city history reset remains inherited behavior pending M3.
+- [x] Source comparisons confirm 13 simulation/data implementations unchanged, only an unused SDL include removed from `s_sim.cpp`, and all eight sprite updates unchanged apart from equal frame-count substitution.
+- [ ] Verify hosted Debug/Release/ASan CI on the delivered PR; record its result in the PR description after completion.
 
-- [x] **M1-01:** Complete command inventory, with all former routes and retirement decisions recorded in [LEGACY_EVAL_INVENTORY.md](project/reference/LEGACY_EVAL_INVENTORY.md).
-- [x] **M1-02:** All audio calls are typed; dashboard messages, navigation requests, generation, earthquake and scenario outcomes use application-owned presentation interfaces. Null audio/navigation/visual behavior is preserved; dormant notification audio is not activated.
-- [x] **M1-03:** Native `ScenarioController` validates/loads/starts all eight packaged scenarios. F6 opens a native selector; `civic89.exe --scenario 1..8` selects at startup. Successful starts clear stale earthquake state and old save selection. Missing/invalid inputs preserve the active session and emit no started event. Won/lost outcomes retain thresholds and reach the dashboard.
-- [x] **M1-04:** Remove the `Eval` declaration/definition and all call expressions, string sound wrappers, unused picture wrapper and inactive options command. CTest prevents reintroduction.
-- [x] Characterize all eight inherited loads, metadata, disaster/scoring deadlines and the missing-file failure before implementation (`1f49500`), in both configurations.
-- [x] Pin all eight fixture byte digests, check decoding and actual initialized state, then run 64 native simulation frames per scenario. Cover invalid IDs, missing/empty/truncated/oversized/old-format/corrupt files, session preservation, restart and initialized-event ordering.
-- [x] Verify message/focus order, message expiry, dormant audio, generation-before-map ordering, all scoring boundaries and actual won/lost dispatch.
-- [x] Pass **7/7 CTests in Debug and Release**, including actual application lifecycle under SDL dummy video/software rendering. Retained Visual Studio Release also builds.
-- [x] Source comparisons reproduce complete sprite/tool/generation files by reversing only typed replacements. Simulation, disaster/RNG, existing city load/save functions, 47-source list, dependencies and inherited project files are unchanged (`out/audit/m1-source-parity.log`).
-- [x] Publish the entire milestone branch for one PR at the user's request.
-- [ ] Verify hosted Debug/Release CI.
-
-[ADR 0002](project/decisions/0002_M1_COMPLETION.md) records deliberate startup repairs: validate before committing data, reset arrays before restoring histories, catalog difficulty before initialization, and emit the formerly absent win notification. Script speed modifiers are retired without guessing a multiplier; typed `ShipHorn` and `Monster` identities retain intent for the future backend. Existing sound setting/serialization behavior is preserved.
-
-Exact commands and paths are in [BUILDING.md](project/BUILDING.md). [Milestone evidence](tests/baseline/M1_2026-10-06.md) records fixture checks, tests, warnings, source comparisons and UI limits. The interactive GUI smoke could not be completed: computer-use capture returned `IGraphicsCaptureItemInterop.CreateForMonitor ... 0x80070057`, and activation returned `GetCursorPos ... 0x80070005`. Only the task-created smoke process was closed. The selector has not been visually verified on this desktop; automated native lifecycle tests do not establish interactive layout/DPI behavior.
+[ADR 0003](project/decisions/0003_M2_ENGINE_BOUNDARY.md) documents compatibility decisions and limits. [M2 evidence](tests/baseline/M2_2026-10-06.md) records the pre-extraction capture, commands, results, paths and warning debt. [BUILDING.md](project/BUILDING.md) documents application/headless/ASan commands and runner use. M1's [ADR 0002](project/decisions/0002_M1_COMPLETION.md) and [evidence](tests/baseline/M1_2026-10-06.md) remain historical checkpoints.
 
 ## Verified environment and dependency baseline
 
@@ -83,15 +78,15 @@ Exact commands and paths are in [BUILDING.md](project/BUILDING.md). [Milestone e
 
 Exact commands/target mapping: [project/BUILDING.md](project/BUILDING.md). Local evidence: [tests/baseline/BOOTSTRAP_2026-10-05.md](tests/baseline/BOOTSTRAP_2026-10-05.md). Asset provenance and replacement decision: [project/reference/RUNTIME_ASSETS.md](project/reference/RUNTIME_ASSETS.md), `assets/runtime-assets.json`, `assets/ASSET-LICENSES.yml`.
 
-Bootstrap and earlier typed increments are merged. This branch completes M1 without source moves, new production translation units or new dependencies. Hosted milestone CI is pending PR verification. No upstream push or history/tag rewrite occurred.
+M0 and M1 are merged. This branch completes M2, preserving original source paths and adding eight implementation support/split files plus the runner. No production dependencies, asset changes, upstream push or history/tag rewrite occurred. Hosted verification is delivered with the PR.
 
 ## Inherited limitations and release gates
 
 - Missing fonts were an inherited packaging defect, not a Civic 89 regression. Startup now works with approved fonts/substitute. Original developer font versions and pixel-identical text metrics cannot be established.
-- **Historical `.cty` compatibility is unproven.** The inherited writer uses native 32-bit arrays and produced a **51,360-byte** save; some supplied cities are **27,120 bytes**. The existing city reader in `FileIo.cpp` does not validate short reads. A current-version round trip does not establish historical save compatibility; M1 validates the eight packaged Windows scenario files separately. Investigate separately with tests; no format change is made here.
+- **Historical `.cty` compatibility is unproven.** The inherited writer uses native 32-bit arrays and produced a **51,360-byte** save; some supplied cities are **27,120 bytes**. M2 rejects wrong-size/corrupt city input before mutation using the existing 32-bit decoder. Current-version serialization/load tests do not establish historical import compatibility or full-state restoration. The inherited city-load history reset and writer error/atomicity limitations remain M3 work; no format change is made here.
 - `icons/LICENSE.txt` supplies OpenSVG attribution without identifying original icon sets/licences. Public binary redistribution remains blocked on that audit. Other retained graphics/fixtures preserve inherited project-level GPL/additional-terms provenance, not a completed per-asset rights review.
-- Audio playback, camera auto-goto and earthquake shake/timing remain silent/no-op presentation adapters for later milestones. M1 removes all command plumbing and adds working native scenario startup; it does not add an audio/renderer backend. Dormant notification audio and inherited mute/initialization semantics remain unchanged. Simulation RNG seeding, deterministic digests, save safety beyond scenario startup, and resource lifetime are later milestones.
+- Audio playback, camera auto-goto and earthquake shake/timing remain silent/no-op presentation adapters for later milestones. M1 removes all command plumbing and adds working native scenario startup; it does not add an audio/renderer backend. Dormant notification audio and inherited mute/initialization semantics remain unchanged. M2 supplies explicit RNG control, deterministic digests and read validation. Wider resource lifetime, full city-state restoration and safe saving remain M3 work.
 - Historical bootstrap `/W4` capture exposed **50 inherited warnings per configuration**: 40 C4100, one C4189, two C4389, one C4456, six C4459. The inherited `/W3` comparison build reported none. No warning-as-error policy introduced.
 - A final inherited MSBuild rerun passed after the manifest change with four CS1668 environment warnings: two missing `LIB` search directories reported twice by Roslyn inline tasks (Enterprise ATL/MFC and `lib\um\x64`). These are workstation/global-integration warnings, not C++ errors; no unrelated environment repair was made.
 - Original UI/window/resource branding is retained for comparison. `civic89.exe` is the new target name; public product branding/packaging remains later work.
-- Retained `.sln`/`.vcxproj` remain unedited and build after the implemented typed routes. Catch2, engine extraction, deterministic simulation digests, ASan and exhaustive UI/asset compliance testing remain later milestones.
+- Retained `.sln`/`.vcxproj` build with the M2 split/support files. Engine extraction, deterministic digests and ASan are verified. Exhaustive desktop/DPI/resource/asset compliance testing remains later work; automated native tests use SDL dummy/software rendering.

@@ -12,7 +12,7 @@
 
 #include "Budget.h"
 #include "Connection.h"
-#include "main.h"
+#include "EngineState.h"
 #include "Map.h"
 #include "s_alloc.h"
 #include "s_msg.h"
@@ -412,7 +412,8 @@ namespace
 
     ToolResult validatePlacement(const Point<int> location, int toolSize, Budget& budget, int& totalCost)
     {
-        if (!pointInRect(location - AnchorOffset, { 0, 0, SimWidth - toolSize, SimHeight - toolSize }))
+        const auto origin = location - AnchorOffset;
+        if (origin.x < 0 || origin.y < 0 || origin.x >= SimWidth - toolSize || origin.y >= SimHeight - toolSize)
         {
             return ToolResult::OutOfBounds;
         }

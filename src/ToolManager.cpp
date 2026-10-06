@@ -9,11 +9,12 @@
 // it under the terms of the GNU GPLv3, with additional terms. See the README
 // file, included in this distribution, for details.
 #include "ToolManager.h"
-#include "GameDataLoader.h"
+#include <algorithm>
+#include <utility>
 
 
-ToolManager::ToolManager() :
-    mTools{ GameDataLoader::loadTools() },
+ToolManager::ToolManager(std::vector<Tool> tools) :
+    mTools{ std::move(tools) },
     mCurrentTool{ nullptr }
 {}
 

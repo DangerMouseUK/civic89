@@ -15,7 +15,7 @@
 
 #include <array>
 
-#include <SDL3/SDL.h>
+
 
 
 /* Character Mapping */
@@ -180,7 +180,7 @@ constexpr int BurnableConductiveBits = BurnableBit + ConductiveBit;
 /* Constants */
 constexpr auto SimWidth = 120;
 constexpr auto SimHeight = 100;
-constexpr SDL_Rect ValidMapCoordinates{ 0, 0, SimWidth - 1, SimHeight - 1 };
+
 
 constexpr auto HalfWorldWidth = SimWidth / 2;
 constexpr auto HalfWorldHeight = SimHeight / 2;
@@ -222,9 +222,6 @@ bool tileIsRoad(int tile);
 bool tileCanBeBulldozed(int tile);
 bool tileCanBurn(int tile);
 
-void toggleBlinkFlag();
+
 
 void ResetMap();
-
-void drawBigMapSegment(const Point<int>& begin, const Point<int>& end);
-void drawBigMap();

@@ -34,52 +34,23 @@
 
 namespace
 {
-    void copyBufIntoArray(const int(&buf)[HistoryLength], GraphHistory& graph)
-    {
-        for (size_t i = 0; i < ResidentialPopulationHistory.size(); ++i)
-        {
-            graph[i] = buf[i];
-        }
-    }
-
-
     bool loadFile(const std::string filename)
     {
-        std::ifstream infile(filename, std::ofstream::binary);
-        if (infile.fail())
-        {
-            infile.close();
-            return false;
-        }
-
-        int buff[HistoryLength]{};
-
-        infile.read(reinterpret_cast<char*>(&buff[0]), sizeof(GraphHistory));
-        copyBufIntoArray(buff, ResidentialPopulationHistory);
-
-        infile.read(reinterpret_cast<char*>(&buff[0]), sizeof(GraphHistory));
-        copyBufIntoArray(buff, CommercialPopulationHistory);
-
-        infile.read(reinterpret_cast<char*>(&buff[0]), sizeof(GraphHistory));
-        copyBufIntoArray(buff, IndustrialPopulationHistory);
-
-        infile.read(reinterpret_cast<char*>(&buff[0]), sizeof(GraphHistory));
-        copyBufIntoArray(buff, CrimeHistory);
-
-        infile.read(reinterpret_cast<char*>(&buff[0]), sizeof(GraphHistory));
-        copyBufIntoArray(buff, PollutionHistory);
-
-        infile.read(reinterpret_cast<char*>(&buff[0]), sizeof(GraphHistory));
-        copyBufIntoArray(buff, MoneyHis);
-
-        infile.read(reinterpret_cast<char*>(&buff[0]), sizeof(GraphHistory));
-        copyBufIntoArray(buff, MiscHistory);
-
-        const auto mapData = getMapData();
-        infile.read(const_cast<char*>(mapData.data), mapData.size);
-
-        infile.close();
-
+        ScenarioData data;
+        if (readScenarioData(filename, data) != ScenarioResult::Success) { return false; }
+        const auto& misc = data.histories[6];
+        if (misc[57] < 0 || misc[57] > static_cast<int>(SimulationSpeed::AfricanSwallow) ||
+            misc[58] < 0 || misc[58] > 100 || misc[60] < 0 || misc[60] > 100 ||
+            misc[62] < 0 || misc[62] > 100) { return false; }
+        ResidentialPopulationHistory = data.histories[0];
+        CommercialPopulationHistory = data.histories[1];
+        IndustrialPopulationHistory = data.histories[2];
+        CrimeHistory = data.histories[3];
+        PollutionHistory = data.histories[4];
+        MoneyHis = data.histories[5];
+        MiscHistory = data.histories[6];
+        const auto map = getMapData();
+        std::copy(data.tiles.begin(), data.tiles.end(), reinterpret_cast<int*>(const_cast<char*>(map.data)));
         return true;
     }
 

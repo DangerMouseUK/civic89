@@ -37,7 +37,7 @@
 #include "Math/Point.h"
 
 
-#include <SDL3/SDL.h>
+
 
 #include <algorithm>
 #include <array>

@@ -19,7 +19,7 @@
 #include "w_update.h"
 
 
-#include "main.h"
+#include "EngineState.h"
 
 #include <algorithm>
 #include <array>
@@ -77,26 +77,6 @@ const Vector<int> vectorFromPoints(const Point<int>& start, const Point<int>& en
 }
 
 
-bool pointInRect(const Point<int>& point, const SDL_Rect& rect)
-{
-    return point.x >= rect.x && point.x < rect.x + rect.w && point.y >= rect.y && point.y < rect.y + rect.h;
-}
-
-
-bool pointInFRect(const Point<int>& point, const SDL_FRect& rect)
-{
-    return point.x >= rect.x && point.x < rect.x + rect.w && point.y >= rect.y && point.y < rect.y + rect.h;
-}
-
-
-SDL_FRect fRectFromRect(const SDL_Rect& rect)
-{
-    SDL_FRect fRect{};
-    SDL_RectToFRect(&rect, &fRect);
-    return fRect;
-}
-
-
 int longestAxis(const Vector<int>& vec)
 {
     return abs(vec.x) >= abs(vec.y) ? vec.x : vec.y;
@@ -115,7 +95,8 @@ Point<int> positionToCell(const Point<int>& position, const Point<int>& offset)
 
 bool coordinatesValid(const Point<int>& position)
 {
-    return pointInRect(position, ValidMapCoordinates);
+    return position.x >= 0 && position.x < SimWidth - 1 &&
+        position.y >= 0 && position.y < SimHeight - 1; // Preserve inherited edge exclusions.
 }
 
 
@@ -218,4 +199,9 @@ int random()
 int rand16()
 {
     return randomRange(0, 32767) * (randomRange(0, 1) ? -1 : 1);
+}
+
+void seedSimulationRandom(unsigned int seed)
+{
+    PseudoRandomNumberGenerator.seed(seed);
 }

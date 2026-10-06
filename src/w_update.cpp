@@ -12,7 +12,8 @@
 
 #include "Budget.h"
 
-#include "main.h"
+#include "EngineState.h"
+#include "EngineServices.h"
 
 #include "s_msg.h"
 
@@ -168,7 +169,7 @@ void updateDate()
 		//          having to call back into a global function from here.
 		if (month == Month::Enum::Jan && !gameplayOptions().autoBudget && !newMap())
 		{
-			showBudgetWindow();
+			currentPresentationEvents().budgetRequested();
 		}
     }
 }

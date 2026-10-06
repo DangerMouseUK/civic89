@@ -9,17 +9,8 @@
 // it under the terms of the GNU GPLv3, with additional terms. See the README
 // file, included in this distribution, for details.
 #pragma once
-
-#include "GameOptions.h"
-#include "Texture.h"
-
 #include "Math/Point.h"
-
-#include <string>
-
 #include <SDL3/SDL.h>
-
-#include "EngineState.h"
-
-extern SDL_Renderer* MainWindowRenderer;
-const Point<int>& viewOffset();
+bool pointInRect(const Point<int>&, const SDL_Rect&);
+bool pointInFRect(const Point<int>&, const SDL_FRect&);
+SDL_FRect fRectFromRect(const SDL_Rect&);

@@ -11,7 +11,7 @@
 #pragma once
 
 #include "EffectMap.h"
-#include "main.h"
+#include "EngineState.h"
 #include "Util.h"
 
 #include "Math/Point.h"

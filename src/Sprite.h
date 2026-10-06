@@ -10,7 +10,7 @@
 // file, included in this distribution, for details.
 #pragma once
 
-#include "Texture.h"
+
 
 #include "Math/Point.h"
 #include "Math/Vector.h"
@@ -56,7 +56,7 @@ struct SimSprite
 
 	bool active{ false };
 
-	std::vector<Texture> frames;
+	int frameCount{0};
 };
 
 
@@ -64,7 +64,7 @@ Point<int>& crashPosition();
 void crashPosition(const Point<int>& position);
 
 SimSprite* getSprite(SimSprite::Type type);
-void drawSprites();
+const std::vector<SimSprite>& simulationSprites();
 void destroyAllSprites();
 void updateSprites();
 

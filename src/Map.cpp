@@ -12,27 +12,19 @@
 
 #include "s_alloc.h"
 #include "Sprite.h"
-#include "Texture.h"
+
 #include "Util.h"
 
 #include "Math/Point.h"
 
 #include <vector>
 
-#include <SDL3/SDL.h>
-
-extern SDL_Renderer* MainWindowRenderer;
-
-extern Texture BigTileset;
-extern Texture MainMapTexture;
-
 
 namespace
 {
 	std::vector<int> MapBuffer;
 
-	SDL_FRect TileDrawRect{ 0, 0, 16, 16 };
-	bool Blink{ false };
+
 };
 
 
@@ -153,60 +145,8 @@ bool tileCanBurn(int tile)
 }
 
 
-void toggleBlinkFlag()
-{
-	Blink = !Blink;
-}
-
-
 void ResetMap()
 {
 	MapBuffer.resize(SimWidth * SimHeight);
 	std::fill(MapBuffer.begin(), MapBuffer.end(), Dirt);
-}
-
-
-/**
- * Assumes \c begin and \c end are in a valid range
- */
-void drawBigMapSegment(const Point<int>& begin, const Point<int>& end)
-{
-	SDL_SetRenderTarget(MainWindowRenderer, MainMapTexture.texture);
-
-	SDL_FRect drawRect{ 0.0f, 0.0f, 16.0f, 16.0f };
-	unsigned int tile = 0;
-
-	for (int row = begin.x; row < end.x; row++)
-	{
-		for (int col = begin.y; col < end.y; col++)
-		{
-			tile = tileValue(row, col);
-			// Blink lightning bolt in unpowered zone center
-			if (Blink && tileIsZoned({ row, col }) && !tileIsPowered({ row, col }))
-			{
-				tile = LightningBolt;
-			}
-
-			drawRect = { row * drawRect.w, col * drawRect.h, drawRect.w, drawRect.h };
-
-			const unsigned int masked = maskedTileValue(tile);
-			TileDrawRect =
-			{
-				static_cast<float>((static_cast<int>(masked) % 32) * 16),
-				static_cast<float>((static_cast<int>(masked) / 32) * 16),
-				16.0f, 16.0f
-			};
-
-			SDL_RenderTexture(MainWindowRenderer, BigTileset.texture, &TileDrawRect, &drawRect);
-		}
-	}
-
-	SDL_RenderPresent(MainWindowRenderer);
-	SDL_SetRenderTarget(MainWindowRenderer, nullptr);
-}
-
-
-void drawBigMap()
-{
-	drawBigMapSegment(Point<int>{0, 0}, Point<int>{SimWidth, SimHeight});
 }
