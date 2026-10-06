@@ -10,39 +10,31 @@
 // file, included in this distribution, for details.
 #include "SpriteRenderer.h"
 #include "Sprite.h"
-#include "Texture.h"
-#include "PresentationUtil.h"
-#include "main.h"
-#include <array>
 
-namespace { std::array<std::vector<Texture>, 7> images; }
-
-void clearSpriteImages()
+void SpriteRenderer::clear()
 {
-    for (auto& frames : images)
-    {
-        frames.clear();
-    }
+    for (auto& frames : mImages) { frames.clear(); }
 }
-
-void drawSprites()
+void SpriteRenderer::draw(SDL_Renderer* renderer, const Camera2D& camera, Vector<float> shake)
 {
     for (const auto& sprite : simulationSprites())
     {
         if (!sprite.active) { continue; }
-        auto& frames = images.at(static_cast<size_t>(sprite.type));
+        auto& frames = mImages.at(static_cast<size_t>(sprite.type));
         if (frames.empty())
         {
             for (int i = 0; i < sprite.frameCount; ++i)
             {
                 const auto name = "images/obj" + std::to_string(static_cast<int>(sprite.type) + 1)
                     + "-" + std::to_string(i) + ".xpm";
-                frames.push_back(loadTexture(MainWindowRenderer, name));
+                frames.push_back(loadTexture(renderer, name));
+                SDL_SetTextureScaleMode(frames.back().texture, SDL_SCALEMODE_NEAREST);
             }
         }
         const auto& frame = frames.at(static_cast<size_t>(sprite.frame));
-        const auto rect = fRectFromRect({sprite.position.x - viewOffset().x + sprite.offset.x,
-            sprite.position.y - viewOffset().y + sprite.offset.y, frame.dimensions.x, frame.dimensions.y});
-        SDL_RenderTexture(MainWindowRenderer, frame.texture, &frame.area, &rect);
+        const auto point = camera.worldToScreen({static_cast<float>(sprite.position.x + sprite.offset.x),
+            static_cast<float>(sprite.position.y + sprite.offset.y)}) + shake;
+        const SDL_FRect rect{point.x, point.y, frame.dimensions.x * camera.zoom(), frame.dimensions.y * camera.zoom()};
+        SDL_RenderTexture(renderer, frame.texture, &frame.area, &rect);
     }
 }

@@ -9,5 +9,16 @@
 // it under the terms of the GNU GPLv3, with additional terms. See the README
 // file, included in this distribution, for details.
 #pragma once
-void drawSprites();
-void clearSpriteImages();
+#include "Camera2D.h"
+#include "Texture.h"
+#include <array>
+#include <vector>
+
+class SpriteRenderer
+{
+public:
+    void draw(SDL_Renderer* renderer, const Camera2D& camera, Vector<float> shake);
+    void clear();
+private:
+    std::array<std::vector<Texture>, 7> mImages;
+};

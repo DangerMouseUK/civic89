@@ -36,6 +36,11 @@ set_target_properties(civic89_storage PROPERTIES VS_GLOBAL_VcpkgEnabled false VS
 
 include(CTest)
 if(BUILD_TESTING)
+    add_executable(civic89_camera_tests tests/CameraPresentation.cpp src/Camera2D.cpp src/DisplaySettings.cpp)
+    target_link_libraries(civic89_camera_tests PRIVATE civic89_engine civic89_storage)
+    target_compile_options(civic89_camera_tests PRIVATE /W4 /sdl /permissive-)
+    add_test(NAME camera-layout-cadence-settings COMMAND civic89_camera_tests)
+    set_tests_properties(camera-layout-cadence-settings PROPERTIES TIMEOUT 30)
     add_executable(civic89_tests tests/EngineTests.cpp)
     target_link_libraries(civic89_tests PRIVATE civic89_engine civic89_storage)
     target_compile_options(civic89_tests PRIVATE /W4 /sdl /permissive-)
@@ -151,7 +156,7 @@ if(CIVIC89_BUILD_APPLICATION)
         set_tests_properties(legacy-audio-and-earthquake PROPERTIES TIMEOUT 10)
 
         # Exercise native lifecycle code with the same application sources and dummy SDL.
-        add_executable(civic89_milestone_tests ${CIVIC89_APPLICATION_SOURCES} tests/MilestoneLifecycle.cpp)
+        add_executable(civic89_milestone_tests ${CIVIC89_APPLICATION_SOURCES} tests/MilestoneLifecycle.cpp tests/WindowCameraRendering.cpp)
         target_include_directories(civic89_milestone_tests PRIVATE src)
         target_compile_definitions(civic89_milestone_tests PRIVATE CIVIC89_MILESTONE_TESTS WINDOWS UNICODE _UNICODE)
         target_link_libraries(civic89_milestone_tests PRIVATE civic89_engine
@@ -196,7 +201,7 @@ if(CIVIC89_ENABLE_ASAN)
     if(NOT EXISTS "${asan_runtime}")
         message(FATAL_ERROR "MSVC AddressSanitizer runtime is missing: ${asan_runtime}")
     endif()
-    foreach(target IN ITEMS civic89_runner civic89_tests civic89_io_tests civic89 civic89_runtime_tests civic89_legacy_tests civic89_milestone_tests civic89_audio_tests)
+    foreach(target IN ITEMS civic89_runner civic89_tests civic89_camera_tests civic89_io_tests civic89 civic89_runtime_tests civic89_legacy_tests civic89_milestone_tests civic89_audio_tests)
         if(TARGET ${target})
             add_custom_command(TARGET ${target} POST_BUILD
                 COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${asan_runtime}" "$<TARGET_FILE_DIR:${target}>"

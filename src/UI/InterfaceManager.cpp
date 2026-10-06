@@ -18,10 +18,14 @@ namespace
 	std::unordered_map<InterfaceManager::Window, WindowBase*> WindowTable;
 
 
-	void CenterWindow(SDL_Window* sdlWindow, WindowBase& window)
+	void CenterWindow(SDL_Renderer* renderer, WindowBase& window)
 	{
 		int windowWidth = 0, windowHeight = 0;
-		SDL_GetWindowSize(sdlWindow, &windowWidth, &windowHeight);
+		SDL_GetRenderOutputSize(renderer, &windowWidth, &windowHeight);
+        float scaleX = 1, scaleY = 1;
+        SDL_GetRenderScale(renderer, &scaleX, &scaleY);
+        windowWidth = static_cast<int>(windowWidth / scaleX);
+        windowHeight = static_cast<int>(windowHeight / scaleY);
 		window.position({ windowWidth / 2 - window.area().size.x / 2, windowHeight / 2 - window.area().size.y / 2 });
 	}
 
@@ -127,7 +131,7 @@ void InterfaceManager::positionWindow(Window window, const Point<int>& position)
 
 void InterfaceManager::centerWindow(Window window)
 {
-	CenterWindow(mWindow, *WindowTable.at(window));
+	CenterWindow(mRenderer, *WindowTable.at(window));
 }
 
 
@@ -144,7 +148,7 @@ void InterfaceManager::centerAllWindows()
 {
 	for (auto& [id, window] : WindowTable)
 	{
-		CenterWindow(mWindow, *window);
+		CenterWindow(mRenderer, *window);
 	}
 }
 

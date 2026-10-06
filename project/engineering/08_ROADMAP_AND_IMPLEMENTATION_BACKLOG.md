@@ -146,7 +146,7 @@ Golden state digests for known city/tick counts.
 
 Replace silent/console-only critical failures with structured reporting.
 
-**Completion record (6 October 2026):** M3-01 through M3-04 are implemented together on `codex/m3-functional-completion`: typed SDL3_mixer audio with original effects and persisted native volume controls; RAII/exception-safe resource teardown; same-directory atomic city publication with validated restoration and autosave/recovery; typed diagnostics and native error reporting. Application Debug/Release/ASan pass 41/41 tests; headless Debug/ASan pass 33/33; all 25 M2 golden cases and the retained Visual Studio Release build pass. [ADR 0004](../decisions/0004_M3_FUNCTIONAL_COMPLETION.md) and [evidence](../../tests/baseline/M3_2026-10-06.md) record acceptance and compatibility limits, including ordinary-city recovery and unsupported historical formats. Hosted CI is tracked on the delivered PR.
+**Completion record (6 October 2026):** M3-01 through M3-04 are implemented together on `codex/m3-functional-completion`: typed SDL3_mixer audio with original effects and persisted native volume controls; RAII/exception-safe resource teardown; same-directory atomic city publication with validated restoration and autosave/recovery; typed diagnostics and native error reporting. Application Debug/Release/ASan pass 41/41 tests; headless Debug/ASan pass 33/33; all 25 M2 golden cases and the retained Visual Studio Release build pass. [ADR 0004](../decisions/0004_M3_FUNCTIONAL_COMPLETION.md) and [evidence](../../tests/baseline/M3_2026-10-06.md) record acceptance and compatibility limits, including ordinary-city recovery and unsupported historical formats. Merged in PR #8 (`555b7ba`); hosted Debug/Release/application ASan 41/41 and headless ASan 33/33 passed on `39a9399`.
 
 ## 6. Milestone 4 - Modern Window, Camera and Rendering
 
@@ -179,6 +179,8 @@ Separate render cadence from simulation tick cadence.
 ### M4-05 Renderer cleanup - L
 
 Centralise tile/sprite/overlay rendering and remove map drawing responsibilities from the application loop.
+
+**Completion record (6 October 2026):** M4-01 through M4-05 are implemented together on `codex/m4-window-camera-rendering`: persisted windowed/maximized/borderless modes; per-window DPI/input/layout; Camera2D with pan, cursor zoom, bounds, keyboard and pixel scaling; main-thread simulation/animation scheduling and VSync/frame limiting; centralized map/sprite/tool/quake rendering. Application Debug/Release/ASan pass 42/42 checks; headless Debug/ASan pass 34/34; all 25 M2 goldens and retained Visual Studio Release pass. Native Windows mode APIs and the automated 100–200%/mixed-scale matrix pass. Physical mixed-DPI/visible desktop/hardware refresh remain release checks. [ADR 0005](../decisions/0005_M4_WINDOW_CAMERA_RENDERING.md) and [evidence](../../tests/baseline/M4_2026-10-06.md) record acceptance and compatibility decisions. Hosted CI is tracked on the delivered PR.
 
 ## 7. Milestone 5 - Modern UI/UX
 

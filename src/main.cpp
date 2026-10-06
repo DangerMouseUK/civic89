@@ -8,9 +8,11 @@
 // Micropolis-SDLPP is free software; you can redistribute it and/or modify
 // it under the terms of the GNU GPLv3, with additional terms. See the README
 // file, included in this distribution, for details.
-#include "PresentationUtil.h"
-#include "SpriteRenderer.h"
 #include "MapRenderer.h"
+#include "DisplayLayout.h"
+#include "DisplaySettings.h"
+#include "FrameScheduler.h"
+#include "QuakeEffect.h"
 #include "EngineServices.h"
 #include "main.h"
 
@@ -67,17 +69,10 @@
 #include <sstream>
 #include <stdexcept>
 #include <string>
-#include <vector>
+#include <array>
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
-
-#if defined(__APPLE__)
-#include <SDL3_image/SDL_image.h>
-#else
-//#include <SDL3/SDL_image.h>
-#include <SDL3_image/SDL_Image.h>
-#endif
 
 #if defined(_WIN32)
 #define WIN32_LEAN_AND_MEAN
@@ -94,42 +89,44 @@ SDL_Renderer* MainWindowRenderer = nullptr;
 
 uint32_t MainWindowId{};
 
-Texture MainMapTexture{};
 
-Texture BigTileset{};
 
 
 namespace
 {
     constexpr auto TileSize = 16;
     constexpr auto MiniTileSize = 3;
-    constexpr auto MiniMapTileMultiplier = (TileSize + MiniTileSize - 1) / MiniTileSize;
+
 
 	constexpr Point<int> ToolPaletteDefaultPosition{ 10, 100 };
 
-    SDL_FRect FullMapViewRect{};
+    Camera2D camera;
+    QuakeEffect quake;
+    Vector<float> cameraShake{};
+    std::unique_ptr<MapRenderer> cityRenderer;
+    DisplaySettings displaySettings;
+    DisplayLayout displayLayout;
+    FrameScheduler scheduler;
+    bool settingsDirty{false};
+    bool vsyncActive{false};
+    Uint64 settingsChangedAt{};
+    Vector<float> panelDragRemainder{};
 
     Vector<int> WindowSize{};
     Vector<int> DraggableToolVector{};
 
-    Point<int> MapViewOffset{};
+
     Point<int> TilePointedAt{};
 
     bool Exit{ false };
-    bool RedrawMinimap{ false };
-    bool SimulationStep{ false };
-    bool AnimationStep{ false };
     bool RightButtonDrag{ false };
+    bool MapToolGesture{ false };
 
 
-    constexpr unsigned int SimStepDefaultTime{ 100 };
-    constexpr unsigned int AnimationStepDefaultTime{ 150 };
-
-    SDL_Rect TileHighlight{ 0, 0, TileSize, TileSize };
 
     std::array<unsigned int, 5> SpeedModifierTable{ 0, 0, 50, 75, 95 };
 
-    std::vector<SDL_TimerID> Timers;
+
 
     Budget budget{};
     CityProperties cityProperties{};
@@ -184,8 +181,8 @@ namespace
     public:
         void toolsReset() override;
         void budgetRequested() override;
-        void earthquakeStarted() override {} // Camera/disaster rendering belongs to M4.
-        void focusMap(Point<int>) override {} // Preserve the inherited no-op navigation.
+        void earthquakeStarted() override { quake.start(SDL_GetTicks()); }
+        void focusMap(Point<int> point) override { camera.focus({point.x * 16.f, point.y * 16.f}); }
         void generationStarted() override {} // Notification precedes GenerateMap.
         void showMessage(const std::string& message) override;
         void scenarioStarted(Scenario scenario) override;
@@ -202,46 +199,6 @@ namespace
     unsigned int speedModifier()
     {
         return SpeedModifierTable[static_cast<unsigned int>(simSpeed())];
-    }
-
-    Uint32 SDLCALL zonePowerBlinkTick(void*, SDL_TimerID timerID, Uint32 interval)
-    {
-        toggleBlinkFlag();
-        return interval;
-    }
-
-    Uint32 SDLCALL redrawMiniMapTick(void*, SDL_TimerID timerID, Uint32 interval)
-    {
-        RedrawMinimap = true;
-        return interval;
-    }
-
-    Uint32 SDLCALL simulationTick(void*, SDL_TimerID timerID, Uint32 interval)
-    {
-        SimulationStep = true;
-        return SimStepDefaultTime - speedModifier();
-    }
-
-    Uint32 SDLCALL animationTick(void*, SDL_TimerID timerID, Uint32 interval)
-    {
-        AnimationStep = true;
-        return interval;
-    }
-
-    void initTimers()
-    {
-        Timers.push_back(SDL_AddTimer(500, zonePowerBlinkTick, nullptr));
-        Timers.push_back(SDL_AddTimer(1000, redrawMiniMapTick, nullptr));
-        Timers.push_back(SDL_AddTimer(SimStepDefaultTime, simulationTick, nullptr));
-        Timers.push_back(SDL_AddTimer(AnimationStepDefaultTime, animationTick, nullptr));
-        if (std::ranges::any_of(Timers, [](auto timer) { return timer == 0; }))
-            { throw std::runtime_error(std::string("Unable to start application timers: ") + SDL_GetError()); }
-    }
-
-    void deinitTimers()
-    {
-        for (auto timer : Timers) { if (timer) { SDL_RemoveTimer(timer); } }
-        Timers.clear();
     }
 
     void showBudgetIfNeeded()
@@ -265,16 +222,14 @@ namespace EventHandling
     Point<int> MouseDownPosition{};
     Point<int> MouseClickPosition{};
     Point<int> MousePosition{};
+    Point<float> SceneMousePosition{};
 
     bool MouseLeftDown{ false };
 };
 
 
-const Point<int>& viewOffset()
-{
-    return MapViewOffset;
-}
-
+MapRenderer& applicationMapRenderer() { return *cityRenderer; }
+Camera2D& applicationCamera() { return camera; }
 
 void showBudgetWindow()
 {
@@ -285,6 +240,8 @@ void showBudgetWindow()
 void simInit()
 {
     initializeEngine(cityProperties, budget);
+    quake.cancel();
+    cameraShake = {};
     syncAudioOptions();
     Exit = false;
 }
@@ -310,41 +267,32 @@ void simUpdate()
 }
 
 
-void simLoop(bool doSim)
+void advancePresentation(Uint64 now)
 {
-    if (doSim)
+    for (const auto event : scheduler.advance(now, 100 - speedModifier(), interfaceManager->modalWindowVisible()))
     {
-        SimFrame(cityProperties, budget);
-        SimulationStep = false;
-    }
-
-    if (AnimationStep)
-    {
-        AnimationStep = false;
-
-        if (!paused())
+        switch (event)
         {
-            animateTiles();
-            updateSprites();
+        case FrameScheduler::Event::Simulation:
+            if (interfaceManager->modalWindowVisible()) { break; }
+            SimFrame(cityProperties, budget);
+            cityRenderer->invalidate();
+            simUpdate();
+            break;
+        case FrameScheduler::Event::Animation:
+            if (!interfaceManager->modalWindowVisible() && !paused()) { animateTiles(); updateSprites(); cityRenderer->invalidate(); }
+            break;
+        case FrameScheduler::Event::Blink:
+            cityRenderer->toggleBlink();
+            break;
+        case FrameScheduler::Event::Minimap:
+            miniMapWindow->draw();
+            break;
         }
-
-        const Point<int> begin{ MapViewOffset.x / TileSize, MapViewOffset.y / TileSize };
-        const Point<int> end
-        {
-            std::clamp((MapViewOffset.x + WindowSize.x) / TileSize + 1, 0, SimWidth),
-            std::clamp((MapViewOffset.y + WindowSize.y) / TileSize + 1, 0, SimHeight)
-        };
-
-        drawBigMapSegment(begin, end);
     }
-
-    if (RedrawMinimap)
-    {
-        miniMapWindow->draw();
-        RedrawMinimap = false;
-    }
-
-    simUpdate();
+    if (!ShakeNow) { quake.cancel(); }
+    else if (!quake.active(now)) { StopEarthquake(); quake.cancel(); }
+    cameraShake = quake.offset(now);
 }
 
 
@@ -379,9 +327,9 @@ void ApplicationPresentationEvents::scenarioFinished(ScenarioOutcome outcome)
 }
 
 
-void doPlayNewCity(CityProperties& properties, Budget& budget)
+void doPlayNewCity(CityProperties& properties, Budget& cityBudget)
 {
-    GenerateNewCity(properties, budget);
+    GenerateNewCity(properties, cityBudget);
     resume();
     simSpeed(SimulationSpeed::Normal);
 }
@@ -395,7 +343,7 @@ ScenarioResult doStartScenario(Scenario scenario)
     {
         interfaceManager->fileIoDialog().clearSaveFilename();
         interfaceManager->toolPalette().cancelTool();
-        drawBigMap();
+        cityRenderer->invalidate();
     }
     return result;
 }
@@ -431,12 +379,12 @@ void selectScenario()
 }
 
 
-void primeGame(const int startFlag, CityProperties& properties, Budget& budget)
+void primeGame(const int startFlag, CityProperties& properties, Budget& cityBudget)
 {
     switch (startFlag)
     {
     case -2: // Load a city
-        if (LoadCity("filename", properties, budget))
+        if (LoadCity("filename", properties, cityBudget))
         {
 			interfaceManager->dashboardWindow().cityName(properties.CityName());
             break;
@@ -448,7 +396,7 @@ void primeGame(const int startFlag, CityProperties& properties, Budget& budget)
         properties.GameLevel(0);
         properties.CityName("NoWhere");
 		interfaceManager->dashboardWindow().cityName(properties.CityName());
-        doPlayNewCity(properties, budget);
+        doPlayNewCity(properties, cityBudget);
         break;
 
     case 0:
@@ -477,7 +425,7 @@ void newGame()
 {
     interfaceManager->fileIoDialog().clearSaveFilename();
     resetGame();
-    drawBigMap();
+    cityRenderer->invalidate();
 }
 
 
@@ -492,7 +440,7 @@ void openGame()
         interfaceManager->toolPalette().cancelTool();
         interfaceManager->dashboardWindow().cityName(cityProperties.CityName());
         updateDate();
-        drawBigMap();
+        cityRenderer->invalidate();
     }
 }
 
@@ -519,124 +467,60 @@ void saveGame()
 }
 
 
-void buildBigTileset()
-{
-    SurfaceOwner source(IMG_Load("images/tiles.xpm"));
-    SurfaceOwner destination(SDL_CreateSurface(512, 512, SDL_PIXELFORMAT_RGBA32));
-    if (!source || !destination) { throw std::runtime_error(std::string("Unable to create tileset: ") + SDL_GetError()); }
-    auto* srcSurface = source.get();
-    auto* dstSurface = destination.get();
-
-    SDL_Rect srcRect{ 0, 0, TileSize, TileSize };
-    SDL_Rect dstRect{ 0, 0, TileSize, TileSize };
-
-    for (int i = 0; i < TILE_COUNT; ++i)
-    {
-        srcRect.y = i * TileSize;
-        dstRect = { (i % (TileSize * 2)) * TileSize, (i / (TileSize * 2)) * TileSize, TileSize, TileSize };
-        SDL_BlitSurface(srcSurface, &srcRect, dstSurface, &dstRect);
-    }
-
-    SDL_Texture* texture = SDL_CreateTextureFromSurface(MainWindowRenderer, dstSurface);
-
-    if (!texture)
-    {
-        const std::string message(std::string("buildBigTileset(): ") + SDL_GetError());
-        std::cout << message << std::endl;
-        throw std::runtime_error(message);
-    }
-
-    BigTileset = buildTexture(texture);
-}
-
-
 void loadGraphics()
 {
-    buildBigTileset();
+    cityRenderer = std::make_unique<MapRenderer>(MainWindowRenderer);
 }
-
 
 void updateMapDrawParameters()
 {
-    FullMapViewRect =
-    {
-        static_cast<float>(MapViewOffset.x),
-        static_cast<float>(MapViewOffset.y),
-        static_cast<float>(WindowSize.x),
-        static_cast<float>(WindowSize.y)
-    };
-
-    miniMapWindow->updateMapViewPosition(MapViewOffset);
+    if (!miniMapWindow) { return; }
+    miniMapWindow->updateViewportSize(camera.visibleWorld());
+    miniMapWindow->updateMapViewPosition(camera.position());
 }
-
 
 void windowSize()
 {
-    SDL_GetWindowSize(MainWindow, &WindowSize.x, &WindowSize.y);;
+    int width, height;
+    if (!SDL_GetRenderOutputSize(MainWindowRenderer, &width, &height)) { throw std::runtime_error(SDL_GetError()); }
+    if (width <= 0 || height <= 0) { return; }
+    displayLayout = DisplayLayout::fromPixels(width, height, SDL_GetWindowDisplayScale(MainWindow));
+    if (!SDL_SetRenderScale(MainWindowRenderer, displayLayout.scale, displayLayout.scale)) { throw std::runtime_error(SDL_GetError()); }
+    WindowSize = {static_cast<int>(displayLayout.logical.x), static_cast<int>(displayLayout.logical.y)};
+    camera.displayScale(displayLayout.scale);
+    camera.viewport(displayLayout.logical);
+    const float windowScale = displayLayout.scale / SDL_GetWindowPixelDensity(MainWindow);
+    SDL_SetWindowMinimumSize(MainWindow, static_cast<int>(800 * windowScale), static_cast<int>(600 * windowScale));
 }
 
-
-void clampViewOffset()
+void minimapViewUpdated(const Point<int>& tile)
 {
-    MapViewOffset =
-    {
-        std::clamp(MapViewOffset.x, 0, std::max(0, MainMapTexture.dimensions.x - WindowSize.x)),
-        std::clamp(MapViewOffset.y, 0, std::max(0, MainMapTexture.dimensions.y - WindowSize.y))
-    };
-}
-
-
-void minimapViewUpdated(const Point<int>& newOffset)
-{
-    MapViewOffset = newOffset.skewBy({ MiniMapTileMultiplier, MiniMapTileMultiplier });
-    clampViewOffset();
+    camera.focus({tile.x * 16.f + 8, tile.y * 16.f + 8});
     updateMapDrawParameters();
 }
 
-
-void windowResized(const Vector<int>& size)
+void windowResized()
 {
+    if (SDL_GetWindowFlags(MainWindow) & SDL_WINDOW_MINIMIZED) { return; }
     windowSize();
-    clampViewOffset();
-
-    miniMapWindow->updateViewportSize(WindowSize);
-
     updateMapDrawParameters();
-
-	interfaceManager->centerWindows({ InterfaceManager::Window::Budget,
-        InterfaceManager::Window::Evaluation,
-        InterfaceManager::Window::Graph,
-        InterfaceManager::Window::Options,
-        InterfaceManager::Window::Query});
-
+    if (!interfaceManager) { return; }
+    interfaceManager->centerWindows({ InterfaceManager::Window::Budget,
+        InterfaceManager::Window::Evaluation, InterfaceManager::Window::Graph,
+        InterfaceManager::Window::Options, InterfaceManager::Window::Query});
     positionDashboardWindow();
     interfaceManager->positionWindow(InterfaceManager::Window::ToolPalette, ToolPaletteDefaultPosition);
 }
 
-
 void calculateMouseToWorld()
 {
-    const auto screenCell = positionToCell(EventHandling::MousePosition, MapViewOffset);
-    
-    TilePointedAt =
-    {
-       std::clamp(screenCell.x + (MapViewOffset.x / TileSize), 0, SimWidth - 1),
-       std::clamp(screenCell.y + (MapViewOffset.y / TileSize), 0, SimHeight - 1)
-    };
-
-
-    TileHighlight =
-    {
-        (screenCell.x * TileSize) - MapViewOffset.x % TileSize,
-        (screenCell.y * TileSize) - MapViewOffset.y % TileSize,
-        TileSize, TileSize
-    };
-
-    miniMapWindow->updateTilePointedAt(TilePointedAt);
+    const auto world = camera.screenToWorld(EventHandling::SceneMousePosition - cameraShake);
+    TilePointedAt = {static_cast<int>(std::floor(world.x / TileSize)), static_cast<int>(std::floor(world.y / TileSize))};
+    if (miniMapWindow) { miniMapWindow->updateTilePointedAt(TilePointedAt); }
 }
 
 
-bool IgnoreToolMouseUp(Point<int>& mousePosition)
+bool IgnoreToolMouseUp()
 {
     if (interfaceManager->pointInWindow(EventHandling::MousePosition))
     {
@@ -692,8 +576,101 @@ void showSystemWindow()
 }
 
 
+void markDisplaySettingsChanged()
+{
+    settingsDirty = true;
+    settingsChangedAt = SDL_GetTicks();
+}
+
+void persistDisplaySettings()
+{
+    if (!settingsDirty) { return; }
+    settingsDirty = false;
+    const auto result = displaySettings.save(userDirectory / "display.cfg", fileStorage);
+    if (!result)
+    {
+        diagnostics->write(Severity::Error, DiagnosticCode::Settings, result.detail, result.path);
+#if !defined(CIVIC89_MILESTONE_TESTS)
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Civic 89 display",
+            "Could not save display settings. They will apply for this session.", MainWindow);
+#endif
+    }
+}
+
+bool applyDisplayMode(WindowMode mode)
+{
+    const auto flags = SDL_GetWindowFlags(MainWindow);
+    bool success = !(flags & SDL_WINDOW_FULLSCREEN) || SDL_SetWindowFullscreen(MainWindow, false);
+    if (success && (flags & (SDL_WINDOW_MAXIMIZED | SDL_WINDOW_MINIMIZED))) { success = SDL_RestoreWindow(MainWindow); }
+    if (mode == WindowMode::Borderless)
+    {
+        success = success && SDL_SetWindowFullscreenMode(MainWindow, nullptr) && SDL_SetWindowFullscreen(MainWindow, true);
+    }
+    else
+    {
+        const float scale = SDL_GetWindowDisplayScale(MainWindow) / SDL_GetWindowPixelDensity(MainWindow);
+        SDL_Rect usable{};
+        const bool bounded = SDL_GetDisplayUsableBounds(SDL_GetDisplayForWindow(MainWindow), &usable);
+        const int width = static_cast<int>(displaySettings.width * scale);
+        const int height = static_cast<int>(displaySettings.height * scale);
+        success = success && SDL_SetWindowSize(MainWindow, bounded ? std::min(width, usable.w) : width,
+            bounded ? std::min(height, std::max(1, usable.h - 50)) : height);
+        if (mode == WindowMode::Maximized) { success = success && SDL_MaximizeWindow(MainWindow); }
+    }
+    success = success && SDL_SyncWindow(MainWindow);
+    if (success)
+    {
+        displaySettings.mode = mode;
+        windowResized();
+        markDisplaySettingsChanged();
+        diagnostics->write(Severity::Info, DiagnosticCode::Display, "Window mode " + std::to_string(static_cast<int>(mode)));
+    }
+    else
+    {
+        diagnostics->write(Severity::Warning, DiagnosticCode::Display, SDL_GetError());
+#if !defined(CIVIC89_MILESTONE_TESTS)
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Civic 89 display", SDL_GetError(), MainWindow);
+#endif
+    }
+    return success;
+}
+
+void applyVSync()
+{
+    vsyncActive = displaySettings.vsync && SDL_SetRenderVSync(MainWindowRenderer, 1);
+    if (!vsyncActive)
+    {
+        SDL_SetRenderVSync(MainWindowRenderer, 0);
+        if (displaySettings.vsync) { diagnostics->write(Severity::Warning, DiagnosticCode::Display, "VSync unavailable; using a 60 Hz frame limit"); }
+    }
+}
+
+void displayOptions()
+{
+    const std::array<SDL_MessageBoxButtonData,6> buttons{{{0,0,"Windowed"}, {0,1,"Maximized"}, {0,2,"Borderless fullscreen"},
+        {0,3,"Toggle VSync"}, {0,4,"Toggle pixel perfect"}, {SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT,5,"Close"}}};
+    const std::string message = std::string("VSync: ") + (displaySettings.vsync ? "on" : "off") +
+        "; pixel perfect: " + (displaySettings.pixelPerfect ? "on" : "off") +
+        "\nMouse wheel: zoom; right-drag or arrow keys: pan; Home: center.\nF11: toggle borderless fullscreen; F12: display settings.";
+    const SDL_MessageBoxData box{SDL_MESSAGEBOX_INFORMATION, MainWindow, "Civic 89 display", message.c_str(),
+        static_cast<int>(buttons.size()), buttons.data(), nullptr};
+    int selected = 5;
+    if (!SDL_ShowMessageBox(&box, &selected)) { diagnostics->write(Severity::Warning, DiagnosticCode::Display, SDL_GetError()); return; }
+    if (selected >= 0 && selected <= 2) { applyDisplayMode(static_cast<WindowMode>(selected)); }
+    else if (selected == 3) { displaySettings.vsync = !displaySettings.vsync; applyVSync(); markDisplaySettingsChanged(); }
+    else if (selected == 4)
+    {
+        displaySettings.pixelPerfect = !displaySettings.pixelPerfect;
+        camera.pixelPerfect(displaySettings.pixelPerfect);
+        markDisplaySettingsChanged();
+    }
+    persistDisplaySettings();
+}
+
+
 void handleKeyEvent(SDL_Event& event)
 {
+    if (event.key.windowID != MainWindowId || event.key.repeat) { return; }
     if (interfaceManager->optionsWindow().visible())
     {
         interfaceManager->optionsWindow().injectKeyDown(event.key.key);
@@ -760,6 +737,15 @@ void handleKeyEvent(SDL_Event& event)
         interfaceManager->showWindow(InterfaceManager::Window::Graph);
         break;
 
+    case SDLK_F11:
+        applyDisplayMode(displaySettings.mode == WindowMode::Borderless ? WindowMode::Windowed : WindowMode::Borderless);
+        break;
+    case SDLK_F12:
+        displayOptions();
+        break;
+    case SDLK_HOME:
+        camera.focus({SimWidth * 8.f, SimHeight * 8.f});
+        break;
     case SDLK_F10:
 		interfaceManager->showWindow(InterfaceManager::Window::Budget);
         break;
@@ -771,57 +757,70 @@ void handleKeyEvent(SDL_Event& event)
 }
 
 
+void updateDragVector()
+{
+    DraggableToolVector = {};
+    if (toolManager->currentTool().draggable && MapToolGesture && EventHandling::MouseLeftDown && toolManager->dragStart() != TilePointedAt)
+    {
+        DraggableToolVector = vectorFromPoints(toolManager->dragStart(), TilePointedAt);
+        ToolActions::validateDragVector(DraggableToolVector, budget, *toolManager);
+    }
+}
+
 void handleMouseEvent(SDL_Event& event)
 {
     if (event.window.windowID != MainWindowId) { return; }
-
-    Vector<int> mouseMotionDelta{};
-    Point<int> mousePosition = EventHandling::MousePosition;
-
     switch (event.type)
     {
     case SDL_EVENT_MOUSE_MOTION:
-        EventHandling::MousePosition = { static_cast<int>(event.motion.x), static_cast<int>(event.motion.y) };
-        mouseMotionDelta = { static_cast<int>(event.motion.xrel), static_cast<int>(event.motion.yrel) };
-
-        DraggableToolVector = {};
-        if (toolManager->currentTool().draggable && EventHandling::MouseLeftDown && toolManager->dragStart() != TilePointedAt)
+    {
+        EventHandling::SceneMousePosition = {event.motion.x, event.motion.y};
+        EventHandling::MousePosition = EventHandling::SceneMousePosition.to<int>();
+        panelDragRemainder += Vector<float>{event.motion.xrel, event.motion.yrel};
+        const auto delta = panelDragRemainder.to<int>();
+        panelDragRemainder -= delta.to<float>();
+        interfaceManager->injectMouseMotion(delta);
+        if ((event.motion.state & SDL_BUTTON_RMASK) && !interfaceManager->modalWindowVisible())
         {
-            DraggableToolVector = vectorFromPoints(toolManager->dragStart(), TilePointedAt);
-			ToolActions::validateDragVector(DraggableToolVector, budget, *toolManager);
-        }
-
-        calculateMouseToWorld();
-
-		interfaceManager->injectMouseMotion(mouseMotionDelta);
-
-        if ((SDL_GetMouseState(nullptr, nullptr) & SDL_BUTTON_RMASK) != 0)
-        {
-            MapViewOffset -= mouseMotionDelta;
-            clampViewOffset();
+            camera.pan({-event.motion.xrel, -event.motion.yrel});
             updateMapDrawParameters();
             RightButtonDrag = true;
         }
+        calculateMouseToWorld();
+        updateDragVector();
         break;
-
+    }
+    case SDL_EVENT_MOUSE_WHEEL:
+    {
+        EventHandling::SceneMousePosition = {event.wheel.mouse_x, event.wheel.mouse_y};
+        EventHandling::MousePosition = EventHandling::SceneMousePosition.to<int>();
+        if (interfaceManager->modalWindowVisible() || EventHandling::MouseLeftDown ||
+            interfaceManager->pointInWindow(EventHandling::MousePosition)) { break; }
+        const float direction = event.wheel.direction == SDL_MOUSEWHEEL_FLIPPED ? -event.wheel.y : event.wheel.y;
+        const float zoom = camera.pixelPerfect() ? camera.zoom() + direction / displayLayout.scale :
+            camera.zoom() * std::pow(1.125f, direction);
+        camera.zoomAt(zoom, {event.wheel.mouse_x, event.wheel.mouse_y});
+        updateMapDrawParameters(); calculateMouseToWorld();
+        break;
+    }
     case SDL_EVENT_MOUSE_BUTTON_DOWN:
+        EventHandling::SceneMousePosition = {event.button.x, event.button.y};
+        EventHandling::MousePosition = EventHandling::SceneMousePosition.to<int>();
+        calculateMouseToWorld();
         if (event.button.button == SDL_BUTTON_LEFT)
         {
             EventHandling::MouseLeftDown = true;
-            EventHandling::MouseDownPosition = { static_cast<int>(event.motion.x), static_cast<int>(event.motion.y) };
-
-            if (interfaceManager->injectMouseDown(EventHandling::MousePosition))
-            {
-                return;
-            }
-
-            toolManager->dragStart(TilePointedAt);
-            
-            if (!interfaceManager->budgetWindow().visible() && !toolManager->currentTool().draggable)
+            MapToolGesture = false;
+            EventHandling::MouseDownPosition = EventHandling::MousePosition;
+            if (interfaceManager->injectMouseDown(EventHandling::MousePosition) || interfaceManager->modalWindowVisible()) { return; }
+            if (!camera.containsWorld(camera.screenToWorld(EventHandling::SceneMousePosition - cameraShake))) { return; }
+            MapToolGesture = true;
+            toolManager->dragStart(TilePointedAt); updateDragVector();
+            if (!toolManager->currentTool().draggable)
             {
                 ToolActions::executeTool(TilePointedAt, budget, *toolManager);
+                cityRenderer->invalidate();
             }
-
             if (toolManager->currentTool().type == Tool::Type::Query)
             {
                 interfaceManager->queryWindow().setQueryResult(toolManager->queryResult());
@@ -829,70 +828,75 @@ void handleMouseEvent(SDL_Event& event)
             }
         }
         break;
-
     case SDL_EVENT_MOUSE_BUTTON_UP:
+        EventHandling::SceneMousePosition = {event.button.x, event.button.y};
+        EventHandling::MousePosition = EventHandling::SceneMousePosition.to<int>();
+        calculateMouseToWorld(); updateDragVector();
         if (event.button.button == SDL_BUTTON_LEFT)
         {
+            const bool gesture = MapToolGesture;
+            MapToolGesture = false;
             EventHandling::MouseLeftDown = false;
-            EventHandling::MouseClickPosition = { static_cast<int>(event.button.x), static_cast<int>(event.button.y) };
+            EventHandling::MouseClickPosition = EventHandling::MousePosition;
             interfaceManager->injectMouseUp();
-
-            if (IgnoreToolMouseUp(mousePosition))
-            {
-                return;
-            }
-
+            if (!gesture || IgnoreToolMouseUp() || interfaceManager->modalWindowVisible()) { return; }
+            if (!camera.containsWorld(camera.screenToWorld(EventHandling::SceneMousePosition - cameraShake))) { return; }
             toolManager->dragEnd(TilePointedAt);
-            
             if (toolManager->currentTool().draggable)
             {
                 ToolActions::executeDrag(DraggableToolVector, TilePointedAt, budget, *toolManager);
+                cityRenderer->invalidate();
             }
         }
         else if (event.button.button == SDL_BUTTON_RIGHT)
         {
-            if (!RightButtonDrag)
-            {
-                toolManager->currentTool(Tool::Type::None);
-                interfaceManager->toolPalette().cancelTool();
-            }
-
+            if (!RightButtonDrag) { toolManager->currentTool(Tool::Type::None); interfaceManager->toolPalette().cancelTool(); }
             RightButtonDrag = false;
         }
         break;
-
-    default:
-        break;
+    default: break;
     }
 }
 
 
 void handleWindowEvent(SDL_Event& event)
 {
-    switch (event.window.type)
+    if (event.window.windowID != MainWindowId) { return; }
+    switch (event.type)
     {
     case SDL_EVENT_WINDOW_RESIZED:
-        windowResized(Vector<int>{event.window.data1, event.window.data2});
-        break;
-
-    case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
-        if (event.window.windowID == miniMapWindow->id())
+    case SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED:
+    case SDL_EVENT_WINDOW_DISPLAY_SCALE_CHANGED:
+    case SDL_EVENT_WINDOW_DISPLAY_CHANGED:
+        windowResized();
+        if (!(SDL_GetWindowFlags(MainWindow) & (SDL_WINDOW_MAXIMIZED | SDL_WINDOW_FULLSCREEN | SDL_WINDOW_MINIMIZED)))
         {
-            miniMapWindow->hide();
+            displaySettings.width = std::clamp(WindowSize.x, 800, 7680);
+            displaySettings.height = std::clamp(WindowSize.y, 600, 4320);
+            markDisplaySettingsChanged();
         }
-
-        if (event.window.windowID == MainWindowId)
+        break;
+    case SDL_EVENT_WINDOW_MAXIMIZED:
+    case SDL_EVENT_WINDOW_RESTORED:
+        if (!(SDL_GetWindowFlags(MainWindow) & SDL_WINDOW_FULLSCREEN))
         {
-            simExit();
+            displaySettings.mode = SDL_GetWindowFlags(MainWindow) & SDL_WINDOW_MAXIMIZED ? WindowMode::Maximized : WindowMode::Windowed;
+            markDisplaySettingsChanged();
         }
-
         break;
-
-    default:
+    case SDL_EVENT_WINDOW_FOCUS_LOST:
+        MapToolGesture = false;
+        EventHandling::MouseLeftDown = false;
+        RightButtonDrag = false;
+        interfaceManager->injectMouseUp();
         break;
+    case SDL_EVENT_WINDOW_CLOSE_REQUESTED: simExit(); break;
+    default: break;
     }
 }
 
+
+void rebuildPresentationGraphics();
 
 void pumpEvents()
 {
@@ -900,6 +904,15 @@ void pumpEvents()
     while (SDL_PollEvent(&event))
     {
         miniMapWindow->injectEvent(event);
+        if (event.type == SDL_EVENT_RENDER_DEVICE_RESET || event.type == SDL_EVENT_RENDER_TARGETS_RESET)
+        {
+            rebuildPresentationGraphics();
+            continue;
+        }
+        if (event.type == SDL_EVENT_RENDER_DEVICE_LOST)
+            { throw std::runtime_error("The graphics device was lost. Restart Civic 89. If an autosave exists, recovery is available."); }
+        if (event.window.windowID == MainWindowId && !SDL_ConvertEventToRenderCoordinates(MainWindowRenderer, &event))
+            { throw std::runtime_error(SDL_GetError()); }
 
         if (event.type >= SDL_EVENT_WINDOW_FIRST && event.type <= SDL_EVENT_WINDOW_LAST)
         {
@@ -916,6 +929,7 @@ void pumpEvents()
         case SDL_EVENT_MOUSE_MOTION:
         case SDL_EVENT_MOUSE_BUTTON_DOWN:
         case SDL_EVENT_MOUSE_BUTTON_UP:
+        case SDL_EVENT_MOUSE_WHEEL:
             handleMouseEvent(event);
             break;
 
@@ -932,13 +946,17 @@ void pumpEvents()
 
 void initMainWindow()
 {
-	MainWindow = SDL_CreateWindow("Civic 89", 800, 600, SDL_WINDOW_RESIZABLE);
+    auto flags = SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY;
+#if defined(CIVIC89_MILESTONE_TESTS)
+    flags |= SDL_WINDOW_HIDDEN;
+#endif
+	MainWindow = SDL_CreateWindow("Civic 89", 800, 600, flags);
     if (!MainWindow)
     {
         throw std::runtime_error("initRenderer(): Unable to create primary window: " + std::string(SDL_GetError()));
     }
     
-    SDL_SetWindowMinimumSize(MainWindow, 800, 600);
+
 	SDL_SetWindowPosition(MainWindow, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
 }
 
@@ -957,6 +975,9 @@ void initRenderer()
     SDL_SetRenderDrawBlendMode(MainWindowRenderer, SDL_BLENDMODE_BLEND);
 
     MainWindowId = SDL_GetWindowID(MainWindow);
+    applyVSync();
+    diagnostics->write(Severity::Info, DiagnosticCode::Display, std::string("Renderer: ") + SDL_GetRendererName(MainWindowRenderer));
+    applyDisplayMode(displaySettings.mode);
 }
 
 
@@ -964,85 +985,31 @@ void initViewParamters()
 {
     windowSize();
 
-    MainMapTexture = newTexture(MainWindowRenderer, {SimWidth * 16, SimHeight * 16});
+    camera.pixelPerfect(displaySettings.pixelPerfect);
 }
 
 
-void drawToolRect(const SDL_FRect& rect)
+std::optional<MapPreview> pendingToolPreview()
 {
-    SDL_SetRenderDrawColor(MainWindowRenderer, 255, 255, 255, 100);
-    SDL_RenderFillRect(MainWindowRenderer, &rect);
-
-    SDL_SetRenderDrawColor(MainWindowRenderer, 255, 255, 255, 255);
-    SDL_RenderRect(MainWindowRenderer, &rect);
-}
-
-
-SDL_FRect pendingToolRect()
-{
-    const SDL_Rect rect{
-        TileHighlight.x - (toolManager->currentTool().offset * TileSize),
-        TileHighlight.y - (toolManager->currentTool().offset * TileSize),
-        toolManager->currentTool().size * TileSize,
-        toolManager->currentTool().size * TileSize
-    };
-
-    return fRectFromRect(rect);
-}
-
-
-void DrawPendingTool(const ToolPalette& palette)
-{
-    if (palette.tool() == Tool::Type::None || (toolManager->currentTool().draggable && EventHandling::MouseLeftDown))
+    if (interfaceManager->modalWindowVisible() || interfaceManager->pointInWindow(EventHandling::MousePosition) ||
+        (EventHandling::MouseLeftDown && !MapToolGesture) ||
+        (interfaceManager->pointInWindow(EventHandling::MouseDownPosition) && EventHandling::MouseLeftDown) ||
+        !camera.containsWorld(camera.screenToWorld(EventHandling::SceneMousePosition - cameraShake))) { return {}; }
+    const auto& tool = toolManager->currentTool();
+    if (tool.type == Tool::Type::None) { return {}; }
+    MapPreview preview{{(TilePointedAt.x - tool.offset) * 16.f, (TilePointedAt.y - tool.offset) * 16.f,
+        tool.size * 16.f, tool.size * 16.f}, &interfaceManager->toolPalette().toolGost()};
+    if (tool.draggable && EventHandling::MouseLeftDown)
     {
-        return;
+        const auto start = toolManager->dragStart();
+        preview = {{start.x * 16.f, start.y * 16.f, 16, 16}, nullptr};
+        const bool xAxis = std::abs(DraggableToolVector.x) > std::abs(DraggableToolVector.y);
+        const int axis = xAxis ? DraggableToolVector.x : DraggableToolVector.y;
+        const float size = (std::abs(axis) + 1) * 16.f;
+        if (xAxis) { preview.worldRect.w = size; if (axis < 0) { preview.worldRect.x -= size - 16; } }
+        else { preview.worldRect.h = size; if (axis < 0) { preview.worldRect.y -= size - 16; } }
     }
-
-    const auto rect = pendingToolRect();
-
-    if (palette.toolGost().texture)
-    {
-        SDL_RenderTexture(MainWindowRenderer, palette.toolGost().texture, &palette.toolGost().area, &rect);
-        return;
-    }
-
-    drawToolRect(rect);
-}
-
-
-void drawDraggableToolVector()
-{
-    if (!EventHandling::MouseLeftDown) { return; }
-	if (!toolManager->currentTool().draggable) { return; }
-
-    if (interfaceManager->pointInWindow(EventHandling::MouseDownPosition))
-    {
-        return;
-    }
-    
-    auto toolRect = fRectFromRect({
-        (toolManager->dragStart().x * TileSize) - MapViewOffset.x,
-        (toolManager->dragStart().y * TileSize) - MapViewOffset.y,
-        TileSize, TileSize
-		});
-
-    const int axis = longestAxis(DraggableToolVector);
-    const int size = (std::abs(axis) * TileSize) + TileSize;
-
-    const bool xAxisLarger = std::abs(DraggableToolVector.x) > std::abs(DraggableToolVector.y);
-    xAxisLarger ? toolRect.w = static_cast<float>(size) : toolRect.h = static_cast<float>(size);
-
-    if (axis < 0)
-    {
-        const int startValue = size - TileSize;
-        xAxisLarger ? toolRect.x -= static_cast<float>(startValue) : toolRect.y -= static_cast<float>(startValue);
-    }
-
-    SDL_SetRenderDrawColor(MainWindowRenderer, 255, 255, 255, 100);
-    SDL_RenderFillRect(MainWindowRenderer, &toolRect);
-
-    SDL_SetRenderDrawColor(MainWindowRenderer, 255, 255, 255, 255);
-    SDL_RenderRect(MainWindowRenderer, &toolRect);
+    return preview;
 }
 
 
@@ -1060,7 +1027,7 @@ void gameInit(std::optional<Scenario> scenario)
     else { primeGame(-1, cityProperties, budget); }
 
     updateMapDrawParameters();
-    initTimers();
+    scheduler.reset(SDL_GetTicks());
 }
 
 
@@ -1112,7 +1079,7 @@ void initMinimap(const Point<int>& mainWindowPosition, const SDL_DisplayMode* mo
     };
 
     miniMapWindow = std::make_unique<MiniMapWindow>(miniMapWindowPosition, Vector<int>{ SimWidth, SimHeight });
-    miniMapWindow->updateViewportSize(WindowSize);
+    miniMapWindow->updateViewportSize(camera.visibleWorld());
     miniMapWindow->focusOnMapCoordBind(&minimapViewUpdated);
     miniMapWindow->linkEffectMaps(buildEffectMapMapping());
 }
@@ -1162,9 +1129,40 @@ void initUI()
 }
 
 
+void rebuildPresentationGraphics()
+{
+    const bool minimapVisible = miniMapWindow && !miniMapWindow->hidden();
+    clearNewMonthCallbacks(); clearNewYearCallbacks();
+    interfaceManager.reset();
+    miniMapWindow.reset();
+    cityRenderer.reset();
+    EventHandling::MouseLeftDown = false;
+    MapToolGesture = false;
+    RightButtonDrag = false;
+    toolManager->currentTool(Tool::Type::None);
+    loadGraphics();
+    initUI();
+    interfaceManager->dashboardWindow().cityName(cityProperties.CityName());
+    interfaceManager->dashboardWindow().onNewMonth((CityTime / 4) % 12);
+    interfaceManager->dashboardWindow().onNewYear(CityTime / 48 + StartingYear);
+    interfaceManager->dashboardWindow().setMessage("Graphics restored.");
+    if (minimapVisible) { miniMapWindow->show(); }
+    diagnostics->write(Severity::Info, DiagnosticCode::Display, "Presentation resources recreated after graphics reset");
+}
+
+
 void cleanUp()
 {
-    deinitTimers();
+    quake.cancel();
+    cameraShake = {};
+    camera = Camera2D{};
+    EventHandling::MouseLeftDown = false;
+    MapToolGesture = false;
+    RightButtonDrag = false;
+    panelDragRemainder = {};
+    EventHandling::SceneMousePosition = {};
+    EventHandling::MousePosition = {};
+    EventHandling::MouseDownPosition = {};
 
     miniMapWindow.reset(nullptr);
     
@@ -1177,10 +1175,7 @@ void cleanUp()
     audioService.reset();
     ShutDownSound();
     destroyAllSprites();
-    BigTileset.reset();
-    MainMapTexture.reset();
-
-    clearSpriteImages();
+    cityRenderer.reset();
     if (MainWindowRenderer) { SDL_DestroyRenderer(MainWindowRenderer); MainWindowRenderer = nullptr; }
     if (MainWindow) { SDL_DestroyWindow(MainWindow); MainWindow = nullptr; }
 
@@ -1192,50 +1187,58 @@ void cleanUp()
 void GameLoop()
 {
     miniMapWindow->draw();
-    drawBigMap();
-
+    cityRenderer->invalidate();
+    FramePacer renderPacer;
+    Uint64 previous = SDL_GetTicks();
     while (!Exit)
     {
         pumpEvents();
-        if (ScenarioID == 0 && SDL_GetTicks() - lastAutosave >= 300000)
+        const auto now = SDL_GetTicks();
+        toolManager->currentTool(interfaceManager->toolPalette().tool());
+        if (SDL_GetKeyboardFocus() == MainWindow && !interfaceManager->modalWindowVisible())
         {
-            lastAutosave = SDL_GetTicks();
+            const auto* keys = SDL_GetKeyboardState(nullptr);
+            Vector<float> direction{static_cast<float>(keys[SDL_SCANCODE_RIGHT] - keys[SDL_SCANCODE_LEFT]),
+                static_cast<float>(keys[SDL_SCANCODE_DOWN] - keys[SDL_SCANCODE_UP])};
+            const float length = std::hypot(direction.x, direction.y);
+            if (length > 0) { camera.pan(direction / length * (static_cast<float>(std::min<Uint64>(now - previous, 50)) * .5f)); }
+        }
+        previous = now;
+        advancePresentation(now);
+        updateMapDrawParameters();
+        calculateMouseToWorld(); updateDragVector();
+        if (settingsDirty && now - settingsChangedAt >= 1000) { persistDisplaySettings(); }
+        if (ScenarioID == 0 && now - lastAutosave >= 300000)
+        {
+            lastAutosave = now;
             const auto result = recovery->save(cityProperties, budget, fileStorage);
             diagnostics->write(result ? Severity::Info : Severity::Error, DiagnosticCode::Autosave,
                 result ? "Recovery city saved" : result.detail, result.path);
             if (!result) { interfaceManager->dashboardWindow().setMessage("Autosave failed. Please save your city manually."); }
         }
-
-        SDL_RenderClear(MainWindowRenderer);
-        SDL_RenderTexture(MainWindowRenderer, MainMapTexture.texture, &FullMapViewRect, nullptr);
-
-        toolManager->currentTool(interfaceManager->toolPalette().tool());
-        drawSprites();
-
-        if (!interfaceManager->modalWindowVisible())
+        const auto* mode = SDL_GetCurrentDisplayMode(SDL_GetDisplayForWindow(MainWindow));
+        const float refresh = vsyncActive && mode && mode->refresh_rate > 0 ? mode->refresh_rate : 60.f;
+        if (renderPacer.ready(SDL_GetTicksNS(), refresh))
         {
-            if (!interfaceManager->pointInWindow(EventHandling::MousePosition))
+            if (!(SDL_GetWindowFlags(MainWindow) & SDL_WINDOW_MINIMIZED))
             {
-                DrawPendingTool(interfaceManager->toolPalette());
-                drawDraggableToolVector();
+                cityRenderer->render(camera, cameraShake, pendingToolPreview());
+                if (!interfaceManager->modalWindowVisible() && currentEvaluation().needsAttention)
+                {
+                    interfaceManager->evaluationWindow().setEvaluation(currentEvaluation());
+                    currentEvaluationSeen();
+                }
+                interfaceManager->draw();
+                SDL_RenderPresent(MainWindowRenderer);
+                if (!miniMapWindow->hidden()) { miniMapWindow->drawUI(); }
+                newMap(false);
             }
-
-            if (currentEvaluation().needsAttention)
-            {
-                interfaceManager->evaluationWindow().setEvaluation(currentEvaluation());
-                currentEvaluationSeen();
-            }
-
-            simLoop(SimulationStep);
         }
-
-        interfaceManager->draw();
-
-        SDL_RenderPresent(MainWindowRenderer);
-        miniMapWindow->drawUI();
-
-        newMap(false);
+        const auto deadline = std::min(scheduler.next() * 1000000, renderPacer.next());
+        const auto after = SDL_GetTicksNS();
+        if (deadline > after) { SDL_DelayNS(std::min<Uint64>(deadline - after, 10000000)); }
     }
+    persistDisplaySettings();
 }
 
 
@@ -1279,6 +1282,9 @@ int main(int argc, char* argv[])
         diagnostics = std::make_unique<DiagnosticLog>(userDirectory / "civic89.log");
         diagnostics->write(Severity::Info, DiagnosticCode::Startup, "Civic 89 starting");
         recovery = std::make_unique<RecoveryStore>(userDirectory);
+        if (const auto settings = DisplaySettings::load(userDirectory / "display.cfg")) { displaySettings = *settings; }
+        else if (std::filesystem::exists(userDirectory / "display.cfg"))
+            { diagnostics->write(Severity::Warning, DiagnosticCode::Settings, "Invalid display settings; using defaults"); }
 #if defined(CIVIC89_MILESTONE_TESTS)
         constexpr int sessions = 12;
 #else
@@ -1308,7 +1314,7 @@ int main(int argc, char* argv[])
             {
                 if (std::string_view(error.what()) != "M3 injected startup failure") { throw; }
                 if (SDL_WasInit(0) || TTF_WasInit() || MainWindow || MainWindowRenderer || audioService ||
-                    interfaceManager || miniMapWindow || BigTileset.texture || MainMapTexture.texture)
+                    interfaceManager || miniMapWindow || cityRenderer)
                     { throw std::runtime_error("Partial startup retained resources"); }
             }
         }
@@ -1336,8 +1342,10 @@ int main(int argc, char* argv[])
             initUI();
 #if defined(CIVIC89_MILESTONE_TESTS)
             void runMilestoneTests(Budget&, CityProperties&, PresentationEvents&);
+            void runWindowCameraRenderingTests(Budget&, CityProperties&, PresentationEvents&, ToolManager&, InterfaceManager&, MiniMapWindow&);
             simInit();
-            initTimers();
+            scheduler.reset(SDL_GetTicks());
+            if (session == 0) { runWindowCameraRenderingTests(budget, cityProperties, presentationEvents, *toolManager, *interfaceManager, *miniMapWindow); }
             runMilestoneTests(budget, cityProperties, presentationEvents);
             const auto result = recovery->save(cityProperties, budget, fileStorage);
             if (!result || !LoadCityDetailed(recovery->path(), cityProperties, budget)) { throw std::runtime_error("Session save/reload failed"); }

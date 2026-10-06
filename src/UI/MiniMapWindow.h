@@ -70,8 +70,8 @@ public:
 
 	void focusOnMapCoordBind(MapCoordsDelegate);
 
-	void updateMapViewPosition(const Point<int>& position);
-	void updateViewportSize(const Vector<int>& viewportSize);
+	void updateMapViewPosition(const Point<float>& position);
+	void updateViewportSize(const Vector<float>& viewportSize);
 	void updateTilePointedAt(const Point<int>& tilePointedAt);
 
 	void linkEffectMap(ButtonId id, const EffectMap& map);
