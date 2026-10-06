@@ -66,6 +66,8 @@ jobs:
           "CANDIDATE_DIRECTORY=$($delivery[0].FullName)" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
           $arch=if ('${{ matrix.preset }}' -eq 'windows-arm64-release') { 'arm64' } else { 'x64' }
           "CANDIDATE_ARCH=$arch" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          ./tools/release/Test-DevelopmentRelease.ps1 -DeliveryDirectory $delivery[0].FullName `
+            -OutputDirectory (Join-Path $env:RUNNER_TEMP ('civic89-release-acceptance-' + [guid]::NewGuid()))
 
       - name: Upload ZIP, installer, corresponding source and checksums
         if: matrix.preset == 'windows-x64-release' || matrix.preset == 'windows-arm64-release'

@@ -22,6 +22,68 @@ are resolved. Inherited icon/per-asset rights, brand review and physical desktop
 acceptance are still pending. Public mode also requires a trusted signing identity.
 CI produces unsigned **development candidates** and does not create tags or public releases.
 
+## Download and play on another machine
+
+For M8 personal testing, use the repository's **draft** playtest release while
+signed into an account with repository write access. Choose `windows-x64.zip` for
+Intel/AMD Windows 11 or `windows-arm64.zip` for ARM Windows 11. Extract the entire
+ZIP into a folder and double-click `civic89.exe`. Keep all included DLLs and asset
+folders together. No compiler, vcpkg, SDL installation or PowerShell is needed to
+play. The architecture's `setup.exe` is an alternative per-user installer.
+
+Normal launch keeps application settings/recovery in the user profile. For an
+isolated desktop acceptance session, run `civic89.exe --desktop-test`; it starts
+Detroit with temporary settings/recovery. Use copies of current saves. The
+[plain-English test instructions](../packaging/DEVELOPMENT_RELEASE_NOTES.md)
+describe the checks to try. A successful download/build does not complete physical
+M8 acceptance or clear public asset/brand/signing gates.
+
+## Repeatable development drafts
+
+The manually dispatched **release-draft** workflow takes a successful
+`windows-ci` run ID and a fresh `playtest-*` tag. It becomes available after this
+workflow is merged into `main`; it runs trusted main scripts, accepts repository-owned
+CI runs (including an unmerged PR candidate), authenticates the actual build
+commit and downloads both architectures. PR CI builds use an integration merge;
+the workflow checks that its second parent is the reviewed run's head SHA.
+It does not require merging M8 to stage its existing green build locally.
+
+`New-DevelopmentRelease.ps1` verifies all ZIP/installer/source checksums, portable
+inventory/PE/build identity, clean build state and corresponding-source identity.
+It checks every source member before sharing one source ZIP between architectures
+(runner ZIP headers/compression can differ). It combines checksums and names
+delivery metadata by architecture so the files do not overwrite each other.
+Downloaded code is never executed by the release job. CI tests this verification
+and rejection of wrong commits, tampered installers, missing hashes and wrong
+source identity even when its outer checksum is valid.
+
+For a local green CI candidate, authenticate its run and download both artifacts:
+
+```powershell
+$run = '<successful windows-ci run ID>'
+gh run view $run --repo DangerMouseUK/civic89
+gh run download $run --repo DangerMouseUK/civic89 --name candidate-x64 --dir out/releases/input-x64
+gh run download $run --repo DangerMouseUK/civic89 --name candidate-arm64 --dir out/releases/input-arm64
+./tools/release/New-DevelopmentRelease.ps1 `
+  -DeliveryDirectory @('out/releases/input-x64','out/releases/input-arm64') `
+  -ExpectedCommit '<full actual delivery commit from the authenticated CI run>' `
+  -Tag playtest-m8-1 -NotesFile packaging/DEVELOPMENT_RELEASE_NOTES.md `
+  -OutputDirectory out/releases/playtest-m8-1
+```
+
+Use `-VerifyOnly` to stage/inspect assets without any GitHub write. Output must be
+fresh. Without that switch, the script creates a lightweight tag at the immutable
+build commit and a **draft prerelease**, explicitly excluded from Latest. It never
+moves an existing tag, replaces a release/asset or publishes. Reusing a release
+tag fails; use a new numbered tag for the next candidate. A draft is visible only
+to repository writers; it is suitable for the owner's other machine, not a public
+download. Public prereleases still require the public-release checklist below.
+
+The workflow needs only `contents: write` and `actions: read` for its explicit
+draft job. Normal CI retains read-only access and cannot publish a release or
+access signing credentials. Stable, signed public releases continue through the
+separate signing stage and final reviewed publication below.
+
 ## Build a complete x64 delivery
 
 Use PowerShell **7**, CMake 4.2+, the VS 2026 toolchain and pinned external vcpkg.

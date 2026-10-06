@@ -34,6 +34,14 @@ Public publication remains gated on asset rights, brand review, signing and phys
 desktop acceptance. See [release instructions](project/RELEASING.md) and
 [current engineering status](PROJECT_STATUS.md).
 
+For personal testing on another PC, download the ZIP or installer from the
+[draft playtest release](https://github.com/DangerMouseUK/civic89/releases)
+while signed into the repository owner's/collaborator's GitHub account. Extract
+the whole ZIP and double-click `civic89.exe`; developer tools are not required.
+Choose x64 for Intel/AMD Windows 11 or ARM64 for ARM Windows 11. See the
+[playtest instructions](packaging/DEVELOPMENT_RELEASE_NOTES.md). Draft downloads
+are restricted to accounts with repository write access.
+
 Windows 11 x64 is the primary target. Native Windows ARM64 builds, tests and packaging
 also pass CI; desktop/hardware support must be validated before release. Other platforms are unsupported.
 

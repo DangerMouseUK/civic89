@@ -7,6 +7,8 @@
 - Windows key chords no longer activate panel controls; focus loss clears keyboard capture and gestures.
 - Audited mechanics/data, tool/economy/network regressions and safe rejection of 24 historical cities.
 - Expanded 1080p/1440p/4K/ultrawide layouts at 100–200% scale and compatibility/desktop evidence.
+- Verified GitHub draft playtest delivery with both architectures, matching source,
+  combined checksums and a manual release workflow; public publication remains gated.
 
 No simulation algorithm, golden result or city payload/schema change. Physical
 display/audibility acceptance remains pending; see M8 evidence. Optional M9 graphics
