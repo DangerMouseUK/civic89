@@ -245,9 +245,54 @@ Compile/test after the engine/platform boundary is clean.
 
 Do not start until Classic Mode has a supported contract.
 
-Candidate backlog:
+**Scope decision (6 October 2026):** the user selected the complete foundation,
+not implementation of every candidate gameplay feature. Establish the supported
+development contract first; stable public release remains separately gated.
 
-- versioned ruleset abstraction;
+### M7-01 Classic development contract
+
+Specify supported mechanics, platforms, file layout and historical/replay limits.
+
+### M7-02 Versioned rulesets
+
+Typed Classic v1/Enhanced v1 identities and capability definitions; reject unknown
+versions before mutation. Enhanced v1 initially shares Classic mechanics.
+
+### M7-03 Explicit mode selection
+
+New-city mode selection, active identity in the UI and headless runner, and Classic
+scenario policy. Existing sessions must not change modes through a preference.
+
+### M7-04 Save/import/export/recovery boundary
+
+Preserve `.cty`; add a bounded, checksummed, versioned Enhanced container, explicit
+Classic import/export and separate recovery slots. Retain atomic publication.
+
+### M7-05 Compatibility acceptance
+
+Unchanged Classic goldens and generated-city baseline; both mode paths; save round
+trips; unknown/corrupt/truncated input and publication failure isolation; UI acceptance;
+Debug/Release/ASan/native ARM64, delivery checks and retained Visual Studio parity.
+
+**Completion record (6 October 2026):** M7-01 through M7-05 are delivered together on
+`codex/m7-enhanced-foundation` in [PR #12](https://github.com/DangerMouseUK/civic89/pull/12).
+Classic v1 has a supported development contract; exact versioned identities, native/CLI
+selection, bounded/checksummed Enhanced saves, explicit Classic import/export and
+separate mode-aware recovery are implemented. All five hosted jobs pass at `105ddc9`
+([run](https://github.com/DangerMouseUK/civic89/actions/runs/37493323959)): application
+Debug/Release/ASan and native ARM64 53/53; headless ASan 43/43. All 25 Classic goldens
+and fresh-process generated-city references remain unchanged. Both architectures pass
+ZIP launch, static DLL closure, update/rollback/failure and installer retention for
+both save formats. Local source export passes 43/43; retained Visual Studio Release
+passes all 65 production entries. M6-to-M7 portable update/rollback also preserves
+both save formats. [ADR 0008](../decisions/0008_M7_ENHANCED_FOUNDATION.md),
+[Classic contract](../CLASSIC_COMPATIBILITY.md), [Enhanced format](../ENHANCED_CITY_FORMAT.md)
+and [evidence](../../tests/baseline/M7_2026-10-06.md) state compatibility and acceptance.
+Enhanced v1 still uses Classic mechanics/map size; public-release gates remain unresolved.
+Final compatibility/evidence commit checks are tracked on the PR.
+
+Future Enhanced candidate backlog (outside the M7 foundation):
+
 - larger maps;
 - expanded finance/population types;
 - additional buildings/tools;

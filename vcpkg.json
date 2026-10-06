@@ -1,6 +1,6 @@
 {
   "name": "civic89",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "builtin-baseline": "19780d9cdf84d0944cf9a318666703b89ab6629c",
   "dependencies": [
     "sdl3",

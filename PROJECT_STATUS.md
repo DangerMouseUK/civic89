@@ -1,6 +1,6 @@
 # Civic 89 - Project Status
 
-**Current phase:** M6 release engineering and root README complete on `codex/m6-release-engineering`; final checks tracked on PR #11
+**Current phase:** M0–M6 merged; complete M7 Enhanced foundation delivered on `codex/m7-enhanced-foundation` in PR #12
 **Updated:** 6 October 2026
 **Current product name:** Civic 89  
 **Repository root:** `C:\Dev\Projects\civic89`  
@@ -8,10 +8,11 @@
 
 ## Authoritative local repository state
 
-- Engineering branch: `codex/m6-release-engineering`, delivering M6-01 through M6-05 plus the root README together.
-- Delivery: [PR #11](https://github.com/DangerMouseUK/civic89/pull/11). Hosted [run 37484465857](https://github.com/DangerMouseUK/civic89/actions/runs/37484465857) passes all five jobs on `3bbea9a`, including complete native ARM64/x64 delivery acceptance and candidate upload. Final documentation/signing-history checks are tracked on the PR.
-- Local and remote `main`: `8db4b1e51e40f35764edb7566b098f96dcedfaf6`, user-merged [PR #10](https://github.com/DangerMouseUK/civic89/pull/10). M5 hosted CI passed all four jobs on `b781fd7` ([run](https://github.com/DangerMouseUK/civic89/actions/runs/37474183236)): application 43/43, headless ASan 35/35.
-- Synced with fetch/prune and ff-only pull; verified ancestry and deleted the merged `codex/m5-modern-ui` branch. Origin had already deleted it. No stale feature branches remain; upstream refs/tag are preserved.
+- Engineering branch: `codex/m7-enhanced-foundation`, delivering M7-01 through M7-05 together.
+- Scope selected by the user: Classic contract, versioned rulesets, mode selection, save compatibility and tests. Enhanced gameplay candidates remain future work.
+- Delivery: [PR #12](https://github.com/DangerMouseUK/civic89/pull/12). Hosted [run 37493323959](https://github.com/DangerMouseUK/civic89/actions/runs/37493323959) passes all five jobs at `105ddc9`: application Debug/Release/ASan and native ARM64 **53/53**, headless ASan **43/43**. Both Release jobs pass complete packaging/update/install acceptance. Final compatibility/evidence commit checks are tracked on the PR.
+- Local and remote `main`: `fa3534bcda2ae6080eb91ac4c799413d40781213`, user-merged [PR #11](https://github.com/DangerMouseUK/civic89/pull/11). Merged-main [run 37487642898](https://github.com/DangerMouseUK/civic89/actions/runs/37487642898) passes all five jobs.
+- Synced with fetch/prune and ff-only pull; verified M6 branch-head ancestry and deleted merged `codex/m6-release-engineering`. Origin had already deleted it. Only main and the active M7 branch remain locally; upstream refs/tag are preserved.
 - `.git`: confirmed at `C:\Dev\Projects\civic89\.git`.
 - Baseline SHA: `9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad`.
 - Baseline tag: `upstream-sdlpp-baseline` (annotated; verified locally and on origin).
@@ -54,24 +55,22 @@
 
 ## Current engineering task
 
-**M6 - Release Engineering plus the root README.** All five items share this branch/PR.
+**M7 - Enhanced Mode foundation.** All five items share this branch/PR.
 
-- [x] Version `0.6.0-dev`, commit/architecture/dirty provenance, original Civic 89 executable resources, AUTHORS/NOTICE/CHANGELOG and rewritten README; original upstream README preserved.
-- [x] Portable ZIP + matching source + hashes; selected-compiler release CRT and complete asset/dependency notices; strict per-file/PE/identity checks and real packaged smoke path.
-- [x] Per-user Inno Setup installer, uninstall/user-data preservation and install/upgrade/removal acceptance harness.
-- [x] Separate protected manual signing integration. Public gates fail closed; no signing key/certificate is created or exported.
-- [x] Offline portable update staging, flushed atomic selection, previous-version retention and rollback; no automatic network updater before stable releases exist.
-- [x] ARM64 Release preset and native build/test/package CI. Native 43/43 tests, ZIP launch, update/rollback and installer acceptance pass.
-- [x] Initial local Debug/Release builds and **43/43** tests in each, including all 25 Classic goldens.
-- [x] Complete x64/ARM64 packages, transaction and installer acceptance; source-archive build 35/35; application ASan 43/43; all five hosted CI jobs pass, including 25 unchanged Classic goldens.
+- [x] M7-01: supported Classic v1 development contract, with historical/replay/platform limitations and unchanged public-release gates.
+- [x] M7-02: typed versioned registry, exact ruleset identities/capabilities and rejection of unknown modes before mutation. Enhanced v1 currently uses Classic mechanics.
+- [x] M7-03: new-city mode selection, active UI/runner identity, CLI selection and Classic scenario policy; cancelling a pending selection preserves the live mode.
+- [x] M7-04: unchanged `.cty` layout, bounded/checksummed `.c89`, explicit import/export, atomic failure preservation and separate mode-aware recovery slots.
+- [x] M7-05: complete local and hosted native acceptance. Debug/Release and application ASan pass **53/53** each; headless ASan and corresponding-source export pass **43/43**. All 25 Classic goldens and four generated-city parity cases are unchanged. Real ZIP/installer/update/rollback, both save formats' retention, production Enhanced smoke under ASan and retained Visual Studio Release pass.
 
-[ADR 0007](project/decisions/0007_M6_RELEASE_ENGINEERING.md),
-[M6 evidence](tests/baseline/M6_2026-10-06.md), [RELEASING.md](project/RELEASING.md)
-and [BUILDING.md](project/BUILDING.md) record acceptance and compatibility.
-M0–M5 are merged; M6 is delivered in PR #11. Public release rights, brand/physical
-acceptance and trusted signing provisioning remain explicit gates; engineering
-candidates are unsigned. M7 is the remaining planned milestone and requires a
-supported Classic contract before Enhanced Mode work starts.
+[ADR 0008](project/decisions/0008_M7_ENHANCED_FOUNDATION.md),
+[Classic contract](project/CLASSIC_COMPATIBILITY.md),
+[Enhanced format](project/ENHANCED_CITY_FORMAT.md) and
+[M7 evidence](tests/baseline/M7_2026-10-06.md) record the foundation and acceptance.
+M0–M6 are merged. M7 is the last milestone in the current roadmap; larger maps,
+wider values and the other Enhanced candidates remain future backlog rather than
+completed gameplay. Public asset/brand/physical acceptance and trusted signing
+provisioning remain external gates; development candidates are unsigned.
 
 ## Verified environment and dependency baseline
 
@@ -83,8 +82,8 @@ supported Classic contract before Enhanced Mode work starts.
 
 Exact commands/target mapping: [project/BUILDING.md](project/BUILDING.md). Local evidence: [tests/baseline/BOOTSTRAP_2026-10-05.md](tests/baseline/BOOTSTRAP_2026-10-05.md). Asset provenance and replacement decision: [project/reference/RUNTIME_ASSETS.md](project/reference/RUNTIME_ASSETS.md), `assets/runtime-assets.json`, `assets/ASSET-LICENSES.yml`.
 
-M0–M5 are merged. M6 adds versioned release tooling and delivery checks around the
-completed native interface. The engine remains platform-free. All 122 staged
+M0–M6 are merged. M7 adds explicit ruleset and save compatibility boundaries around
+the completed native interface and delivery tooling. The engine remains platform-free. All 122 staged
 assets/notices are retained; new audio is original GPL source-generated PCM.
 No upstream push, history rewrite or tag modification occurred.
 
@@ -98,4 +97,4 @@ No upstream push, history rewrite or tag modification occurred.
 - Historical bootstrap `/W4` capture exposed **50 inherited warnings per configuration**: 40 C4100, one C4189, two C4389, one C4456, six C4459. The inherited `/W3` comparison build reported none. No warning-as-error policy introduced.
 - A final inherited MSBuild rerun passed after the manifest change with four CS1668 environment warnings: two missing `LIB` search directories reported twice by Roslyn inline tasks (Enterprise ATL/MFC and `lib\um\x64`). These are workstation/global-integration warnings, not C++ errors; no unrelated environment repair was made.
 - The main window and new dialogs identify Civic 89; inherited UI art/resources remain for comparison. `civic89.exe` is the new target name; M6 adds Civic 89 executable resources and development packaging; public release clearance remains gated.
-- Retained `.sln`/`.vcxproj` build with the M2 split/support files and M3/M4/M5 services. Engine extraction, deterministic digests and ASan are verified. Exhaustive desktop/DPI/resource/asset compliance testing remains later work; automated native tests use SDL dummy/software rendering.
+- Retained `.sln`/`.vcxproj` build with the M2 split/support files, M3/M4/M5 services and M7 container codec. Engine extraction, deterministic digests and ASan are verified. Exhaustive desktop/DPI/resource/asset compliance testing remains later work; automated native tests use SDL dummy/software rendering.

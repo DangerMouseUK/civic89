@@ -9,6 +9,7 @@
 // it under the terms of the GNU GPLv3, with additional terms. See the README
 // file, included in this distribution, for details.
 #include "FileIoDialog.h"
+#include "../CityIo.h"
 
 #include <filesystem>
 #include <stdexcept>
@@ -48,9 +49,9 @@ bool FileIoDialog::filePicked() const
 /**
  * \return Returns true if a file name was selected, false otherwise.
  */
-bool FileIoDialog::pickSaveFile()
+bool FileIoDialog::pickSaveFile(RulesetId ruleset)
 {
-    const auto filePicked = showFileDialog(FileOperation::Save);
+    const auto filePicked = showFileDialog(FileOperation::Save,ruleset);
     
     return filePicked;
 }
@@ -70,20 +71,33 @@ bool FileIoDialog::pickOpenFile()
 /**
  * \return Returns true if a file name has been picked. False otherwise.
  */
-bool FileIoDialog::showFileDialog(FileOperation operation)
+bool FileIoDialog::pickImportFile() { return showFileDialog(FileOperation::Import); }
+bool FileIoDialog::pickExportFile() { return showFileDialog(FileOperation::Export); }
+
+bool FileIoDialog::showFileDialog(FileOperation operation, RulesetId ruleset)
 {
+    const auto* definition=findRuleset(ruleset);
+    if (!definition) { return false; }
     NFD::UniquePath outPath;
-    nfdfilteritem_t filterItem[1] = {{"Civic 89 City", "cty"}};
+    nfdfilteritem_t filterItem[2] = {{"Classic city", "cty"},{"Enhanced city", "c89"}};
+    const bool opening=operation==FileOperation::Open || operation==FileOperation::Import;
+    const nfdfiltersize_t count=operation==FileOperation::Open ? 2 : 1;
+    if (operation==FileOperation::Save && ruleset==RulesetId::EnhancedV1) { filterItem[0]=filterItem[1]; }
        
-    const auto result = operation == FileOperation::Open ? NFD::OpenDialog(outPath, filterItem, 1) : NFD::SaveDialog(outPath, filterItem, 1);
+    const auto result = opening ? NFD::OpenDialog(outPath, filterItem, count) : NFD::SaveDialog(outPath, filterItem, count);
     if (result == NFD_CANCEL) { return false; }
     if (result != NFD_OKAY)
     {
         if (mErrorHandler) { mErrorHandler(NFD::GetError() ? NFD::GetError() : "File picker failed."); }
         return false;
     }
-    if (operation == FileOperation::Open) { mOpenPath = outPath.get(); return true; }
-    mFileName = outPath.get();
+    if (opening) { mOpenPath = outPath.get(); return true; }
+    auto selected=pathFromUtf8(outPath.get());
+    if (!selected.has_extension()) { selected += operation==FileOperation::Export ? ".cty" : std::string(definition->extension); }
+    const auto selectedUtf8=selected.u8string();
+    const std::string filename(selectedUtf8.begin(),selectedUtf8.end());
+    if (operation==FileOperation::Export) { mExportPath=filename; return true; }
+    mFileName = filename;
     
     std::size_t location = mFileName.find_last_of(mSeparator);
     mSavePath = mFileName.substr(0, location);

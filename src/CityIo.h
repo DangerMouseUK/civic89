@@ -17,7 +17,7 @@ inline std::string pathUtf8(const std::filesystem::path& path)
     return std::string(bytes.begin(), bytes.end());
 }
 
-enum class CityIoCode { Success, MissingFile, InvalidFormat, InvalidData, CreateFailed, WriteFailed, FlushFailed, ReplaceFailed };
+enum class CityIoCode { Success, MissingFile, InvalidFormat, InvalidData, CreateFailed, WriteFailed, FlushFailed, ReplaceFailed, UnsupportedRuleset, IncompatibleMode };
 struct CityIoResult
 {
     CityIoCode code{CityIoCode::Success};
