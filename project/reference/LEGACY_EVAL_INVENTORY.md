@@ -1,12 +1,12 @@
 # Legacy Eval inventory
 
-Initially audited 5 October 2026 against merged bootstrap `b6fc77e561bb3bbcc60c75603b942e755f4992a9`, when inherited C++ was still identical to `upstream-sdlpp-baseline` (`9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad`). This completes the documented inventory for M1-01. Subsequent progress below records typed earthquake audio, audio controls and default city effects; scenario startup and complete bridge removal remain open.
+Initially audited 5 October 2026 against merged bootstrap `b6fc77e561bb3bbcc60c75603b942e755f4992a9`, when inherited C++ was still identical to `upstream-sdlpp-baseline` (`9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad`). This completes the documented inventory for M1-01. Subsequent progress below records typed earthquake audio/presentation, audio controls and default city effects; scenario startup and complete bridge removal remain open.
 
-[`Eval()`](../../src/w_tk.cpp) prints `Eval: <command>` to `std::cout` and always returns `false`. There is no interpreter, command dispatch or consumer of its return value. Initial count: **12 live call expressions**. Current count after migrating three audio controls: **9 live call expressions**, **one commented-out call**, one definition and one declaration. A live expression inside an otherwise uncalled function is distinguished below from a reachable game path.
+[`Eval()`](../../src/w_tk.cpp) prints `Eval: <command>` to `std::cout` and always returns `false`. There is no interpreter, command dispatch or consumer of its return value. Initial count: **12 live call expressions**. Current count after migrating three audio controls and earthquake presentation: **8 live call expressions**, **one commented-out call**, one definition and one declaration. A live expression inside an otherwise uncalled function is distinguished below from a reachable game path.
 
 ## Calls and intended replacements
 
-Replacement names refer to the [typed boundary design and implementation record](../decisions/0001_TYPED_PRESENTATION_BOUNDARY.md). Default sprite/bulldozing effects, earthquake sound and bulldozer/sound-off controls are implemented; the table below lists remaining live calls.
+Replacement names refer to the [typed boundary design and implementation record](../decisions/0001_TYPED_PRESENTATION_BOUNDARY.md). Default sprite/bulldozing effects, earthquake audio/presentation and bulldozer/sound-off controls are implemented; the table below lists remaining live calls.
 
 | Command actually emitted | Call site | Reachability and current effect | Intended effect / replacement |
 |---|---|---|---|
@@ -18,19 +18,19 @@ Replacement names refer to the [typed boundary design and implementation record]
 | `UIWinGame` | [s_msg.cpp](../../src/s_msg.cpp), `DoWinGame` | No caller. A passing `DoScenarioScore` does **not** call this wrapper. | Typed won outcome after an explicit, tested lifecycle correction; do not infer that changing only this wrapper fixes scenario wins. |
 | `UIMakeSound "<channel>" "<id>"` | [w_sound.cpp](../../src/w_sound.cpp), string `MakeSound` overload | Reachable from the two rate-bearing sprite calls; lazily sets sound initialization and logs. Default sprite/bulldozing and earthquake effects now use typed overloads. Dormant message-audio callers are discussed below. No samples/devices are used. | Implemented `AudioService::playEffect(SoundId, AudioChannel)` for default effects; explicit `PlaybackRate` remains proposed for deferred operands. |
 | Empty string | [w_sound.cpp](../../src/w_sound.cpp), `MakeSoundOn` | Reachable from `ToolActions::executeTool` for `RequiresBulldozing` / `InsufficientFunds`. Its formatting is commented out, so both operands are lost and output is `Eval: ` alone. | Typed UI/construction error effects, subject to an explicit behavior correction. The intended commented command was `UIMakeSoundOn <window> "<channel>" "<id>"`; no window string belongs in the replacement. |
-| `UIEarthQuake` | [w_tk.cpp](../../src/w_tk.cpp), `DoEarthQuake(AudioService&)` | Reachable through `MakeEarthquake` and the application's no-argument adapter. Dispatches a typed explosion sound first, logs the visual request, increments `ShakeNow` and sets the timer flag. Timer creation/cancellation is commented out, and no renderer reads `ShakeNow`. | `PresentationEvents::earthquakeStarted()` with application-owned visual timing; keep simulation damage/RNG separate. |
 
 The inactive `Eval(buf)` in [`w_update.cpp`](../../src/w_update.cpp), `UpdateOptionsMenu`, remains commented out with its whole body, including formatting `UISetOptions` with eight option-bit booleans. There is no caller or runtime options command to migrate. Native options already access `GameOptions`; do not revive this command merely to replace it.
 
-## Retired audio command paths
+## Retired command paths
 
 | Former command / wrapper | Current typed route | Preserved behavior |
 |---|---|---|
 | `UISoundOff` / `SoundOff` | `SoundOff(AudioService&)` -> `stopAll()` | Lazily initializes, dispatches before clearing `Dozing`, and does not mute subsequent effects. |
 | `UIStartSound edit 1` / `DoStartSound` | `StartBulldozer(AudioService&)` -> `startLoop(Bulldozer, Construction)` | Enable/initialization guards remain; repeated starts emit once while `Dozing` is set. |
 | `UIStopSound 1` / `DoStopSound` | `StopBulldozer(AudioService&)` -> `stopLoop(Construction)` | An uninitialized stop returns without changing `Dozing`; initialized repeated stops still dispatch. |
+| `UIEarthQuake` / earthquake helper | `DoEarthQuake(AudioService&, PresentationEvents&)` -> `earthquakeStarted()` | Audio precedes the event; shake/timer state updates follow it. Explicit stop and disabled timers remain; the application-owned null adapter preserves no-op visuals. |
 
-The application supplies its null adapter through the retained no-argument control entry points. These controls still have no game callers; no UI activation is introduced. `DoStartSound` and `DoStopSound` declarations/definitions were removed only after their internal callers migrated and characterization passed. The former `DoStartSound` header/definition parameter mismatch is retired with them.
+The application supplies its null audio adapter through the retained no-argument control entry points. The three audio controls still have no game callers; no UI activation is introduced. `DoStartSound` and `DoStopSound` declarations/definitions were removed only after their internal callers migrated and characterization passed. The former `DoStartSound` header/definition parameter mismatch is retired with them.
 
 ## Audio operands and state
 
@@ -75,11 +75,11 @@ Files live under `scenarios/`; table time is `(year - 1900) * 48 + 2`. **Enum or
 
 ## Characterization and migration gates
 
-[`tests/LegacyBridge.cpp`](../../tests/LegacyBridge.cpp) links the **actual** `w_tk.cpp` and `w_sound.cpp`. It supplies only the simulation-owned `ShakeNow` storage and captures standard output. It checks lazy initialization, literal speed operands, empty tool-error requests and the inherited mute/shutdown behavior. Recording/null adapters check typed default/earthquake effects and audio-control routing, repeated start/stop, cold SoundOff and stop guards, and dispatch before state updates. CTest name: `legacy-audio-and-earthquake`. It needs no SDL initialization, window, audio device or asset working directory.
+[`tests/LegacyBridge.cpp`](../../tests/LegacyBridge.cpp) links the **actual** `w_tk.cpp` and `w_sound.cpp`. It supplies only the simulation-owned `ShakeNow` storage and captures standard output. It checks lazy initialization, literal speed operands, empty tool-error requests and the inherited mute/shutdown behavior. Recording/null adapters check typed default/earthquake effects, earthquake presentation and audio-control routing, repeated start/stop, cold SoundOff and stop guards, and dispatch before state updates. CTest name: `legacy-audio-and-earthquake`. It needs no SDL initialization, window, audio device or asset working directory.
 
 ## First migration checkpoint
 
-`DoEarthQuake(AudioService&)` routes the low explosion sound through `MakeSound(SoundId::ExplosionLow, AudioChannel::City, audio)`. The application owns the null adapter and supplies it through the inherited no-argument entry point; there is no global service registry. Its typed overload preserves lazy sound initialization and the private enable guard. The old string effect overload initially remained for all other callers. This first migration left 12 live `Eval` expressions; the subsequent control migration above reduces that count to 9. The earthquake visual `Eval` call remains.
+The first `DoEarthQuake(AudioService&)` overload routed the low explosion sound through `MakeSound(SoundId::ExplosionLow, AudioChannel::City, audio)`. The application owned the null adapter and supplied it through the inherited no-argument entry point; there was no global service registry. Its typed overload preserved lazy sound initialization and the private enable guard. The old string effect overload initially remained for all other callers. This first migration left 12 live `Eval` expressions; audio controls subsequently reduced that count to 9, with the visual call still present at that checkpoint.
 
 Tests record the typed event plus console/shake/timer state at dispatch. This verifies one low explosion on the city channel before the visual command/state changes, including repeated earthquakes. The null route produces no sound command and preserves the saved initialization flag. `MakeEarthquake`, damage/RNG, save code and visual timers are untouched. See [ADR 0001](../decisions/0001_TYPED_PRESENTATION_BOUNDARY.md) for the compatibility record.
 
@@ -87,7 +87,13 @@ Tests record the typed event plus console/shake/timer state at dispatch. This ve
 
 Four sprite calls (crash/explosion audio, traffic reporting and the ordinary low horn) and eight bulldozing explosion calls now use typed IDs through the application's `MakeSound(SoundId, AudioChannel)` adapter. `ExplosionHigh`, `HeavyTraffic` and `HonkLow` join the existing `ExplosionLow` / `Bulldozer`; all effect calls retain `City`. Tests characterize their old operands before migration and then verify typed order, initialization, mute semantics and null behavior through the actual explicit-service helper.
 
-Reversing the 12 sound-operand replacements exactly reproduces `Sprite.cpp` and `ToolActions.cpp` from merged `main` (`3e30b82`). Conditions, messages, costs, rubble/map updates and RNG calls are unchanged. This comparison supplements helper tests; it is not an integration test of the caller branches or a simulation digest. The two rate-bearing sprite calls and dormant message audio remain on the string overload, so nine live `Eval` expressions remain.
+Reversing the 12 sound-operand replacements exactly reproduces `Sprite.cpp` and `ToolActions.cpp` from merged `main` (`3e30b82`). Conditions, messages, costs, rubble/map updates and RNG calls are unchanged. This comparison supplements helper tests; it is not an integration test of the caller branches or a simulation digest. The two rate-bearing sprite calls and dormant message audio remain on the string overload; this checkpoint left nine live `Eval` expressions.
+
+## Earthquake-presentation migration checkpoint
+
+The application owns a `NullPresentationEvents` beside its audio service. Its no-argument earthquake adapter passes both to `DoEarthQuake(AudioService&, PresentationEvents&)`. The helper dispatches typed low-explosion audio, then `earthquakeStarted()`, then its existing shake/timer mutations. Recording tests snapshot audio count, console, initialization and state at visual-event dispatch for first, repeated and restarted earthquakes. Actual null adapters preserve state and remove the string visual log; explicit stop remains covered.
+
+Reversing only the new include, parameter and dispatch reproduces `w_tk.cpp` from merged `main` (`4ee280c`) exactly. `MakeEarthquake` damage/RNG, the 3,000 ms delay and disabled timer creation/cancellation remain unchanged. No renderer implements shake yet; timing/cancellation is a separate application-owned contract. This retires `UIEarthQuake`, leaving **eight** live bridge expressions. See [ADR 0001](../decisions/0001_TYPED_PRESENTATION_BOUNDARY.md) for the compatibility record and validation.
 
 These tests document the current defects; they do not endorse them as permanent compatibility requirements. Change the expectations only with the matching reviewed behavior decision and replacement tests. They do not validate sprite/tool execution, real playback, visual shaking, automatic timer expiry, scenario loading or earthquake simulation damage/RNG.
 

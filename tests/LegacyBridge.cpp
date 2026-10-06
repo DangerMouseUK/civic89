@@ -1,4 +1,5 @@
 // Civic 89 legacy characterization tests. SPDX-License-Identifier: GPL-3.0-or-later
+#include "PresentationEvents.h"
 #include "w_sound.h"
 #include "w_tk.h"
 
@@ -98,6 +99,34 @@ namespace
         }
 
         const ConsoleCapture& capture;
+    };
+
+    struct RecordedEarthquake
+    {
+        size_t audioRequestsBeforeEvent;
+        std::string consoleBeforeEvent;
+        int shakeBeforeEvent;
+        int timerBeforeEvent;
+        bool soundInitialized;
+    };
+
+    class RecordingPresentationEvents final : public PresentationEvents
+    {
+    public:
+        RecordingPresentationEvents(const ConsoleCapture& console, const RecordingAudioService& recordedAudio)
+            : capture(console), audio(recordedAudio) {}
+
+        void earthquakeStarted() override
+        {
+            requests.push_back({ audio.requests.size(), capture.contents(), ShakeNow,
+                earthquake_timer_set, userSoundOn() });
+        }
+
+        std::vector<RecordedEarthquake> requests;
+
+    private:
+        const ConsoleCapture& capture;
+        const RecordingAudioService& audio;
     };
 
     void resetBridge()
@@ -271,11 +300,12 @@ namespace
         resetBridge();
         ConsoleCapture console;
         RecordingAudioService audio(console);
-        const std::string expected = "DoEarthQuake\nEval: UIEarthQuake\n";
+        RecordingPresentationEvents presentation(console, audio);
+        const std::string expected = "DoEarthQuake\n";
         require(ShakeNow == 0 && earthquake_timer_set == 0, "Earthquake should start reset");
         require(earthquake_delay == 3000, "Inherited earthquake delay changed");
 
-        DoEarthQuake(audio);
+        DoEarthQuake(audio, presentation);
         require(ShakeNow == 1 && earthquake_timer_set == 1, "Earthquake should set shake/timer state");
         require(audio.requests.size() == 1, "Earthquake should emit one typed sound request");
         const auto& first = audio.requests.front();
@@ -284,10 +314,15 @@ namespace
             "Earthquake typed sound/channel changed");
         require(first.consoleBeforeEffect == "DoEarthQuake\n" && first.shakeBeforeEffect == 0 &&
             first.timerBeforeEffect == 0 && first.soundInitialized,
-            "Sound must initialize and route before the visual command and shake/timer mutation");
-        require(console.take() == expected, "Earthquake should retain only its legacy visual command");
+            "Sound must initialize and route before the presentation event and shake/timer mutation");
+        require(presentation.requests.size() == 1 && presentation.requests.front().audioRequestsBeforeEvent == 1 &&
+            presentation.requests.front().consoleBeforeEvent == expected &&
+            presentation.requests.front().shakeBeforeEvent == 0 &&
+            presentation.requests.front().timerBeforeEvent == 0 && presentation.requests.front().soundInitialized,
+            "Presentation must follow initialized audio and precede shake/timer mutation");
+        require(console.take() == expected, "Earthquake must not emit a string visual command");
 
-        DoEarthQuake(audio);
+        DoEarthQuake(audio, presentation);
         require(ShakeNow == 2 && earthquake_timer_set == 1, "Repeated earthquake should increment shake state");
         require(audio.requests.size() == 2, "Each earthquake should request its sound once");
         const auto& second = audio.requests.back();
@@ -295,15 +330,21 @@ namespace
             second.channel == AudioChannel::City &&
             second.consoleBeforeEffect == "DoEarthQuake\n" && second.shakeBeforeEffect == 1 &&
             second.timerBeforeEffect == 1 && second.soundInitialized,
-            "Repeated earthquake sound must precede its visual command and state increment");
-        require(console.take() == expected, "Repeated earthquake visual routing changed");
+            "Repeated earthquake sound must precede its presentation event and state increment");
+        require(presentation.requests.size() == 2 && presentation.requests.back().audioRequestsBeforeEvent == 2 &&
+            presentation.requests.back().consoleBeforeEvent == expected &&
+            presentation.requests.back().shakeBeforeEvent == 1 &&
+            presentation.requests.back().timerBeforeEvent == 1 && presentation.requests.back().soundInitialized,
+            "Repeated presentation must preserve audio/event/state ordering");
+        require(console.take() == expected, "Repeated earthquake must not emit a string visual command");
 
         StopEarthquake();
         StopEarthquake();
         require(ShakeNow == 0 && earthquake_timer_set == 0, "Earthquake stop should clear both state values");
         require(console.take().empty(), "Earthquake stop should not emit legacy commands");
+        require(presentation.requests.size() == 2, "Stopping must not emit a new earthquake-start event");
 
-        DoEarthQuake(audio);
+        DoEarthQuake(audio, presentation);
         require(ShakeNow == 1 && earthquake_timer_set == 1 && audio.requests.size() == 3,
             "Earthquake must restart from cleared shake/timer state");
         const auto& restarted = audio.requests.back();
@@ -311,16 +352,22 @@ namespace
             restarted.channel == AudioChannel::City && restarted.shakeBeforeEffect == 0 &&
             restarted.timerBeforeEffect == 0 && restarted.soundInitialized &&
             restarted.consoleBeforeEffect == "DoEarthQuake\n",
-            "Restart sound must precede the visual command and reset state increment");
-        require(console.take() == expected, "Restart should retain the legacy visual request");
+            "Restart sound must precede the presentation event and reset state increment");
+        require(presentation.requests.size() == 3 && presentation.requests.back().audioRequestsBeforeEvent == 3 &&
+            presentation.requests.back().consoleBeforeEvent == expected &&
+            presentation.requests.back().shakeBeforeEvent == 0 &&
+            presentation.requests.back().timerBeforeEvent == 0 && presentation.requests.back().soundInitialized,
+            "Restart presentation must observe the reset state after its audio request");
+        require(console.take() == expected, "Restart must not emit a string visual command");
         StopEarthquake();
 
         NullAudioService nullAudio;
+        NullPresentationEvents nullPresentation;
         userSoundOn(false);
-        DoEarthQuake(nullAudio);
+        DoEarthQuake(nullAudio, nullPresentation);
         require(ShakeNow == 1 && earthquake_timer_set == 1 && userSoundOn(),
-            "Null audio must preserve earthquake state and saved initialization flag");
-        require(console.take() == expected, "Null audio must not reintroduce a string sound command");
+            "Null adapters must preserve earthquake state and saved initialization flag");
+        require(console.take() == expected, "Null adapters must not reintroduce string commands");
         StopEarthquake();
     }
 }
@@ -334,7 +381,7 @@ int main()
         checkDefaultEffects();
         checkBulldozerLifecycle();
         checkEarthquakeLifecycle();
-        std::cout << "Legacy effects and typed audio control/earthquake tests passed\n";
+        std::cout << "Legacy effects and typed audio/presentation lifecycle tests passed\n";
         return 0;
     }
     catch (const std::exception& error)

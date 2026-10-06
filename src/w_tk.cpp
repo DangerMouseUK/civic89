@@ -10,6 +10,7 @@
 // file, included in this distribution, for details.
 #include "main.h"
 
+#include "PresentationEvents.h"
 #include "w_sound.h"
 
 #include <iostream>
@@ -38,11 +39,11 @@ void StopEarthquake()
 }
 
 
-void DoEarthQuake(AudioService& audio)
+void DoEarthQuake(AudioService& audio, PresentationEvents& presentation)
 {
     std::cout << "DoEarthQuake" << std::endl;
     MakeSound(SoundId::ExplosionLow, AudioChannel::City, audio);
-    Eval("UIEarthQuake");
+    presentation.earthquakeStarted();
     ShakeNow++;
     if (earthquake_timer_set)
     {

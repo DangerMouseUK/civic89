@@ -1,14 +1,14 @@
 # ADR 0001: Typed presentation boundary
 
-**Status:** Default city effects, earthquake audio and audio controls implemented; the broader presentation/scenario boundary remains proposed.
+**Status:** Default city effects, earthquake audio/presentation and audio controls implemented; other presentation/scenario routes remain proposed.
 
 **Date:** 5 October 2026
 
-**Scope:** M1-01 inventory, the first M1-02 audio routes and the remaining design for M1-02/M1-03.
+**Scope:** M1-01 inventory, the implemented M1-02 audio/earthquake routes and the remaining design for M1-02/M1-03.
 
 ## Context
 
-The [bridge inventory](../reference/LEGACY_EVAL_INVENTORY.md) initially identified 12 live `Eval()` calls; 9 remain after retiring the audio controls. The bridge only logs and returns `false`. Several wrappers are dormant, scenario startup is disconnected from loading, and audio payloads retain script syntax. Replacing strings with a generic string-keyed event bus would preserve the same ambiguity.
+The [bridge inventory](../reference/LEGACY_EVAL_INVENTORY.md) initially identified 12 live `Eval()` calls; 8 remain after retiring audio controls and the earthquake visual command. The bridge only logs and returns `false`. Several wrappers are dormant, scenario startup is disconnected from loading, and audio payloads retain script syntax. Replacing strings with a generic string-keyed event bus would preserve the same ambiguity.
 
 Follow the governing [phase-safe refactoring sequence and typed boundary](../engineering/05_ARCHITECTURE_AND_REFACTORING.md): test, introduce an interface, route one path, verify parity, delete the obsolete path, then consider source moves. Engine extraction and functioning audio are later milestones.
 
@@ -17,6 +17,8 @@ Follow the governing [phase-safe refactoring sequence and typed boundary](../eng
 Use small synchronous C++ interfaces, called on the existing application/simulation thread. The application owns and injects the adapters; no global string registry, queued event framework, SDL types or window names cross this boundary. Begin with recording adapters for tests and a null audio adapter. Construct adapters before their callers and keep them alive until the game/session stops.
 
 The following remains the broader illustrative design. The production [AudioService.h](../../src/AudioService.h) currently contains `ExplosionLow`, `Bulldozer`, `ExplosionHigh`, `HeavyTraffic` and `HonkLow`, `City` / `Construction`, and `playEffect`, `startLoop`, `stopLoop` and `stopAll`, plus the null adapter. Rates, additional sounds and presentation/scenario interfaces will be added when their callers migrate:
+
+The production [PresentationEvents.h](../../src/PresentationEvents.h) currently contains only `earthquakeStarted()` and its null adapter. Navigation, generation and scenario methods below remain proposed.
 
 ```cpp
 enum class AudioChannel { City, Construction };
@@ -71,15 +73,15 @@ Loop stop can use a channel because the baseline has a single construction loop 
 
 1. Completed the inventory and inherited audio/earthquake characterization without production edits in `8f7d3e1` / `8b4d5c2`.
 2. Implemented the typed earthquake sound request and recording/null adapters, preserving sound-before-visual order. Visual timing and simulation damage remain separate; evidence is recorded below.
-3. Migrate other covered audio operands individually, then navigation/notifications with their own tests. Resolve rate-bearing payloads and dormant wrappers explicitly.
+3. Implemented audio controls, default effects and the earthquake presentation event with recording/null tests. Continue with remaining audio and navigation/notifications using their own tests; resolve rate-bearing payloads and dormant wrappers explicitly.
 4. Introduce the scenario-loading seam and native controller with all eight scenario fixtures and lifecycle/failure tests. Add selection only after loading works.
 5. Delete `Eval` and its obsolete wrappers only when every inventory entry is migrated or deliberately retired and no runtime dependency remains. Keep source layout unchanged throughout this milestone.
 
 ## First route: implementation and compatibility record
 
-The application owns a `NullAudioService` beside its other existing services. The inherited no-argument `DoEarthQuake()` entry point is now a one-line application adapter that passes this service to `DoEarthQuake(AudioService&)`. `MakeEarthquake` and its callers remain untouched. The helper sends `ExplosionLow` on `City` through the typed `MakeSound` overload, then retains the legacy visual command and shake/timer mutations in their original order.
+At this first checkpoint, the application-owned `NullAudioService` was passed through the inherited no-argument `DoEarthQuake()` adapter to `DoEarthQuake(AudioService&)`. `MakeEarthquake` and its callers remained untouched. The helper sent `ExplosionLow` on `City` through the typed `MakeSound` overload, then retained the legacy visual command and shake/timer mutations in their original order. The subsequent presentation migration below adds the second explicit service parameter.
 
-The typed sound overload retains the same private enable guard and lazy `SoundInitialized` update as the string overload. This deliberately preserves the value saved through `userSoundOn()` / `MiscHistory[55]`; mute/shutdown repairs remain separate decisions. The null implementation opens no device, loads no asset and adds no dependency. The only diagnostic difference on this path is removal of `Eval: UIMakeSound "city" "Explosion-Low"`; `DoEarthQuake` and `Eval: UIEarthQuake` still log. Playback stays silent. Other effects remained on the string path at this first checkpoint; subsequent loop/default-effect migrations are recorded below.
+The typed sound overload retains the same private enable guard and lazy `SoundInitialized` update as the string overload. This deliberately preserves the value saved through `userSoundOn()` / `MiscHistory[55]`; mute/shutdown repairs remain separate decisions. The null implementation opens no device, loads no asset and adds no dependency. The diagnostic difference at this checkpoint was removal of `Eval: UIMakeSound "city" "Explosion-Low"`; `DoEarthQuake` and `Eval: UIEarthQuake` still logged. Playback stayed silent. Other effects remained on the string path at this first checkpoint; subsequent migrations are recorded below.
 
 The recording adapter exists only in `tests/LegacyBridge.cpp`. Tests check the exact typed sound/channel, one request per earthquake, initialization before dispatch, and console/shake/timer snapshots at dispatch to prove it precedes the visual command and state increment. Repeated start and explicit stop retain their prior state assertions. Running the helper with the actual null adapter also verifies lazy initialization and the absence of a string sound command.
 
@@ -105,4 +107,14 @@ Four calls in `Sprite.cpp` and eight calls in `ToolActions.cpp` now use `Explosi
 
 Recording tests verify one request per effect, high-before-low ordering, initialization before dispatch and unchanged loop/earthquake state. They also retain the inherited ineffective mute behavior and check silent null playback. These tests exercise the actual sound helper, not sprite/tool execution or a simulation digest. Both CMake builds pass 3/3 tests and the retained Visual Studio Release build passes. Commands remain in [BUILDING.md](../BUILDING.md); logs use `out/audit/typed-city-*`.
 
-The migrated effects cease printing `UIMakeSound` diagnostics and remain silent. No audio device, sample, dependency, save change or RNG/map logic is introduced. The shared string helper remains for deferred callers, so the count stays at nine live `Eval` expressions.
+The migrated effects cease printing `UIMakeSound` diagnostics and remain silent. No audio device, sample, dependency, save change or RNG/map logic is introduced. The shared string helper remained for deferred callers, so this checkpoint left nine live `Eval` expressions.
+
+## Earthquake presentation: implementation and compatibility record
+
+After PR #4 merged, restart-after-stop characterization was extended and passed against the legacy visual command in Debug and Release (`3bbda3a`). The application now owns a `NullPresentationEvents` beside its audio service and passes both through the inherited no-argument earthquake adapter to `DoEarthQuake(AudioService&, PresentationEvents&)`.
+
+The helper emits the existing low-explosion sound, calls `earthquakeStarted()`, then performs its unchanged `ShakeNow` increment and timer-flag update. The event is synchronous and carries no strength parameter: the legacy increment counter is not simulation strength. Repeated starts and explicit stops retain their state behavior; stop emits no new start event. The renderer still has no shake implementation, and the 3,000 ms timer remains disabled. Actual visual duration/cancellation needs its own application/renderer contract before a real adapter is added.
+
+Recording tests snapshot the audio-request count, console, initialization and shake/timer state at presentation dispatch for first, repeated and restarted earthquakes. They verify one presentation event after its audio request and before state mutations. The actual null adapters preserve the same state while removing the visual string log. `DoEarthQuake` itself still logs. Reversing only the new include, service parameter and event dispatch reproduces all of `w_tk.cpp` from merged `main` exactly; `MakeEarthquake` damage/RNG and the audio helpers are untouched.
+
+Both CMake builds pass 3/3 tests and the retained Visual Studio Release build passes. The header-only interface retains all 47 production translation units and unchanged project files. Commands remain in [BUILDING.md](../BUILDING.md); logs use `out/audit/typed-presentation-*`. This verifies helper routing/state with a null visual adapter, not real shake, automatic expiry, renderer teardown or deterministic simulation parity. Live `Eval` expressions decrease from nine to eight.
