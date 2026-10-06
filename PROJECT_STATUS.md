@@ -9,6 +9,7 @@
 ## Authoritative local repository state
 
 - Engineering branch: `codex/m8-faithfulness-windows-polish`, delivering M8-01 through M8-06 together, including the agreed scope documentation.
+- M8 candidate: draft [PR #13](https://github.com/DangerMouseUK/civic89/pull/13), implementation `e6039b1`. Local x64 delivery/source/update/installer acceptance passes; all five jobs pass in [CI run 37503989275](https://github.com/DangerMouseUK/civic89/actions/runs/37503989275): application Debug/Release/ASan and native ARM64 55/55; headless ASan 45/45. Both Release architectures pass complete delivery acceptance. Final documentation checks are tracked on the PR. Required physical acceptance remains pending; the draft is not a fully accepted milestone.
 - Scope selected by the user: faithful original gameplay/mechanics, modern Windows presentation and optional improved graphics only. The earlier Enhanced gameplay candidates are withdrawn; [ADR 0009](project/decisions/0009_FAITHFUL_MODERNISATION_AND_GRAPHICS.md) records the decision.
 - M7 delivery: merged [PR #12](https://github.com/DangerMouseUK/civic89/pull/12). Final head `6d73e53` passed all five jobs in [run 37494533588](https://github.com/DangerMouseUK/civic89/actions/runs/37494533588): application Debug/Release/ASan and native ARM64 **53/53**, headless ASan **43/43**. Both Release jobs passed complete packaging/update/install acceptance.
 - Local and remote `main`: `eb73f64230e35c2f0aaf8134c4cd5e6100ed155d`, the user-merged M7 PR. The recorded CI result verifies the final M7 branch head.

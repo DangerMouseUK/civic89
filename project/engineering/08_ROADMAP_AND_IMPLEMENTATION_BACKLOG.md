@@ -392,7 +392,9 @@ contract and mechanics regressions; original-gameplay interface with M7 saves/CL
 documented historical format mismatch; Windows chord/focus/native-owner/save-location
 fixes; expanded software/Direct3D 11 display and lifecycle matrix; version 0.8.0-dev
 and current documentation. Application Debug/Release/ASan pass 55/55 and headless
-Debug/ASan 45/45 locally; retained Visual Studio Release passes. Default-device
+Debug/ASan 45/45 locally; retained Visual Studio Release passes. All five hosted
+jobs pass on `e6039b1` in [run 37503989275](https://github.com/DangerMouseUK/civic89/actions/runs/37503989275),
+including native ARM64 55/55 and both complete Release deliveries. Default-device
 opening succeeds. Required physical visibility/input/dialog/audibility/mixed-DPI
 checks remain pending because desktop capture/input access is unavailable.
 [M8 evidence/checklist](../../tests/baseline/M8_2026-10-06.md) records results and
