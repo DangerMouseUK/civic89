@@ -50,7 +50,16 @@ $crtVersion=(Get-Content -LiteralPath (Join-Path $instance 'VC/Auxiliary/Build/M
 $crtBase=Join-Path $instance "VC/Redist/MSVC/$crtVersion/$($build.architecture)"
 $crtDirectories=@(Get-ChildItem -LiteralPath $crtBase -Directory -Filter '*.CRT')
 if ($crtDirectories.Count -ne 1) { throw 'Cannot select the matching MSVC CRT redistributable.' }
-Copy-Item -Path (Join-Path $crtDirectories[0].FullName '*.dll') -Destination $stage
+foreach ($dll in Get-ChildItem -LiteralPath $crtDirectories[0].FullName -Filter '*.dll') {
+    if ((Get-PeArchitecture $dll.FullName) -eq $build.architecture) {
+        Copy-Item -LiteralPath $dll.FullName -Destination $stage
+    } else {
+        # The ARM64 CRT also includes x64-base ARM64X vcruntime140_1.dll.
+        # Do not ship non-native optional libraries. Static import closure below
+        # must prove that none of the excluded DLLs is required by this package.
+        Write-Output "Excluded non-native optional CRT: $($dll.Name)"
+    }
+}
 $crtNotice=Join-Path $stage 'licenses/msvc'
 New-Item -ItemType Directory -Path $crtNotice -Force | Out-Null
 Copy-Item -LiteralPath (Join-Path $instance 'Licenses/1033/Redist.txt') -Destination $crtNotice

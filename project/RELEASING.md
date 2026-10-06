@@ -55,6 +55,10 @@ files cover the installed pinned ports, including transitive libraries. Microsof
 CRT distribution retains its separate terms and `Redist.txt`; see
 [Microsoft's documentation](https://learn.microsoft.com/en-us/cpp/windows/redistributing-visual-cpp-files).
 Windows 11 supplies the Universal CRT. App-local CRT servicing needs a new package.
+The ARM64 CRT directory includes an optional x64-base ARM64X exception runtime.
+Only native-header CRT files are copied; static import closure rejects any omitted
+DLL that the package requires. The strict native-architecture check remains in force.
+See [Microsoft's ARM64X description](https://learn.microsoft.com/en-us/windows/arm/arm64x-pe).
 Extracted source builds display an untracked-modifications annotation because no
 Git working-tree comparison is available. Official packaging requires a clean Git checkout.
 

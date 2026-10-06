@@ -59,7 +59,7 @@ Development-only portable staging:
 cmake --install out/build/windows-x64-release --config Release --prefix out/install/windows-x64-release
 ```
 
-Installation includes only the application, pinned dependency DLLs, inventoried assets and notices. It excludes user saves, tests, PDBs and arbitrary build-directory files. Run the installed executable from its directory. This does not clear inherited icon rights or historical save compatibility for public release; see `PROJECT_STATUS.md`.
+Installation includes only the application, pinned dependency DLLs, inventoried assets and notices. It excludes user saves, test binaries, PDBs and arbitrary build-directory files. Run the installed executable from its directory. This does not clear inherited icon rights or historical save compatibility for public release; see `PROJECT_STATUS.md`.
 
 ## Inherited comparison
 
@@ -76,7 +76,7 @@ Global MSBuild vcpkg integration remains available for that inherited comparison
 
 | Inherited project | CMake |
 |---|---|
-| 61 `ClCompile` entries (47 original + 8 M2 splits + 4 M3 services + 2 M4 implementations) | Explicit source parity list; 31 engine units in `civic89_engine`, 30 application units in `civic89` |
+| 64 `ClCompile` entries (47 original + 8 M2 + 4 M3 + 2 M4 + 3 M5 implementations) | Explicit source parity list; 31 engine units in `civic89_engine`, 33 application units in `civic89` |
 | `micropolis-sdlpp.rc` | Civic 89 original icon and generated version resource; inherited comparison retains its resource |
 | C++20 / WINDOWS / Unicode | C++20 / WINDOWS / UNICODE / _UNICODE |
 | `/W3`, `/sdl`, conformance | `/W4`, `/sdl`, `/permissive-`; warning debt recorded |
