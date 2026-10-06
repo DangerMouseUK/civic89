@@ -21,7 +21,6 @@ void clearSpriteImages()
 {
     for (auto& frames : images)
     {
-        for (auto& frame : frames) { SDL_DestroyTexture(frame.texture); }
         frames.clear();
     }
 }

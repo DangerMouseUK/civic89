@@ -52,11 +52,6 @@ bool FileIoDialog::pickSaveFile()
 {
     const auto filePicked = showFileDialog(FileOperation::Save);
     
-    if (filePicked)
-    {
-        extractFileName();
-    }
-
     return filePicked;
 }
 
@@ -68,19 +63,7 @@ bool FileIoDialog::pickOpenFile()
 {
     const auto filePicked = showFileDialog(FileOperation::Open);
 
-    if (filePicked)
-    {
-        extractFileName();
-    }
-
     return filePicked;
-}
-
-
-void FileIoDialog::extractFileName()
-{
-    std::size_t location = mFileName.find_last_of(mSeparator);
-    mFileName = mFileName.substr(location + 1);
 }
 
 
@@ -90,23 +73,16 @@ void FileIoDialog::extractFileName()
 bool FileIoDialog::showFileDialog(FileOperation operation)
 {
     NFD::UniquePath outPath;
-    nfdfilteritem_t filterItem[1] = {{"Micropolis City", "cty"}};
+    nfdfilteritem_t filterItem[1] = {{"Civic 89 City", "cty"}};
        
-    if(operation == FileOperation::Open)
+    const auto result = operation == FileOperation::Open ? NFD::OpenDialog(outPath, filterItem, 1) : NFD::SaveDialog(outPath, filterItem, 1);
+    if (result == NFD_CANCEL) { return false; }
+    if (result != NFD_OKAY)
     {
-        if(NFD::OpenDialog(outPath, filterItem, 1) != NFD_OKAY)
-        {
-            return false;
-        }
+        if (mErrorHandler) { mErrorHandler(NFD::GetError() ? NFD::GetError() : "File picker failed."); }
+        return false;
     }
-    else
-    {
-        if(NFD::SaveDialog(outPath, filterItem, 1) != NFD_OKAY)
-        {
-            return false;
-        }
-    }
-    
+    if (operation == FileOperation::Open) { mOpenPath = outPath.get(); return true; }
     mFileName = outPath.get();
     
     std::size_t location = mFileName.find_last_of(mSeparator);

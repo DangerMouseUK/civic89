@@ -20,6 +20,8 @@
 #include "../RCI.h"
 #include "../StringRender.h"
 #include "../Texture.h"
+#include "../Font.h"
+#include <memory>
 #include "../ToolManager.h"
 
 #include <SDL3/SDL.h>
@@ -73,6 +75,8 @@ private:
 	SDL_Renderer* mRenderer{ nullptr };
 	
 	Texture mTexture;
+    std::unique_ptr<Font> mTitleFont;
+    std::unique_ptr<Font> mMessageFont;
 	
 	const Budget& mBudget;
 	const RCI& mRci;

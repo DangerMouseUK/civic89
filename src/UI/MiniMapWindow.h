@@ -14,6 +14,7 @@
 
 #include "../Delegate.h"
 #include "../Texture.h"
+#include "../SdlResources.h"
 
 #include "../Math/Point.h"
 #include "../Math/Vector.h"
@@ -118,6 +119,8 @@ private:
 	void fillButtonHandlerTable();
 
 private:
+	WindowOwner mWindowOwner;
+	RendererOwner mRendererOwner;
 	SDL_Window* mWindow{ nullptr };
 	SDL_Renderer* mRenderer{ nullptr };
 

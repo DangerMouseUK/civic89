@@ -8,6 +8,7 @@
 // = Acknowledgement of your use of NAS2D is appriciated but is not required.
 // ==================================================================================
 #include "Font.h"
+#include "SdlResources.h"
 
 #include "Math/PointInRectangleRange.h"
 
@@ -177,7 +178,8 @@ namespace {
 			}
 		}
 
-		TTF_Font* font = TTF_OpenFont(path.c_str(), static_cast<float>(ptSize));
+		std::unique_ptr<TTF_Font, SdlDeleter<TTF_Font, TTF_CloseFont>> fontOwner(TTF_OpenFont(path.c_str(), static_cast<float>(ptSize)));
+        auto* font = fontOwner.get();
 		if (!font)
 		{
 			throw std::runtime_error("Unable to load font: " + std::string{ SDL_GetError() });
@@ -188,15 +190,13 @@ namespace {
 		fillInCharacterDimensions(font, glm);
 		const auto charBoundsSize = maxCharacterDimensions(font);
 		const auto roundedCharSize = roundedCharacterDimensions(charBoundsSize);
-		SDL_Surface* fontSurface = generateFontSurface(font, roundedCharSize);
+		SurfaceOwner fontSurface(generateFontSurface(font, roundedCharSize));
 
 		fontInfo.pointSize = ptSize;
 		fontInfo.height = TTF_GetFontHeight(font);
 		fontInfo.ascent = TTF_GetFontAscent(font);
 		fontInfo.glyphSize = roundedCharSize;
-		fontInfo.texture = generateFontTexture(fontSurface, glm, roundedCharSize);
-		SDL_DestroySurface(fontSurface);
-		TTF_CloseFont(font);
+		fontInfo.texture = generateFontTexture(fontSurface.get(), glm, roundedCharSize);
 
 		return fontInfo;
 	}
@@ -224,7 +224,8 @@ namespace {
 	SDL_Surface* generateFontSurface(TTF_Font* font, Vector<int> characterSize)
 	{
 		const auto matrixSize = characterSize * GLYPH_MATRIX_SIZE;
-		auto fontSurface = SDL_CreateSurface(matrixSize.x, matrixSize.y, SDL_PIXELFORMAT_RGBA32);
+		SurfaceOwner fontSurface(SDL_CreateSurface(matrixSize.x, matrixSize.y, SDL_PIXELFORMAT_RGBA32));
+        if (!fontSurface) { throw std::runtime_error(std::string("Unable to create font surface: ") + SDL_GetError()); }
 
 		SDL_Color white = { 255, 255, 255, 255 };
 		for (const auto glyphPosition : PointInRectangleRange(Rectangle{0, 0, GLYPH_MATRIX_SIZE, GLYPH_MATRIX_SIZE}))
@@ -244,10 +245,10 @@ namespace {
 			SDL_SetSurfaceBlendMode(characterSurface, SDL_BLENDMODE_NONE);
 			const auto pixelPosition = glyphPosition.skewBy(characterSize);
 			SDL_Rect rect = { pixelPosition.x, pixelPosition.y, 0, 0 };
-			SDL_BlitSurface(characterSurface, nullptr, fontSurface, &rect);
+			SDL_BlitSurface(characterSurface, nullptr, fontSurface.get(), &rect);
 			SDL_DestroySurface(characterSurface);
 		}
-		return fontSurface;
+		return fontSurface.release();
 	}
 
 

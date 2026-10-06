@@ -16,7 +16,7 @@ public:
     virtual void stopAll() = 0;
 };
 
-// Preserve silent playback until licensed assets and an audio backend exist.
+// Silent fallback for headless tools and unavailable presentation backends.
 class NullAudioService final : public AudioService
 {
 public:

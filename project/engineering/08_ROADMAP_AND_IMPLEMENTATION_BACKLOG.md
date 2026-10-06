@@ -116,7 +116,7 @@ Provide explicit test seeding/control without changing normal play semantics.
 
 Golden state digests for known city/tick counts.
 
-**Completion record (6 October 2026):** M2-01 through M2-05 are implemented on `codex/m2-engine-boundary`. The native app links a platform-free engine; a standalone headless runner, explicit deterministic control and 25 pre-extraction golden cases are verified. Application Debug/Release pass 39/39 checks each; headless and ASan pass 32/32 each; retained Visual Studio Release builds. [ADR 0003](../decisions/0003_M2_ENGINE_BOUNDARY.md), [dependency audit](../reference/ENGINE_DEPENDENCIES.md) and [evidence](../../tests/baseline/M2_2026-10-06.md) record the complete milestone and limits. Hosted CI is tracked on its delivered PR.
+**Completion record (6 October 2026):** M2-01 through M2-05 are implemented on `codex/m2-engine-boundary`. The native app links a platform-free engine; a standalone headless runner, explicit deterministic control and 25 pre-extraction golden cases are verified. Application Debug/Release pass 39/39 checks each; headless and ASan pass 32/32 each; retained Visual Studio Release builds. [ADR 0003](../decisions/0003_M2_ENGINE_BOUNDARY.md), [dependency audit](../reference/ENGINE_DEPENDENCIES.md) and [evidence](../../tests/baseline/M2_2026-10-06.md) record the complete milestone and limits. Merged in PR #7 (`090633d`); hosted Debug/Release/headless ASan CI passed on `d0986f5`.
 
 ## 5. Milestone 3 - Functional Completion
 
@@ -145,6 +145,8 @@ Golden state digests for known city/tick counts.
 ### M3-04 Error/logging layer - M
 
 Replace silent/console-only critical failures with structured reporting.
+
+**Completion record (6 October 2026):** M3-01 through M3-04 are implemented together on `codex/m3-functional-completion`: typed SDL3_mixer audio with original effects and persisted native volume controls; RAII/exception-safe resource teardown; same-directory atomic city publication with validated restoration and autosave/recovery; typed diagnostics and native error reporting. Application Debug/Release/ASan pass 41/41 tests; headless Debug/ASan pass 33/33; all 25 M2 golden cases and the retained Visual Studio Release build pass. [ADR 0004](../decisions/0004_M3_FUNCTIONAL_COMPLETION.md) and [evidence](../../tests/baseline/M3_2026-10-06.md) record acceptance and compatibility limits, including ordinary-city recovery and unsupported historical formats. Hosted CI is tracked on the delivered PR.
 
 ## 6. Milestone 4 - Modern Window, Camera and Rendering
 

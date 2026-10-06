@@ -170,7 +170,7 @@ MiniMapWindow::MiniMapWindow(const Point<int>& position, const Vector<int>& size
     if (!SDL_WasInit(SDL_INIT_VIDEO))
     {
         std::cout << "MiniMapWindow::c'tor: SDL Video subsystem was not initialized. Initializing now." << std::endl;
-        if (SDL_Init(SDL_INIT_VIDEO) != 0)
+        if (!SDL_InitSubSystem(SDL_INIT_VIDEO))
         {
             throw std::runtime_error(std::string("MiniMapWindow(): Unable to initialize video subsystem: ") + SDL_GetError());
         }
@@ -181,14 +181,16 @@ MiniMapWindow::MiniMapWindow(const Point<int>& position, const Vector<int>& size
         size.y * MiniTileSize + ButtonAreaHeight,
         SDL_WINDOW_ALWAYS_ON_TOP | SDL_WINDOW_UTILITY | SDL_WINDOW_HIDDEN);
 
-	SDL_SetWindowPosition(mWindow, position.x, position.y);
+    mWindowOwner.reset(mWindow);
 
     if (!mWindow)
     {
         throw std::runtime_error("MiniMapWindow(): Unable to create primary window: " + std::string(SDL_GetError()));
     }
 
+    SDL_SetWindowPosition(mWindow, position.x, position.y);
 	mRenderer = SDL_CreateRenderer(mWindow, nullptr);
+    mRendererOwner.reset(mRenderer);
     
     if (!mRenderer)
     {
@@ -198,7 +200,7 @@ MiniMapWindow::MiniMapWindow(const Point<int>& position, const Vector<int>& size
     mWindowID = SDL_GetWindowID(mWindow);
 
     mTiles = loadTexture(mRenderer, "images/tilessm.xpm");
-    mTexture.texture = SDL_CreateTexture(mRenderer, SDL_PIXELFORMAT_ARGB32, SDL_TEXTUREACCESS_TARGET, size.x * MiniTileSize, size.y * MiniTileSize);
+    mTexture = newTexture(mRenderer, {size.x * MiniTileSize, size.y * MiniTileSize});
     mButtonTextures = loadTexture(mRenderer, "icons/minimap.png");
 
     setButtonValues();
@@ -213,8 +215,7 @@ MiniMapWindow::MiniMapWindow(const Point<int>& position, const Vector<int>& size
 
 MiniMapWindow::~MiniMapWindow()
 {
-    SDL_DestroyRenderer(mRenderer);
-    SDL_DestroyWindow(mWindow);
+    // Members release textures, renderer, then window in that order.
 }
 
 

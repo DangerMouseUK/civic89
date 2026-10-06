@@ -29,12 +29,22 @@ add_executable(civic89_runner src/EngineRunner.cpp)
 target_link_libraries(civic89_runner PRIVATE civic89_engine)
 target_compile_options(civic89_runner PRIVATE /W4 /sdl /permissive-)
 
+add_library(civic89_storage STATIC src/WindowsFileStorage.cpp)
+target_include_directories(civic89_storage PUBLIC src)
+target_compile_options(civic89_storage PRIVATE /W4 /sdl /permissive-)
+set_target_properties(civic89_storage PROPERTIES VS_GLOBAL_VcpkgEnabled false VS_GLOBAL_VcpkgEnableManifest false)
+
 include(CTest)
 if(BUILD_TESTING)
     add_executable(civic89_tests tests/EngineTests.cpp)
-    target_link_libraries(civic89_tests PRIVATE civic89_engine)
+    target_link_libraries(civic89_tests PRIVATE civic89_engine civic89_storage)
     target_compile_options(civic89_tests PRIVATE /W4 /sdl /permissive-)
     target_compile_definitions(civic89_tests PRIVATE "$<$<CONFIG:Release>:CIVIC89_FAST_FLOAT>")
+    add_executable(civic89_io_tests tests/FunctionalIo.cpp src/RecoveryStore.cpp src/DiagnosticLog.cpp)
+    target_link_libraries(civic89_io_tests PRIVATE civic89_engine civic89_storage)
+    target_compile_options(civic89_io_tests PRIVATE /W4 /sdl /permissive-)
+    add_test(NAME functional-persistence COMMAND civic89_io_tests)
+    set_tests_properties(functional-persistence PROPERTIES TIMEOUT 60)
     add_test(NAME engine-smoke COMMAND civic89_tests --smoke "${CMAKE_SOURCE_DIR}")
     set_tests_properties(engine-smoke PROPERTIES TIMEOUT 60)
     foreach(scenario RANGE 1 8)
@@ -58,33 +68,20 @@ if(BUILD_TESTING)
     add_test(NAME engine-boundary COMMAND "${CMAKE_COMMAND}" "-DSOURCE_DIR=${CMAKE_SOURCE_DIR}" "-DRUNNER=$<TARGET_FILE:civic89_runner>" "-DDUMP_TOOL=${CMAKE_LINKER}" -P "${CMAKE_SOURCE_DIR}/cmake/VerifyEngineBoundary.cmake")
 endif()
 
-if(CIVIC89_ENABLE_ASAN)
-    get_filename_component(msvc_bin "${CMAKE_CXX_COMPILER}" DIRECTORY)
-    set(asan_runtime "${msvc_bin}/clang_rt.asan_dynamic-x86_64.dll")
-    if(NOT EXISTS "${asan_runtime}")
-        message(FATAL_ERROR "MSVC AddressSanitizer runtime is missing: ${asan_runtime}")
-    endif()
-    foreach(target IN ITEMS civic89_runner civic89_tests)
-        if(TARGET ${target})
-            add_custom_command(TARGET ${target} POST_BUILD
-                COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${asan_runtime}" "$<TARGET_FILE_DIR:${target}>"
-                VERBATIM)
-        endif()
-    endforeach()
-endif()
 
 if(CIVIC89_BUILD_APPLICATION)
     enable_language(RC)
     find_package(SDL3 CONFIG REQUIRED)
     find_package(SDL3_image CONFIG REQUIRED)
     find_package(SDL3_ttf CONFIG REQUIRED)
+    find_package(SDL3_mixer CONFIG REQUIRED)
     find_package(nfd CONFIG REQUIRED)
     find_package(nlohmann_json CONFIG REQUIRED)
     set(CIVIC89_APPLICATION_SOURCES ${CIVIC89_INHERITED_SOURCES})
     list(REMOVE_ITEM CIVIC89_APPLICATION_SOURCES ${CIVIC89_ENGINE_SOURCES})
     add_executable(civic89 ${CIVIC89_APPLICATION_SOURCES} micropolis-sdlpp.rc)
     target_link_libraries(civic89 PRIVATE civic89_engine
-        SDL3::SDL3 SDL3_image::SDL3_image SDL3_ttf::SDL3_ttf
+        SDL3::SDL3 SDL3_image::SDL3_image SDL3_ttf::SDL3_ttf SDL3_mixer::SDL3_mixer
         nfd::nfd nlohmann_json::nlohmann_json Shlwapi)
     target_compile_definitions(civic89 PRIVATE WINDOWS _CONSOLE UNICODE _UNICODE)
     target_compile_options(civic89 PRIVATE /W4 /sdl /permissive- "$<$<CONFIG:Release>:/fp:fast>" "$<$<CONFIG:Release>:/Zi>")
@@ -126,12 +123,19 @@ if(CIVIC89_BUILD_APPLICATION)
         add_test(NAME runtime-assets-and-data COMMAND civic89_runtime_tests)
         set_tests_properties(runtime-assets-and-data PROPERTIES
             WORKING_DIRECTORY "$<TARGET_FILE_DIR:civic89_runtime_tests>"
-            ENVIRONMENT "SDL_VIDEODRIVER=dummy;SDL_RENDER_DRIVER=software"
+            ENVIRONMENT "SDL_VIDEODRIVER=dummy;SDL_RENDER_DRIVER=software;SDL_AUDIODRIVER=dummy"
             TIMEOUT 60
         )
         add_test(NAME inherited-source-list COMMAND "${CMAKE_COMMAND}"
             "-DSOURCE_DIR=${CMAKE_SOURCE_DIR}" -P "${CMAKE_SOURCE_DIR}/cmake/VerifySourceParity.cmake"
         )
+
+        add_executable(civic89_audio_tests tests/AudioBackend.cpp src/AudioManager.cpp src/DiagnosticLog.cpp)
+        target_include_directories(civic89_audio_tests PRIVATE src)
+        target_link_libraries(civic89_audio_tests PRIVATE SDL3::SDL3 SDL3_mixer::SDL3_mixer)
+        target_compile_options(civic89_audio_tests PRIVATE /W4 /sdl /permissive-)
+        add_test(NAME mixer-backend COMMAND civic89_audio_tests)
+        set_tests_properties(mixer-backend PROPERTIES ENVIRONMENT "SDL_AUDIODRIVER=dummy" TIMEOUT 60)
 
         # Exercise typed audio/earthquake helpers without constructing the game/UI.
         add_executable(civic89_legacy_tests
@@ -151,7 +155,7 @@ if(CIVIC89_BUILD_APPLICATION)
         target_include_directories(civic89_milestone_tests PRIVATE src)
         target_compile_definitions(civic89_milestone_tests PRIVATE CIVIC89_MILESTONE_TESTS WINDOWS UNICODE _UNICODE)
         target_link_libraries(civic89_milestone_tests PRIVATE civic89_engine
-            SDL3::SDL3 SDL3_image::SDL3_image SDL3_ttf::SDL3_ttf
+            SDL3::SDL3 SDL3_image::SDL3_image SDL3_ttf::SDL3_ttf SDL3_mixer::SDL3_mixer
             nfd::nfd nlohmann_json::nlohmann_json Shlwapi
         )
         target_compile_options(civic89_milestone_tests PRIVATE /W4 /sdl /permissive-)
@@ -162,8 +166,8 @@ if(CIVIC89_BUILD_APPLICATION)
         add_test(NAME milestone-lifecycle COMMAND civic89_milestone_tests)
         set_tests_properties(milestone-lifecycle PROPERTIES
             WORKING_DIRECTORY "$<TARGET_FILE_DIR:civic89_milestone_tests>"
-            ENVIRONMENT "SDL_VIDEODRIVER=dummy;SDL_RENDER_DRIVER=software"
-            TIMEOUT 60
+            ENVIRONMENT "SDL_VIDEODRIVER=dummy;SDL_RENDER_DRIVER=software;SDL_AUDIODRIVER=dummy"
+            TIMEOUT 120
         )
         add_test(NAME no-legacy-command-bridge COMMAND "${CMAKE_COMMAND}"
             "-DSOURCE_DIR=${CMAKE_SOURCE_DIR}" -P "${CMAKE_SOURCE_DIR}/cmake/VerifyNoLegacyCommands.cmake")
@@ -184,4 +188,19 @@ if(CIVIC89_BUILD_APPLICATION)
         set(VCPKG_SHARE_DIR \"${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/share\")
         include(\"${CMAKE_SOURCE_DIR}/cmake/StageRuntime.cmake\")
     ")
+endif()
+
+if(CIVIC89_ENABLE_ASAN)
+    get_filename_component(msvc_bin "${CMAKE_CXX_COMPILER}" DIRECTORY)
+    set(asan_runtime "${msvc_bin}/clang_rt.asan_dynamic-x86_64.dll")
+    if(NOT EXISTS "${asan_runtime}")
+        message(FATAL_ERROR "MSVC AddressSanitizer runtime is missing: ${asan_runtime}")
+    endif()
+    foreach(target IN ITEMS civic89_runner civic89_tests civic89_io_tests civic89 civic89_runtime_tests civic89_legacy_tests civic89_milestone_tests civic89_audio_tests)
+        if(TARGET ${target})
+            add_custom_command(TARGET ${target} POST_BUILD
+                COMMAND "${CMAKE_COMMAND}" -E copy_if_different "${asan_runtime}" "$<TARGET_FILE_DIR:${target}>"
+                VERBATIM)
+        endif()
+    endforeach()
 endif()

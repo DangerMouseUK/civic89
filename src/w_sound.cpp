@@ -23,12 +23,12 @@ int Dozing = 0;
 
 bool userSoundOn()
 {
-    return SoundInitialized;
+    return UserSoundOn;
 }
 
 void userSoundOn(bool val)
 {
-    SoundInitialized = val;
+    UserSoundOn = val;
 }
 
 
@@ -37,16 +37,14 @@ void InitializeSound()
 {
     SoundInitialized = true;
 
-    // load sound samples here
+    // The application AudioManager owns samples and the playback device.
 }
 
 
 void ShutDownSound()
 {
-    if (SoundInitialized)
-    {
-        // unload sound samples here
-    }
+    SoundInitialized = false;
+    Dozing = 0;
 }
 
 
@@ -96,7 +94,7 @@ void StartBulldozer(AudioService& audio)
 
 void StopBulldozer(AudioService& audio)
 {
-    if ((!UserSoundOn) || (!SoundInitialized))
+    if (!SoundInitialized)
     {
         return;
     }

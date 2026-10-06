@@ -11,6 +11,10 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\AudioManager.cpp" />
+    <ClCompile Include="src\DiagnosticLog.cpp" />
+    <ClCompile Include="src\WindowsFileStorage.cpp" />
+    <ClCompile Include="src\RecoveryStore.cpp" />
     <ClCompile Include="src\EngineState.cpp" />
     <ClCompile Include="src\EngineServices.cpp" />
     <ClCompile Include="src\EngineStep.cpp" />
