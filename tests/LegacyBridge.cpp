@@ -303,6 +303,18 @@ namespace
         require(ShakeNow == 0 && earthquake_timer_set == 0, "Earthquake stop should clear both state values");
         require(console.take().empty(), "Earthquake stop should not emit legacy commands");
 
+        DoEarthQuake(audio);
+        require(ShakeNow == 1 && earthquake_timer_set == 1 && audio.requests.size() == 3,
+            "Earthquake must restart from cleared shake/timer state");
+        const auto& restarted = audio.requests.back();
+        require(restarted.kind == AudioRequestKind::Effect && restarted.sound == SoundId::ExplosionLow &&
+            restarted.channel == AudioChannel::City && restarted.shakeBeforeEffect == 0 &&
+            restarted.timerBeforeEffect == 0 && restarted.soundInitialized &&
+            restarted.consoleBeforeEffect == "DoEarthQuake\n",
+            "Restart sound must precede the visual command and reset state increment");
+        require(console.take() == expected, "Restart should retain the legacy visual request");
+        StopEarthquake();
+
         NullAudioService nullAudio;
         userSoundOn(false);
         DoEarthQuake(nullAudio);
