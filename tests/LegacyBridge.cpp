@@ -149,6 +149,24 @@ namespace
             "Inherited MakeSoundOn emits empty commands; migration must address this explicitly");
     }
 
+    void checkDefaultEffects()
+    {
+        resetBridge();
+        ConsoleCapture console;
+        MakeSound("city", "Explosion-High");
+        MakeSound("city", "Explosion-Low");
+        MakeSound("city", "HeavyTraffic");
+        MakeSound("city", "HonkHonk-Low");
+        require(userSoundOn() && Dozing == 0 && ShakeNow == 0 && earthquake_timer_set == 0,
+            "Default effects must initialize sound without changing loop or earthquake state");
+        require(console.take() ==
+            "Eval: UIMakeSound \"city\" \"Explosion-High\"\n"
+            "Eval: UIMakeSound \"city\" \"Explosion-Low\"\n"
+            "Eval: UIMakeSound \"city\" \"HeavyTraffic\"\n"
+            "Eval: UIMakeSound \"city\" \"HonkHonk-Low\"\n",
+            "Default city effects must retain their operands and request order");
+    }
+
     void checkBulldozerLifecycle()
     {
         resetBridge();
@@ -279,6 +297,7 @@ int main()
     {
         checkEvalStub();
         checkSoundRouting();
+        checkDefaultEffects();
         checkBulldozerLifecycle();
         checkEarthquakeLifecycle();
         std::cout << "Legacy effects and typed audio control/earthquake tests passed\n";
