@@ -296,6 +296,12 @@ GameOptions& gameplayOptions()
 }
 
 
+void MakeSound(SoundId sound, AudioChannel channel)
+{
+    MakeSound(sound, channel, audioService);
+}
+
+
 // Keep service ownership in the application while the disaster API migrates.
 void DoEarthQuake()
 {
