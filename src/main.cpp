@@ -23,6 +23,7 @@
 #include "Graph.h"
 #include "Map.h"
 #include "Month.h"
+#include "PresentationEvents.h"
 #include "s_alloc.h"
 #include "s_disast.h"
 #include "s_gen.h"
@@ -123,6 +124,7 @@ namespace
     Budget budget{};
     CityProperties cityProperties{};
     NullAudioService audioService;
+    NullPresentationEvents presentationEvents;
 
     std::unique_ptr<MiniMapWindow> miniMapWindow;
 
@@ -305,7 +307,7 @@ void MakeSound(SoundId sound, AudioChannel channel)
 // Keep service ownership in the application while the disaster API migrates.
 void DoEarthQuake()
 {
-    DoEarthQuake(audioService);
+    DoEarthQuake(audioService, presentationEvents);
 }
 
 
