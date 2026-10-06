@@ -11,6 +11,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\UiSettings.cpp" />
+    <ClCompile Include="src\OverlayModel.cpp" />
+    <ClCompile Include="src\UI\ModernInterface.cpp" />
     <ClCompile Include="src\Camera2D.cpp" />
     <ClCompile Include="src\DisplaySettings.cpp" />
     <ClCompile Include="src\AudioManager.cpp" />

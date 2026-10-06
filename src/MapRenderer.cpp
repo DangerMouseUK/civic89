@@ -31,6 +31,10 @@ MapRenderer::MapRenderer(SDL_Renderer* renderer) : mRenderer(renderer)
     if (!texture) { throw std::runtime_error(std::string("Unable to create tile atlas: ") + SDL_GetError()); }
     mAtlas = buildTexture(texture);
     mMap = newTexture(renderer, {SimWidth * 16, SimHeight * 16});
+    mOverlay = buildTexture(SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STREAMING, SimWidth, SimHeight));
+    if (!mOverlay.texture) { throw std::runtime_error(SDL_GetError()); }
+    SDL_SetTextureScaleMode(mOverlay.texture, SDL_SCALEMODE_NEAREST);
+    SDL_SetTextureBlendMode(mOverlay.texture, SDL_BLENDMODE_BLEND);
     SDL_SetTextureScaleMode(mAtlas.texture, SDL_SCALEMODE_NEAREST);
     SDL_SetTextureScaleMode(mMap.texture, SDL_SCALEMODE_NEAREST);
 }
@@ -53,8 +57,19 @@ void MapRenderer::updateTiles(Point<int> begin, Point<int> end)
     mDirty = false;
     mBegin = begin; mEnd = end;
 }
-void MapRenderer::render(const Camera2D& camera, Vector<float> shake, std::optional<MapPreview> preview)
+void MapRenderer::render(const Camera2D& camera, Vector<float> shake, std::optional<MapPreview> preview,
+    DataOverlay overlay, float opacity, bool accessibleColors)
 {
+    if (overlay != DataOverlay::None && (mDirty || mOverlayType != overlay || mAccessibleColors != accessibleColors))
+    {
+        static_assert(sizeof(OverlayColor) == 4);
+        std::array<OverlayColor, SimWidth * SimHeight> pixels{};
+        for (int y = 0; y < SimHeight; ++y) for (int x = 0; x < SimWidth; ++x)
+            { pixels[y * SimWidth + x] = overlayColor(overlay, overlayValue(overlay, {x, y}), accessibleColors); }
+        if (!SDL_UpdateTexture(mOverlay.texture, nullptr, pixels.data(), SimWidth * sizeof(OverlayColor)))
+            { throw std::runtime_error(SDL_GetError()); }
+    }
+    mOverlayType = overlay; mAccessibleColors = accessibleColors;
     const auto position = camera.position();
     const auto size = camera.visibleWorld();
     const Point<int> begin{std::clamp(static_cast<int>(std::floor(position.x / 16)), 0, SimWidth),
@@ -68,6 +83,12 @@ void MapRenderer::render(const Camera2D& camera, Vector<float> shake, std::optio
         std::min(size.y, SimHeight * 16.f - position.y)};
     const SDL_FRect destination{shake.x, shake.y, source.w * camera.zoom(), source.h * camera.zoom()};
     SDL_RenderTexture(mRenderer, mMap.texture, &source, &destination);
+    if (overlay != DataOverlay::None)
+    {
+        const SDL_FRect dataSource{source.x / 16, source.y / 16, source.w / 16, source.h / 16};
+        SDL_SetTextureAlphaMod(mOverlay.texture, static_cast<Uint8>(std::clamp(opacity, 0.f, 1.f) * 255));
+        SDL_RenderTexture(mRenderer, mOverlay.texture, &dataSource, &destination);
+    }
     mSprites.draw(mRenderer, camera, shake);
     if (preview)
     {
