@@ -1,14 +1,14 @@
 # Civic 89 - Project Status
 
 **Current phase:** M1-02 typed audio controls on `codex/typed-audio-control`
-**Updated:** 5 October 2026
+**Updated:** 6 October 2026
 **Current product name:** Civic 89  
 **Repository root:** `C:\Dev\Projects\civic89`  
 **External vcpkg root:** `C:\Dev\vcpkg`
 
 ## Authoritative local repository state
 
-- Branch: `codex/typed-audio-control`, created locally from synchronized `main`; no upstream/push yet.
+- Branch: `codex/typed-audio-control`, tracking `origin/codex/typed-audio-control`; published with user approval in [PR #3](https://github.com/DangerMouseUK/civic89/pull/3) against `main`.
 - Local and remote `main`: merge commit `b066399b18ccc66bf893e5eb8e42703eac671839` from [PR #2](https://github.com/DangerMouseUK/civic89/pull/2), merged by the user on 5 October 2026. Bootstrap PR #1 remains in its history.
 - The merged local `codex/eval-inventory` was safely deleted with `git branch -d`; GitHub had already deleted its remote branch. The earlier bootstrap branch is also deleted. No other stale feature branches existed. Upstream refs and the baseline tag are preserved.
 - `.git`: confirmed at `C:\Dev\Projects\civic89\.git`.
@@ -84,7 +84,7 @@ The current production increment touches only `main.cpp`, `w_sound.cpp` / `.h` a
 
 Exact commands/target mapping: [project/BUILDING.md](project/BUILDING.md). Local evidence: [tests/baseline/BOOTSTRAP_2026-10-05.md](tests/baseline/BOOTSTRAP_2026-10-05.md). Asset provenance and replacement decision: [project/reference/RUNTIME_ASSETS.md](project/reference/RUNTIME_ASSETS.md), `assets/runtime-assets.json`, `assets/ASSET-LICENSES.yml`.
 
-Bootstrap and the first typed earthquake route are merged, with local and hosted build/test evidence retained. No upstream push or history/tag rewrite occurred. Hosted CI verifies separate clean runner builds; manual GUI testing remains on the primary workstation. The current typed audio-control increment has local Debug/Release evidence and has not been pushed or checked by hosted CI. No new GUI or actual audio-device test was run for this narrow route; recording/null helper tests and both build paths provide its evidence.
+Bootstrap and the first typed earthquake route are merged, with local and hosted build/test evidence retained. No upstream push or history/tag rewrite occurred. Hosted CI verifies separate clean runner builds; manual GUI testing remains on the primary workstation. The current typed audio-control increment has local Debug/Release evidence and is published with user approval in [PR #3](https://github.com/DangerMouseUK/civic89/pull/3); live hosted CI results appear in its checks. No new GUI or actual audio-device test was run for this narrow route; recording/null helper tests and both build paths provide its evidence.
 
 ## Inherited limitations and release gates
 
