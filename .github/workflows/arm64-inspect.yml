@@ -1,6 +1,8 @@
 name: arm64-runtime-inspection
 on:
-  workflow_dispatch:
+  push:
+    branches: [codex/m6-release-engineering]
+    paths: [.github/workflows/arm64-inspect.yml]
 permissions:
   contents: read
 jobs:
