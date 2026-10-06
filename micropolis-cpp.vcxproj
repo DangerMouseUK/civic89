@@ -11,6 +11,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\Camera2D.cpp" />
+    <ClCompile Include="src\DisplaySettings.cpp" />
     <ClCompile Include="src\AudioManager.cpp" />
     <ClCompile Include="src\DiagnosticLog.cpp" />
     <ClCompile Include="src\WindowsFileStorage.cpp" />

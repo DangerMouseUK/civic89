@@ -22,4 +22,7 @@
 #include "EngineState.h"
 
 extern SDL_Renderer* MainWindowRenderer;
-const Point<int>& viewOffset();
+class Camera2D;
+class MapRenderer;
+Camera2D& applicationCamera();
+MapRenderer& applicationMapRenderer();

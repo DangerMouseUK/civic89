@@ -7,7 +7,7 @@
 
 ## 1. Purpose of this document set
 
-**Engineering update (6 October 2026):** M0-M2 are merged through PR #7. Local `main` is synchronized at `090633d`; the merged M2 branch is deleted locally and remotely. `codex/m3-functional-completion` delivers all of M3: SDL3_mixer audio, resource ownership, reliable native saves/autosave/recovery and structured error reporting. Debug/Release/application ASan pass 41 checks; headless/ASan pass 33. All 25 M2 parity fixtures are retained and the Visual Studio Release build passes. Use `PROJECT_STATUS.md`, `project/BUILDING.md`, ADR 0004 and M3 evidence for current decisions and limits. Hosted checks are tracked on the delivered PR. Delivery remains one whole milestone per branch/PR. M4 is next after review/merge.
+**Engineering update (6 October 2026):** M0–M3 are merged through PR #8; local `main` is synchronized at `555b7ba` and the M3 branch is deleted. `codex/m4-window-camera-rendering` delivers all five M4 items: persisted display modes, logical DPI layout/input, camera/navigation/quake, independent frame pacing and centralized rendering. Debug/Release/application ASan pass 42 checks; headless/ASan pass 34. All 25 M2 goldens and retained Visual Studio Release pass. Native Windows mode APIs pass; physical mixed-DPI and visible/hardware refresh checks remain release validation. Use `PROJECT_STATUS.md`, `project/BUILDING.md`, ADR 0005 and M4 evidence for current state. Hosted checks are tracked on the delivered PR. Delivery remains one whole milestone per branch/PR; M5 follows merge.
 
 This pack is the working engineering specification for **Civic 89**, a polished, modern, native Windows application built from the authentic open-source Micropolis / original SimCity simulation lineage.
 

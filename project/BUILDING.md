@@ -76,7 +76,7 @@ Global MSBuild vcpkg integration remains available for that inherited comparison
 
 | Inherited project | CMake |
 |---|---|
-| 59 `ClCompile` entries (47 original + 8 M2 splits + 4 M3 services) | Explicit source parity list; 31 engine units in `civic89_engine`, 28 application units in `civic89` |
+| 61 `ClCompile` entries (47 original + 8 M2 splits + 4 M3 services + 2 M4 implementations) | Explicit source parity list; 31 engine units in `civic89_engine`, 30 application units in `civic89` |
 | `micropolis-sdlpp.rc` | Same embedded PNG/icon and notices |
 | C++20 / WINDOWS / Unicode | C++20 / WINDOWS / UNICODE / _UNICODE |
 | `/W3`, `/sdl`, conformance | `/W4`, `/sdl`, `/permissive-`; warning debt recorded |
@@ -136,7 +136,7 @@ jobs bootstrap the existing pinned external vcpkg checkout.
 
 ## Tests and limits
 
-Application presets run **41** CTests; separate headless/ASan presets run **33**:
+Application presets run **42** CTests; separate headless/ASan presets run **34**:
 
 - `civic89_tests` covers headless load/step/pause/edit/save-byte-layout/reload,
   transactional invalid-file rejection, seeded terrain generation and sprites.
@@ -155,7 +155,7 @@ Application presets run **41** CTests; separate headless/ASan presets run **33**
   renderer-owned sprite images.
 
 All 47 original translation-unit paths remain. M2 adds eight support/split files;
-M3 adds four service implementations, for **59** entries shared with the retained
+M3 adds four services and M4 adds two camera/settings implementations, for **61** entries shared with the retained
 Visual Studio project. The engine retains 31 files, with 28 application files.
 `civic89_storage` implements the Windows atomic writer for persistence tests;
 the engine consumes only the platform-free writer interface.
@@ -210,3 +210,33 @@ Use **F6** during play for the native scenario selector, or start with `civic89.
 M1 retains all 47 production translation units, project files, dependencies, simulation/disaster/RNG algorithms and city-file writer. It adds header-only typed interfaces/validated scenario data and compiles the same sources again for the native lifecycle test, using `CIVIC89_MILESTONE_TESTS` only in that test target. M2 subsequently extracts the engine; the statements in this section record the M1 checkpoint.
 
 Both preset builds pass 7/7 tests, and the retained Visual Studio Release build passes. Baseline characterization and final results are in [M1_2026-10-06.md](../tests/baseline/M1_2026-10-06.md); logs use `out/audit/m1-*`. Source comparisons verify mechanical call-site changes and unchanged existing city load/save functions. Audio remains silent, focus/shake remain no-ops, and deterministic simulation/historical file compatibility are not claimed. Interactive selector verification was unavailable due to monitor capture/access errors; the automated tests cover native lifecycle under dummy/software SDL, not desktop layout/DPI.
+
+
+## M4 display, camera and rendering
+
+F11 toggles desktop borderless fullscreen. F12 offers windowed/maximized/borderless,
+VSync and pixel-perfect preferences. Normal window size and these preferences persist
+atomically in `display.cfg` in the existing user-data directory. Invalid preferences
+fall back to defaults with a diagnostic; save failures apply for the current session.
+
+Use the wheel to zoom at the cursor, right-drag or held arrows to pan, and Home to
+center. Camera zoom, tool preview/placement, sprites and minimap viewport share world
+coordinates. Pixel perfect aligns source pixels to physical pixels; fractional zoom
+retains nearest tile filtering. Auto-goto messages now move the camera when enabled.
+Earthquakes shake the map for three seconds while leaving UI steady.
+
+Windows DPI/display/pixel-size changes update per-window logical layout and input.
+The existing 800×600 panel layout scales down to fit smaller high-DPI screens until
+M5's responsive redesign. Render pacing uses checked VSync or a 60 Hz limiter;
+simulation and animation run from separate main-thread deadlines with bounded
+chronological catch-up. Recoverable GPU device/target resets recreate presentation resources while keeping
+the city; unrecoverable device loss closes with an error and recovery on restart.
+
+`camera-layout-cadence-settings` runs without SDL in every test preset. The application
+lifecycle test additionally samples actual software-renderer output and construction
+at 100/125/150/200% plus scale transitions. Native hidden-window mode checks passed on
+this Windows workstation (one display at 100%). Physical mixed-DPI displays, visible
+appearance and hardware VSync remain release checks.
+
+See [ADR 0005](decisions/0005_M4_WINDOW_CAMERA_RENDERING.md) and
+[M4 evidence](../tests/baseline/M4_2026-10-06.md) for full commands and compatibility.

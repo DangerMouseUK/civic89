@@ -176,10 +176,10 @@ MiniMapWindow::MiniMapWindow(const Point<int>& position, const Vector<int>& size
         }
     }
 
-	mWindow = SDL_CreateWindow("Minimap Window",
+	mWindow = SDL_CreateWindow("Civic 89 - Minimap",
         size.x * MiniTileSize,
         size.y * MiniTileSize + ButtonAreaHeight,
-        SDL_WINDOW_ALWAYS_ON_TOP | SDL_WINDOW_UTILITY | SDL_WINDOW_HIDDEN);
+        SDL_WINDOW_ALWAYS_ON_TOP | SDL_WINDOW_UTILITY | SDL_WINDOW_HIDDEN | SDL_WINDOW_HIGH_PIXEL_DENSITY);
 
     mWindowOwner.reset(mWindow);
 
@@ -198,6 +198,10 @@ MiniMapWindow::MiniMapWindow(const Point<int>& position, const Vector<int>& size
     }
 
     mWindowID = SDL_GetWindowID(mWindow);
+    const float scale = SDL_GetWindowDisplayScale(mWindow) / SDL_GetWindowPixelDensity(mWindow);
+    SDL_SetWindowSize(mWindow, static_cast<int>(mMinimapArea.w * scale), static_cast<int>((mMinimapArea.h + ButtonAreaHeight) * scale));
+    SDL_SetRenderLogicalPresentation(mRenderer, static_cast<int>(mMinimapArea.w),
+        static_cast<int>(mMinimapArea.h) + ButtonAreaHeight, SDL_LOGICAL_PRESENTATION_LETTERBOX);
 
     mTiles = loadTexture(mRenderer, "images/tilessm.xpm");
     mTexture = newTexture(mRenderer, {size.x * MiniTileSize, size.y * MiniTileSize});
@@ -231,25 +235,16 @@ void MiniMapWindow::focusOnMapCoordBind(MapCoordsDelegate delegate)
 }
 
 
-void MiniMapWindow::updateMapViewPosition(const Point<int>& position)
+void MiniMapWindow::updateMapViewPosition(const Point<float>& position)
 {
-    const Point<int> selectorPosition = position.skewInverseBy({ TileSize, TileSize }).skewBy({ MiniTileSize, MiniTileSize });
-    const Vector<int> selectorSize{ static_cast<int>(mSelector.w), static_cast<int>(mSelector.h) };
-    const Vector<int> selectorMaxPosition = mMapSize.skewBy({ MiniTileSize, MiniTileSize }) - selectorSize;
-
-    mSelector = {
-        static_cast<float>(std::clamp(selectorPosition.x, 0, selectorMaxPosition.x)),
-        static_cast<float>(std::clamp(selectorPosition.y, 0, selectorMaxPosition.y)),
-        mSelector.w,
-        mSelector.h
-	};
+    mSelector.x = std::clamp(position.x * MiniTileSize / TileSize, 0.f, std::max(0.f, mMinimapArea.w - mSelector.w));
+    mSelector.y = std::clamp(position.y * MiniTileSize / TileSize, 0.f, std::max(0.f, mMinimapArea.h - mSelector.h));
 }
 
-
-void MiniMapWindow::updateViewportSize(const Vector<int>& viewportSize)
+void MiniMapWindow::updateViewportSize(const Vector<float>& viewportSize)
 {
-    mSelector.w = std::ceil(viewportSize.x / static_cast<float>(TileSize)) * MiniTileSize;
-    mSelector.h = std::ceil(viewportSize.y / static_cast<float>(TileSize)) * MiniTileSize;
+    mSelector.w = std::min(mMinimapArea.w, viewportSize.x * MiniTileSize / TileSize);
+    mSelector.h = std::min(mMinimapArea.h, viewportSize.y * MiniTileSize / TileSize);
 }
 
 
@@ -666,7 +661,10 @@ void MiniMapWindow::injectEvent(const SDL_Event& event)
     case SDL_EVENT_MOUSE_MOTION:
     case SDL_EVENT_MOUSE_BUTTON_DOWN:
     case SDL_EVENT_MOUSE_BUTTON_UP:
-        handleMouseEvent(event);
+        {
+            SDL_Event converted = event;
+            if (SDL_ConvertEventToRenderCoordinates(mRenderer, &converted)) { handleMouseEvent(converted); }
+        }
         break;
 
     default:
@@ -720,6 +718,13 @@ void MiniMapWindow::handleWindowEvent(const SDL_Event& event)
 {
     switch (event.window.type)
     {
+    case SDL_EVENT_WINDOW_DISPLAY_SCALE_CHANGED:
+    case SDL_EVENT_WINDOW_DISPLAY_CHANGED:
+    {
+        const float scale = SDL_GetWindowDisplayScale(mWindow) / SDL_GetWindowPixelDensity(mWindow);
+        SDL_SetWindowSize(mWindow, static_cast<int>(mMinimapArea.w * scale), static_cast<int>((mMinimapArea.h + ButtonAreaHeight) * scale));
+        break;
+    }
     case SDL_EVENT_WINDOW_MINIMIZED:
         hide();
         mButtonDownInMinimapArea = false;
@@ -794,16 +799,11 @@ void MiniMapWindow::handleNoUiButtonSelected(ButtonId previousButtonDownId)
 
 void MiniMapWindow::focusViewpoint(const Point<int>& point)
 {
-	const Vector<int> selectorSize{ static_cast<int>(mSelector.w) / 2, static_cast<int>(mSelector.h) / 2 };
-	const Point<int> adjustedPosition{ point - selectorSize };
-
-	updateMapViewPosition(adjustedPosition.skewBy({ TileSize, TileSize }).skewInverseBy({ MiniTileSize, MiniTileSize }));
-
-	if (mFocusOnTileCallback)
-	{
-		const Point<int> position{ static_cast<int>(mSelector.x), static_cast<int>(mSelector.y) };
-		mFocusOnTileCallback(position);
-	}
+    if (mFocusOnTileCallback)
+    {
+        mFocusOnTileCallback({std::clamp(point.x / MiniTileSize, 0, mMapSize.x - 1),
+            std::clamp(point.y / MiniTileSize, 0, mMapSize.y - 1)});
+    }
 }
 
 

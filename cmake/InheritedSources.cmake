@@ -1,5 +1,7 @@
-# Exact application ClCompile list from micropolis-cpp.vcxproj, including M2 splits and M3 services.
+# Exact application ClCompile list from micropolis-cpp.vcxproj, including presentation and application services.
 set(CIVIC89_INHERITED_SOURCES
+    src/Camera2D.cpp
+    src/DisplaySettings.cpp
     src/AudioManager.cpp
     src/DiagnosticLog.cpp
     src/WindowsFileStorage.cpp

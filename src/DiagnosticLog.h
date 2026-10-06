@@ -4,7 +4,7 @@
 #include <fstream>
 #include <string_view>
 enum class Severity { Info, Warning, Error };
-enum class DiagnosticCode { Startup, AudioUnavailable, AudioPlayback, CityLoad, CitySave, Autosave, FileDialog, Shutdown, Settings };
+enum class DiagnosticCode { Startup, AudioUnavailable, AudioPlayback, CityLoad, CitySave, Autosave, FileDialog, Shutdown, Settings, Display };
 class DiagnosticLog
 {
 public:
