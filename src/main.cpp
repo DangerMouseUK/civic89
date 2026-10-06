@@ -9,6 +9,7 @@
 // it under the terms of the GNU GPLv3, with additional terms. See the README
 // file, included in this distribution, for details.
 #include "MapRenderer.h"
+#include "BuildInfo.h"
 #include "DisplayLayout.h"
 #include "DisplaySettings.h"
 #include "FrameScheduler.h"
@@ -94,6 +95,7 @@ uint32_t MainWindowId{};
 
 namespace
 {
+    bool packageSmokeTest{false};
     constexpr auto TileSize = 16;
 
 
@@ -782,6 +784,7 @@ void initMainWindow()
 #if defined(CIVIC89_MILESTONE_TESTS)
     flags |= SDL_WINDOW_HIDDEN;
 #endif
+    if (packageSmokeTest) { flags |= SDL_WINDOW_HIDDEN; }
 	MainWindow = SDL_CreateWindow("Civic 89", 800, 600, flags);
     if (!MainWindow)
     {
@@ -1023,7 +1026,17 @@ void GameLoop()
 int main(int argc, char* argv[])
 {
     std::optional<Scenario> startupScenario;
-    if (argc != 1)
+    if (argc == 2 && std::string_view(argv[1]) == "--version")
+    {
+        std::cout << Civic89BuildIdentity << '\n';
+        return 0;
+    }
+    if (argc == 2 && std::string_view(argv[1]) == "--smoke-test")
+    {
+        packageSmokeTest = true;
+        startupScenario = Scenario::Detroit;
+    }
+    else if (argc != 1)
     {
         int id = 0;
         bool valid = argc == 3 && std::string_view(argv[1]) == "--scenario";
@@ -1036,29 +1049,61 @@ int main(int argc, char* argv[])
         if (valid) { startupScenario = scenarioFromLegacyId(id); }
         if (!startupScenario)
         {
-            std::cerr << "Usage: civic89.exe [--scenario 1..8]\n";
+            std::cerr << "Usage: civic89.exe [--scenario 1..8 | --version | --smoke-test]\n";
             return 2;
         }
     }
     setLocale();
 
-    std::cout << "Starting Civic 89, based on Micropolis-SDLPP version " << MicropolisVersion << " originally by Will Wright and Don Hopkins." << std::endl;
+    std::cout << "Starting " << Civic89BuildIdentity << ", based on Micropolis-SDLPP " << MicropolisVersion << " originally by Will Wright and Don Hopkins." << std::endl;
     std::cout << "Original code Copyright (C) 2002 by Electronic Arts, Maxis. Released under the GPL v3" << std::endl;
     std::cout << "Modifications Copyright (C) 2022 - 2026 by Leeor Dicker. Available under the terms of the GPL v3" << std::endl << std::endl;
 
     std::cout << "Micropolis-SDLPP is not afiliated with Electronic Arts." << std::endl << std::endl;
     try
     {
+        // Windows shortcuts and portable launches can have an unrelated cwd.
+        // The retained comparison build can still use repository-relative assets.
+#if !defined(CIVIC89_MILESTONE_TESTS)
+        const auto* base = SDL_GetBasePath();
+        if (!base) { throw std::runtime_error("Unable to locate Civic 89 runtime assets."); }
+        const auto runtimeDirectory = pathFromUtf8(base);
+        if (std::filesystem::exists(runtimeDirectory / "res" / "tools.json"))
+            { std::filesystem::current_path(runtimeDirectory); }
+#if defined(CIVIC89_CMAKE_BUILD)
+        else { throw std::runtime_error("Runtime assets are missing beside civic89.exe."); }
+#endif
+#endif
 #if defined(CIVIC89_MILESTONE_TESTS)
         userDirectory = std::filesystem::temp_directory_path() / ("civic89-session-" + std::to_string(GetCurrentProcessId()));
 #else
-        std::unique_ptr<char, SdlDeleter<char, SDL_free>> preferencePath(SDL_GetPrefPath("Civic89", "Civic89"));
-        if (!preferencePath) { throw std::runtime_error("Unable to locate Civic 89 user data."); }
-        userDirectory = pathFromUtf8(preferencePath.get());
+        if (packageSmokeTest)
+        {
+            userDirectory = std::filesystem::temp_directory_path() /
+                ("civic89-package-test-" + std::to_string(GetCurrentProcessId()) + "-" + std::to_string(GetTickCount64()));
+        }
+        else
+        {
+            std::unique_ptr<char, SdlDeleter<char, SDL_free>> preferencePath(SDL_GetPrefPath("Civic89", "Civic89"));
+            if (!preferencePath) { throw std::runtime_error("Unable to locate Civic 89 user data."); }
+            userDirectory = pathFromUtf8(preferencePath.get());
+        }
 #endif
+        struct SmokeDirectoryLifetime
+        {
+            ~SmokeDirectoryLifetime()
+            {
+                if (packageSmokeTest)
+                {
+                    diagnostics.reset(); recovery.reset();
+                    std::error_code ignored;
+                    std::filesystem::remove_all(userDirectory, ignored);
+                }
+            }
+        } smokeLifetime;
         std::filesystem::create_directories(userDirectory);
         diagnostics = std::make_unique<DiagnosticLog>(userDirectory / "civic89.log");
-        diagnostics->write(Severity::Info, DiagnosticCode::Startup, "Civic 89 starting");
+        diagnostics->write(Severity::Info, DiagnosticCode::Startup, Civic89BuildIdentity);
         recovery = std::make_unique<RecoveryStore>(userDirectory);
         if (const auto settings = UiSettings::load(userDirectory / "ui.cfg"))
         {
@@ -1140,7 +1185,17 @@ int main(int argc, char* argv[])
             if (!result || !LoadCityDetailed(recovery->path(), cityProperties, budget)) { throw std::runtime_error("Session save/reload failed"); }
 #else
             gameInit(startupScenario);
-            if (!startupScenario && recovery->available())
+            if (packageSmokeTest)
+            {
+                cityRenderer->render(camera);
+                interfaceManager->draw(camera);
+                if (!SDL_RenderPresent(MainWindowRenderer)) { throw std::runtime_error(SDL_GetError()); }
+                const auto saved = SaveCity(userDirectory / "smoke.cty", cityProperties, budget, fileStorage);
+                if (!saved || !LoadCityDetailed(saved.path, cityProperties, budget))
+                    { throw std::runtime_error("Packaged city save/reload failed"); }
+                std::cout << "Packaged startup, scenario, render, save/reload and shutdown passed\n";
+            }
+            else if (!startupScenario && recovery->available())
             {
                 const std::array<SDL_MessageBoxButtonData,2> buttons{{{SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT,1,"Recover"}, {SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT,0,"Start new city"}}};
                 const SDL_MessageBoxData box{SDL_MESSAGEBOX_INFORMATION, MainWindow, "Civic 89 recovery", "A previous autosave is available. Recover it?", 2, buttons.data(), nullptr};
@@ -1153,7 +1208,7 @@ int main(int argc, char* argv[])
                 }
             }
             lastAutosave = SDL_GetTicks();
-            GameLoop();
+            if (!packageSmokeTest) { GameLoop(); }
 #endif
         }
 #if defined(CIVIC89_MILESTONE_TESTS)
@@ -1173,7 +1228,8 @@ int main(int argc, char* argv[])
         std::cerr << error.what() << '\n';
 #else
         const std::string message = std::string(error.what()) + "\n\nCivic 89 will now close.";
-        MessageBoxA(nullptr, message.c_str(), "Civic 89", MB_ICONERROR | MB_OK);
+        if (packageSmokeTest) { std::cerr << message << '\n'; }
+        else { MessageBoxA(nullptr, message.c_str(), "Civic 89", MB_ICONERROR | MB_OK); }
 #endif
         return 1;
     }

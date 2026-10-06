@@ -1,6 +1,6 @@
 # Civic 89 Windows application and headless engine build
 
-Use Windows x64, Visual Studio 2026 C++ tools and CMake **4.2+**. The committed presets reproduce the inherited application using C++20/MSVC and explicit vcpkg manifest mode. Visual Studio can open the repository folder and use these presets. The primary workstation's bundled CMake is 4.3.1-msvc1; it selects the installed VS 2026 BuildTools instance without needing a developer shell.
+Use Windows 11 x64 (primary) or ARM64 (secondary), Visual Studio 2026 C++ tools and CMake **4.2+**. The committed presets reproduce the inherited application using C++20/MSVC and explicit vcpkg manifest mode. Visual Studio can open the repository folder and use these presets. The primary workstation's bundled CMake is 4.3.1-msvc1; it selects the installed VS 2026 BuildTools instance without needing a developer shell.
 
 ## PowerShell setup
 
@@ -59,7 +59,7 @@ Development-only portable staging:
 cmake --install out/build/windows-x64-release --config Release --prefix out/install/windows-x64-release
 ```
 
-Installation includes only the application, pinned dependency DLLs, inventoried assets and notices. It excludes user saves, tests, PDBs and arbitrary build-directory files. Run the installed executable from its directory. This does not clear inherited icon rights or historical save compatibility for public release; see `PROJECT_STATUS.md`.
+Installation includes only the application, pinned dependency DLLs, inventoried assets and notices. It excludes user saves, test binaries, PDBs and arbitrary build-directory files. Run the installed executable from its directory. This does not clear inherited icon rights or historical save compatibility for public release; see `PROJECT_STATUS.md`.
 
 ## Inherited comparison
 
@@ -76,8 +76,8 @@ Global MSBuild vcpkg integration remains available for that inherited comparison
 
 | Inherited project | CMake |
 |---|---|
-| 61 `ClCompile` entries (47 original + 8 M2 splits + 4 M3 services + 2 M4 implementations) | Explicit source parity list; 31 engine units in `civic89_engine`, 30 application units in `civic89` |
-| `micropolis-sdlpp.rc` | Same embedded PNG/icon and notices |
+| 64 `ClCompile` entries (47 original + 8 M2 + 4 M3 + 2 M4 + 3 M5 implementations) | Explicit source parity list; 31 engine units in `civic89_engine`, 33 application units in `civic89` |
+| `micropolis-sdlpp.rc` | Civic 89 original icon and generated version resource; inherited comparison retains its resource |
 | C++20 / WINDOWS / Unicode | C++20 / WINDOWS / UNICODE / _UNICODE |
 | `/W3`, `/sdl`, conformance | `/W4`, `/sdl`, `/permissive-`; warning debt recorded |
 | Debug console, Release Windows subsystem | Same configuration-specific subsystems |
@@ -136,7 +136,7 @@ jobs bootstrap the existing pinned external vcpkg checkout.
 
 ## Tests and limits
 
-Application presets run **42** CTests; separate headless/ASan presets run **34**:
+Application presets run **43** CTests; separate headless/ASan presets run **35**:
 
 - `civic89_tests` covers headless load/step/pause/edit/save-byte-layout/reload,
   transactional invalid-file rejection, seeded terrain generation and sprites.
@@ -287,3 +287,28 @@ all panels across 800x600/1366x768/1920x1080/3440x1440 and 100/125/150/200% effe
 scale, drives actual input, saves PNG captures and checks simulation digest invariance.
 Captures are under each application's output directory in `ui-captures/`; selected
 reviewed captures and exact commands are in [M5 evidence](../tests/baseline/M5_2026-10-06.md).
+
+## M6 release and ARM64 paths
+
+The root README now describes Civic 89 rather than upstream SDLPP. Release builds
+identify version `0.6.0-dev`, full/short Git revision, architecture and dirty state.
+`civic89.exe --version` does not initialise SDL or user files. CMake executables
+find assets beside themselves, so a shortcut or an unrelated working directory
+works. The retained comparison executable still permits repository-relative assets.
+CMake uses an original Civic 89 icon; the inherited `.rc` is preserved for comparison.
+All **64** production source entries remain, with **31** engine / **33** application units.
+
+`--smoke-test` launches the real game hidden with an isolated temporary user directory,
+loads Detroit, renders, saves/reloads and exits. Release tooling supplies dummy SDL
+and removes developer PATH DLLs. This mode does not touch real preferences/recovery.
+
+On native ARM64 Windows, install the VS 2026 ARM64 toolchain and use
+`windows-arm64-release` configure/build/test presets. Both target and native host
+triplets are `arm64-windows`. Cross-compiling from x64 can override
+`-D VCPKG_HOST_TRIPLET=x64-windows`; that does not establish native runtime acceptance.
+The five-job CI adds native ARM64 Release to the existing four configurations.
+
+See [RELEASING.md](RELEASING.md) for portable ZIPs, installers, corresponding source,
+signing, release gates and crash-safe offline updates. `cmake --install` remains
+an intermediate development stage; complete release tooling adds CRT and manifest
+verification. No simulation algorithm, golden digest or city format changes in M6.

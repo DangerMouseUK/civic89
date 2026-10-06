@@ -19,6 +19,11 @@
       "condition": { "type": "equals", "lhs": "${hostSystemName}", "rhs": "Windows" }
     },
     {
+      "name": "windows-arm64-release", "inherits": "base-windows-x64",
+      "architecture": "ARM64",
+      "cacheVariables": { "CMAKE_CONFIGURATION_TYPES": "Release", "VCPKG_TARGET_TRIPLET": "arm64-windows", "VCPKG_HOST_TRIPLET": "arm64-windows" }
+    },
+    {
       "name": "windows-x64-debug",
       "inherits": "base-windows-x64",
       "cacheVariables": { "CMAKE_CONFIGURATION_TYPES": "Debug" }
@@ -45,6 +50,7 @@
     }
   ],
   "buildPresets": [
+    { "name": "windows-arm64-release", "configurePreset": "windows-arm64-release", "configuration": "Release" },
     { "name": "windows-x64-debug", "configurePreset": "windows-x64-debug", "configuration": "Debug" },
     { "name": "windows-x64-release", "configurePreset": "windows-x64-release", "configuration": "Release" },
     { "name": "windows-x64-headless", "configurePreset": "windows-x64-headless", "configuration": "Debug" },
@@ -52,6 +58,8 @@
     { "name": "windows-x64-app-asan", "configurePreset": "windows-x64-app-asan", "configuration": "RelWithDebInfo" }
   ],
   "testPresets": [
+    { "name": "windows-arm64-release", "configurePreset": "windows-arm64-release", "configuration": "Release",
+      "output": { "outputOnFailure": true }, "execution": { "noTestsAction": "error" } },
     {
       "name": "windows-x64-debug", "configurePreset": "windows-x64-debug", "configuration": "Debug",
       "output": { "outputOnFailure": true }, "execution": { "noTestsAction": "error" }

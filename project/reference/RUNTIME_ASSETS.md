@@ -1,5 +1,14 @@
 # Civic 89 runtime asset baseline
 
+**M6 update:** CMake embeds the original Civic 89 geometric city icon from
+`assets/branding/civic89.ico`, with its GPL source SVG and standard-library
+generator recorded in the ledger. Inherited embedded resources remain only in
+the retained Visual Studio comparison project. Staging now validates embedded
+checksums as well as the unchanged 122 runtime assets. Release packages add
+version/provenance, complete notices/docs, matching compiler release CRT and a
+per-file manifest; see [RELEASING.md](../RELEASING.md). Inherited OpenSVG atlas
+rights remain unresolved and public packaging fails on the committed gates.
+
 Audited 5 October 2026 against SDLPP `9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad`.
 
 `assets/runtime-assets.json` is the complete staged file inventory, including sizes, SHA-256, immutable source URLs and source references. For text assets, `hash_mode: lf` records the hash/size after CRLF-to-LF normalization so Git's Windows line-ending settings cannot invalidate a fresh checkout. Binary assets use exact bytes. `assets/ASSET-LICENSES.yml` records licence groups and unresolved inherited rights. No asset acquisition runs during configure, build or startup: approved fonts are committed, and a fresh checkout contains the runtime assets.
