@@ -591,18 +591,18 @@ namespace
                 switch (checkSize(temp))
                 {
                 case 3:
-                    MakeSound("city", "Explosion-High");
+                    MakeSound(SoundId::ExplosionHigh, AudioChannel::City);
                     putRubble(x, y, 3);
                     break;
 
                 case 4:
                     putRubble(x, y, 4);
-                    MakeSound("city", "Explosion-Low");
+                    MakeSound(SoundId::ExplosionLow, AudioChannel::City);
                     break;
 
                 case 6:
-                    MakeSound("city", "Explosion-High");
-                    MakeSound("city", "Explosion-Low");
+                    MakeSound(SoundId::ExplosionHigh, AudioChannel::City);
+                    MakeSound(SoundId::ExplosionLow, AudioChannel::City);
                     putRubble(x, y, 6);
                     break;
 
@@ -619,17 +619,17 @@ namespace
                 switch (zoneSize)
                 {
                 case 3:
-                    MakeSound("city", "Explosion-High");
+                    MakeSound(SoundId::ExplosionHigh, AudioChannel::City);
                     break;
 
                 case 4:
-                    MakeSound("city", "Explosion-Low");
+                    MakeSound(SoundId::ExplosionLow, AudioChannel::City);
                     putRubble(x + deltaH, y + deltaV, 4);
                     break;
 
                 case 6:
-                    MakeSound("city", "Explosion-High");
-                    MakeSound("city", "Explosion-Low");
+                    MakeSound(SoundId::ExplosionHigh, AudioChannel::City);
+                    MakeSound(SoundId::ExplosionLow, AudioChannel::City);
                     putRubble(x + deltaH, y + deltaV, 6);
                     break;
                 }

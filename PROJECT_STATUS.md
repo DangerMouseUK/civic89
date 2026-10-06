@@ -1,6 +1,6 @@
 # Civic 89 - Project Status
 
-**Current phase:** M1-02 typed audio controls on `codex/typed-audio-control`
+**Current phase:** M1-02 typed default city effects on `codex/typed-city-effects`
 **Updated:** 6 October 2026
 **Current product name:** Civic 89  
 **Repository root:** `C:\Dev\Projects\civic89`  
@@ -8,9 +8,9 @@
 
 ## Authoritative local repository state
 
-- Branch: `codex/typed-audio-control`, tracking `origin/codex/typed-audio-control`; published with user approval in [PR #3](https://github.com/DangerMouseUK/civic89/pull/3) against `main`.
-- Local and remote `main`: merge commit `b066399b18ccc66bf893e5eb8e42703eac671839` from [PR #2](https://github.com/DangerMouseUK/civic89/pull/2), merged by the user on 5 October 2026. Bootstrap PR #1 remains in its history.
-- The merged local `codex/eval-inventory` was safely deleted with `git branch -d`; GitHub had already deleted its remote branch. The earlier bootstrap branch is also deleted. No other stale feature branches existed. Upstream refs and the baseline tag are preserved.
+- Branch: `codex/typed-city-effects`, tracking `origin/codex/typed-city-effects`; published with user approval for PR review against `main`.
+- Local and remote `main`: merge commit `3e30b82c92ad011fc2c1fb0d86d1ce342a16a76c` from [PR #3](https://github.com/DangerMouseUK/civic89/pull/3), merged by the user on 6 October 2026. Bootstrap and the first typed earthquake route remain in its history.
+- The merged local `codex/typed-audio-control` was safely deleted with `git branch -d`; GitHub had already deleted its remote branch. The earlier bootstrap/inventory branches are also deleted. At cleanup, origin had only `main`; no other stale feature branches existed. Upstream refs and the baseline tag are preserved.
 - `.git`: confirmed at `C:\Dev\Projects\civic89\.git`.
 - Baseline SHA: `9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad`.
 - Baseline tag: `upstream-sdlpp-baseline` (annotated; verified locally and on origin).
@@ -55,6 +55,8 @@
 
 Baseline Bootstrap and [PR #2](https://github.com/DangerMouseUK/civic89/pull/2) are merged. **M1-01** inventory/design (`8f7d3e1` / `8b4d5c2`) and the first **M1-02** earthquake audio route (`9baadda`) are now on `main`. PR #2's [second CI attempt](https://github.com/DangerMouseUK/civic89/actions/runs/37371023429/attempts/2) passed both configurations after the initial runner-allocation failure. [Merged-main CI](https://github.com/DangerMouseUK/civic89/actions/runs/37379422558) also passed for `b066399`.
 
+The audio-control increment (`f25acee` / `7b9f948`) is also merged through PR #3. Its [PR CI](https://github.com/DangerMouseUK/civic89/actions/runs/37395624345) and [merged-main CI](https://github.com/DangerMouseUK/civic89/actions/runs/37396351461) passed both configurations for `2d2fca3` and `3e30b82`, respectively. The current local increment migrates ordinary sprite/bulldozing effects.
+
 - [x] [Inventory](project/reference/LEGACY_EVAL_INVENTORY.md) all 12 live `Eval` calls plus the inactive options call, including reachability, operands and intended replacements.
 - [x] [Record typed interfaces](project/decisions/0001_TYPED_PRESENTATION_BOUNDARY.md) and the migration/compatibility decisions. The first audio seam is implemented; the broader design remains proposed.
 - [x] Link actual inherited `w_sound.cpp` and `w_tk.cpp` into `civic89_legacy_tests`; characterize routing, mute/initialization defects, bulldozer loop state and earthquake start/stop ordering.
@@ -68,11 +70,17 @@ Baseline Bootstrap and [PR #2](https://github.com/DangerMouseUK/civic89/pull/2) 
 - [x] Add typed loop-start, loop-stop and stop-all methods to the recording/null adapters; migrate `StartBulldozer`, `StopBulldozer` and `SoundOff` with their existing guards/state ordering.
 - [x] Retire the internal `DoStartSound` / `DoStopSound` string wrappers after their callers migrate. Live `Eval` expressions decrease from **12 to 9**. No dormant control is enabled in the UI.
 - [x] Build Debug/Release and pass **3/3 CTests in each** after control migration; retained Visual Studio Release also builds. Logs are `out/audit/typed-control-{build,test}-{debug,release}.log` and `out/audit/typed-control-inherited-release.log`.
+- [x] Synchronize local `main` with `git pull --ff-only` after PR #3 and delete the merged branch.
+- [x] Characterize default high/low explosions, traffic reports and low horns before migration (`3985437`); targeted tests pass against the old string helper in both configurations.
+- [x] Add typed `ExplosionHigh`, `HeavyTraffic` and `HonkLow` IDs and an application adapter to the existing explicit-service helper. Migrate four sprite and eight bulldozing calls in place.
+- [x] Verify typed request order, initialization before dispatch, inherited mute semantics and silent null playback. The two rate-bearing sprite effects and dormant message audio retain their old operands.
+- [x] Reverse only the sound-operand replacements and compare both complete caller files against merged `main`; they match exactly (`out/audit/typed-city-callsite-check.log`). This verifies a mechanical caller edit, not a deterministic simulation digest.
+- [x] Build Debug/Release and pass **3/3 CTests in each** after default-effect migration; retained Visual Studio Release also builds. Logs are `out/audit/typed-city-{build,test}-{debug,release}.log` and `out/audit/typed-city-inherited-release.log`.
 - [ ] Migrate remaining audio operands and introduce typed presentation/navigation adapters with tests (M1-02).
 - [ ] Establish a scenario loader seam, validate all eight fixtures and test native start/failure paths (M1-03). There is currently no working scenario startup smoke path.
 - [ ] Delete the bridge only after all entries are covered or deliberately retired (M1-04).
 
-The current production increment touches only `main.cpp`, `w_sound.cpp` / `.h` and `AudioService.h`. The application owns the null adapter and retains no-argument entry points; tests exercise the overloads with explicit services. The 47 translation units, retained `.sln`/`.vcxproj`, disaster damage/RNG, tools/sprites, save implementation and disabled visual timers are unchanged. Migrated controls no longer print string commands; playback remains silent and inherited mute/initialization behavior is preserved. New audio/test code compiles without warnings; rebuilt inherited code emits existing warnings, including the two C4100 warnings in the legacy test target and four CS1668 environment warnings in the inherited Release build.
+The current production increment touches only `main.cpp`, `w_sound.h`, `AudioService.h`, `Sprite.cpp` and `ToolActions.cpp`. The application owns the null adapter; the new two-argument typed `MakeSound` delegates to the existing explicit-service helper exercised by tests. Caller edits replace only sound operands, preserving messages, costs, rubble/map updates, conditions and RNG order. The 47 translation units, retained `.sln`/`.vcxproj`, disaster damage, save implementation and disabled visual timers are unchanged. Migrated effects no longer print string commands; playback remains silent and inherited mute/initialization behavior is preserved. New audio/test code compiles without warnings; CMake rebuilds emit existing inherited warnings. The inherited Release build completed without warnings in this run.
 
 ## Verified environment and dependency baseline
 
@@ -84,15 +92,15 @@ The current production increment touches only `main.cpp`, `w_sound.cpp` / `.h` a
 
 Exact commands/target mapping: [project/BUILDING.md](project/BUILDING.md). Local evidence: [tests/baseline/BOOTSTRAP_2026-10-05.md](tests/baseline/BOOTSTRAP_2026-10-05.md). Asset provenance and replacement decision: [project/reference/RUNTIME_ASSETS.md](project/reference/RUNTIME_ASSETS.md), `assets/runtime-assets.json`, `assets/ASSET-LICENSES.yml`.
 
-Bootstrap and the first typed earthquake route are merged, with local and hosted build/test evidence retained. No upstream push or history/tag rewrite occurred. Hosted CI verifies separate clean runner builds; manual GUI testing remains on the primary workstation. The current typed audio-control increment has local Debug/Release evidence and is published with user approval in [PR #3](https://github.com/DangerMouseUK/civic89/pull/3); live hosted CI results appear in its checks. No new GUI or actual audio-device test was run for this narrow route; recording/null helper tests and both build paths provide its evidence.
+Bootstrap, the first typed earthquake route and audio controls are merged, with local and hosted build/test evidence retained. No upstream push or history/tag rewrite occurred. Hosted CI verifies separate clean runner builds; manual GUI testing remains on the primary workstation. The current default-effect increment has local Debug/Release evidence and is published with user approval for PR review; live hosted CI results appear in the PR checks. No new GUI, actual audio-device or deterministic simulation test was run for this routing change; recording/null helper tests, the mechanical caller comparison and both build paths provide its evidence.
 
 ## Inherited limitations and release gates
 
 - Missing fonts were an inherited packaging defect, not a Civic 89 regression. Startup now works with approved fonts/substitute. Original developer font versions and pixel-identical text metrics cannot be established.
 - **Historical `.cty` compatibility is unproven.** The inherited writer uses native 32-bit arrays and produced a **51,360-byte** save; some supplied cities are **27,120 bytes**. `FileIo.cpp` does not validate short reads. A current-version round trip does not establish historical/scenario compatibility. Investigate separately with tests; no format change is made here.
 - `icons/LICENSE.txt` supplies OpenSVG attribution without identifying original icon sets/licences. Public binary redistribution remains blocked on that audit. Other retained graphics/fixtures preserve inherited project-level GPL/additional-terms provenance, not a completed per-asset rights review.
-- Remaining string effects/scenario/earthquake visual paths retain the stubbed `Eval()` bridge. Earthquake sound and the dormant bulldozer/sound-off controls use typed audio. The [inventory](project/reference/LEGACY_EVAL_INVENTORY.md) records disconnected scenario startup, empty tool-error commands, an ineffective mute setter, dormant message audio/win paths and disabled earthquake timers. Tests cover the audio/earthquake helpers, not real playback, visual effects or scenario loading. Resource lifetime concerns remain inherited; normal GUI exit testing does not prove leak-free teardown.
+- Remaining rate-bearing/dormant string effects, scenario and earthquake visual paths retain the stubbed `Eval()` bridge. Default sprite/bulldozing effects, earthquake sound and the dormant bulldozer/sound-off controls use typed audio. The [inventory](project/reference/LEGACY_EVAL_INVENTORY.md) records disconnected scenario startup, empty tool-error commands, an ineffective mute setter, dormant message audio/win paths and disabled earthquake timers. Tests cover the audio/earthquake helpers, not sprite/tool execution, real playback, visual effects or scenario loading. Resource lifetime concerns remain inherited; normal GUI exit testing does not prove leak-free teardown.
 - `/W4` exposes **50 inherited warnings per configuration**: 40 C4100, one C4189, two C4389, one C4456, six C4459. The inherited `/W3` comparison build reported none. No warning-as-error policy introduced.
 - A final inherited MSBuild rerun passed after the manifest change with four CS1668 environment warnings: two missing `LIB` search directories reported twice by Roslyn inline tasks (Enterprise ATL/MFC and `lib\um\x64`). These are workstation/global-integration warnings, not C++ errors; no unrelated environment repair was made.
 - Original UI/window/resource branding is retained for comparison. `civic89.exe` is the new target name; public product branding/packaging remains later work.
-- Retained `.sln`/`.vcxproj` remain unedited and build after the first typed route. Catch2, engine extraction, deterministic simulation digests, ASan and exhaustive UI/asset compliance testing remain later milestones.
+- Retained `.sln`/`.vcxproj` remain unedited and build after the implemented typed routes. Catch2, engine extraction, deterministic simulation digests, ASan and exhaustive UI/asset compliance testing remain later milestones.

@@ -2,6 +2,7 @@
 #include "w_sound.h"
 #include "w_tk.h"
 
+#include <array>
 #include <iostream>
 #include <optional>
 #include <sstream>
@@ -149,6 +150,45 @@ namespace
             "Inherited MakeSoundOn emits empty commands; migration must address this explicitly");
     }
 
+    void checkDefaultEffects()
+    {
+        resetBridge();
+        ConsoleCapture console;
+        RecordingAudioService audio(console);
+        MakeSound(SoundId::ExplosionHigh, AudioChannel::City, audio);
+        MakeSound(SoundId::ExplosionLow, AudioChannel::City, audio);
+        MakeSound(SoundId::HeavyTraffic, AudioChannel::City, audio);
+        MakeSound(SoundId::HonkLow, AudioChannel::City, audio);
+        require(userSoundOn() && Dozing == 0 && ShakeNow == 0 && earthquake_timer_set == 0,
+            "Default effects must initialize sound without changing loop or earthquake state");
+        constexpr std::array expected{
+            SoundId::ExplosionHigh, SoundId::ExplosionLow, SoundId::HeavyTraffic, SoundId::HonkLow };
+        require(audio.requests.size() == expected.size(), "Each default effect must dispatch once");
+        for (size_t i = 0; i < expected.size(); ++i)
+        {
+            const auto& request = audio.requests[i];
+            require(request.kind == AudioRequestKind::Effect && request.sound == expected[i] &&
+                request.channel == AudioChannel::City && request.soundInitialized &&
+                request.consoleBeforeEffect.empty() && request.dozingBeforeRequest == 0 &&
+                request.shakeBeforeEffect == 0 && request.timerBeforeEffect == 0,
+                "Default effects must retain their order and initialize before typed city dispatch");
+        }
+        userSoundOn(false);
+        MakeSound(SoundId::ExplosionHigh, AudioChannel::City, audio);
+        require(userSoundOn() && audio.requests.size() == 5 && audio.requests.back().soundInitialized,
+            "Typed default effects must retain the inherited mute/initialization behavior");
+        require(console.take().empty(), "Typed default effects must not emit string commands");
+
+        resetBridge();
+        NullAudioService nullAudio;
+        for (const auto sound : expected)
+        {
+            MakeSound(sound, AudioChannel::City, nullAudio);
+        }
+        require(userSoundOn() && Dozing == 0 && ShakeNow == 0 && earthquake_timer_set == 0 &&
+            console.take().empty(), "Null default effects must preserve state and remain silent");
+    }
+
     void checkBulldozerLifecycle()
     {
         resetBridge();
@@ -279,6 +319,7 @@ int main()
     {
         checkEvalStub();
         checkSoundRouting();
+        checkDefaultEffects();
         checkBulldozerLifecycle();
         checkEarthquakeLifecycle();
         std::cout << "Legacy effects and typed audio control/earthquake tests passed\n";

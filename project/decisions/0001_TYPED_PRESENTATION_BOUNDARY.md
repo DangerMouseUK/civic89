@@ -1,6 +1,6 @@
 # ADR 0001: Typed presentation boundary
 
-**Status:** Earthquake audio and audio controls implemented; the broader presentation/scenario boundary remains proposed.
+**Status:** Default city effects, earthquake audio and audio controls implemented; the broader presentation/scenario boundary remains proposed.
 
 **Date:** 5 October 2026
 
@@ -16,7 +16,7 @@ Follow the governing [phase-safe refactoring sequence and typed boundary](../eng
 
 Use small synchronous C++ interfaces, called on the existing application/simulation thread. The application owns and injects the adapters; no global string registry, queued event framework, SDL types or window names cross this boundary. Begin with recording adapters for tests and a null audio adapter. Construct adapters before their callers and keep them alive until the game/session stops.
 
-The following remains the broader illustrative design. The production [AudioService.h](../../src/AudioService.h) currently contains `ExplosionLow` / `Bulldozer`, `City` / `Construction`, and `playEffect`, `startLoop`, `stopLoop` and `stopAll`, plus the null adapter. Rates, additional sounds and presentation/scenario interfaces will be added when their callers migrate:
+The following remains the broader illustrative design. The production [AudioService.h](../../src/AudioService.h) currently contains `ExplosionLow`, `Bulldozer`, `ExplosionHigh`, `HeavyTraffic` and `HonkLow`, `City` / `Construction`, and `playEffect`, `startLoop`, `stopLoop` and `stopAll`, plus the null adapter. Rates, additional sounds and presentation/scenario interfaces will be added when their callers migrate:
 
 ```cpp
 enum class AudioChannel { City, Construction };
@@ -79,7 +79,7 @@ Loop stop can use a channel because the baseline has a single construction loop 
 
 The application owns a `NullAudioService` beside its other existing services. The inherited no-argument `DoEarthQuake()` entry point is now a one-line application adapter that passes this service to `DoEarthQuake(AudioService&)`. `MakeEarthquake` and its callers remain untouched. The helper sends `ExplosionLow` on `City` through the typed `MakeSound` overload, then retains the legacy visual command and shake/timer mutations in their original order.
 
-The typed sound overload retains the same private enable guard and lazy `SoundInitialized` update as the string overload. This deliberately preserves the value saved through `userSoundOn()` / `MiscHistory[55]`; mute/shutdown repairs remain separate decisions. The null implementation opens no device, loads no asset and adds no dependency. The only diagnostic difference on this path is removal of `Eval: UIMakeSound "city" "Explosion-Low"`; `DoEarthQuake` and `Eval: UIEarthQuake` still log. Playback stays silent. Remaining string effects are untouched; loop controls are recorded below.
+The typed sound overload retains the same private enable guard and lazy `SoundInitialized` update as the string overload. This deliberately preserves the value saved through `userSoundOn()` / `MiscHistory[55]`; mute/shutdown repairs remain separate decisions. The null implementation opens no device, loads no asset and adds no dependency. The only diagnostic difference on this path is removal of `Eval: UIMakeSound "city" "Explosion-Low"`; `DoEarthQuake` and `Eval: UIEarthQuake` still log. Playback stays silent. Other effects remained on the string path at this first checkpoint; subsequent loop/default-effect migrations are recorded below.
 
 The recording adapter exists only in `tests/LegacyBridge.cpp`. Tests check the exact typed sound/channel, one request per earthquake, initialization before dispatch, and console/shake/timer snapshots at dispatch to prove it precedes the visual command and state increment. Repeated start and explicit stop retain their prior state assertions. Running the helper with the actual null adapter also verifies lazy initialization and the absence of a string sound command.
 
@@ -96,3 +96,13 @@ The application retains its no-argument `StartBulldozer`, `StopBulldozer` and `S
 The old internal `DoStartSound` / `DoStopSound` functions and declarations have no remaining callers and are removed. Along with `UISoundOff`, this retires three live `Eval` calls. It also retires the old `DoStartSound` declaration/definition mismatch. No strings, loop-number parsing or registry replace these commands; the baseline's sole loop (`1` on `edit`) is represented by typed `Bulldozer` and `Construction`.
 
 Recording tests assert request kinds, sound/channel, initialization and loop state at dispatch, request order and repeat suppression. The production null adapter is also exercised for cold stop, start, stop and stop-all. The controls still have no game callers, and no new UI route enables them. Expected diagnostic changes are removal of `UISoundOff`, `UIStartSound` and `UIStopSound` logs. No device, sample, save-format or simulation behavior is changed. Verification logs use `out/audit/typed-control-*`; build/test commands remain in [BUILDING.md](../BUILDING.md).
+
+## Default city effects: implementation and compatibility record
+
+After PR #3 merged, the legacy helper was characterized for high/low explosions, traffic reports and low horns (`3985437`); targeted tests passed in Debug and Release before production edits. The application now provides `MakeSound(SoundId, AudioChannel)` as an adapter to the existing explicit-service overload, using its owned null service. This follows the application adapter pattern already used by earthquake and loop controls without a service registry or string conversion.
+
+Four calls in `Sprite.cpp` and eight calls in `ToolActions.cpp` now use `ExplosionHigh`, `ExplosionLow`, `HeavyTraffic` or `HonkLow` on `City`. Calls stay at the same positions relative to messages, rubble creation and other state updates. Reversing only these operand replacements reproduces both entire files from merged `main` exactly. The ship's `-speed 80` and monster's `[MonsterSpeed]` requests remain literal legacy strings; unreachable message audio and empty tool-error commands are not activated.
+
+Recording tests verify one request per effect, high-before-low ordering, initialization before dispatch and unchanged loop/earthquake state. They also retain the inherited ineffective mute behavior and check silent null playback. These tests exercise the actual sound helper, not sprite/tool execution or a simulation digest. Both CMake builds pass 3/3 tests and the retained Visual Studio Release build passes. Commands remain in [BUILDING.md](../BUILDING.md); logs use `out/audit/typed-city-*`.
+
+The migrated effects cease printing `UIMakeSound` diagnostics and remain silent. No audio device, sample, dependency, save change or RNG/map logic is introduced. The shared string helper remains for deferred callers, so the count stays at nine live `Eval` expressions.

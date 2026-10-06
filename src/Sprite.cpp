@@ -601,7 +601,7 @@ void explodeSprite(SimSprite& sprite)
         break;
     }
 
-    MakeSound("city", "Explosion-High"); /* explosion */
+    MakeSound(SoundId::ExplosionHigh, AudioChannel::City); /* explosion */
     return;
 }
 
@@ -736,7 +736,7 @@ void updateHelicopter(SimSprite& sprite)
             if ((TrafficDensityMap.value(location) > 170) && (randomRange(0, 7) == 0))
             {
                 SendMesAt(NotificationId::HeavyTrafficReported, (location.x << 1) + 1, (location.y << 1) + 1);
-                MakeSound("city", "HeavyTraffic"); // chopper
+                MakeSound(SoundId::HeavyTraffic, AudioChannel::City); // chopper
                 sprite.sound_count = 200;
             }
         }
@@ -844,7 +844,7 @@ void updateShip(SimSprite& sprite)
             }
             else
             {
-                MakeSound("city", "HonkHonk-Low");
+                MakeSound(SoundId::HonkLow, AudioChannel::City);
             }
         }
         sprite.sound_count = 200;
@@ -1112,7 +1112,7 @@ void updateExplosion(SimSprite& sprite)
 {
     if (sprite.frame == 0)
     {
-        MakeSound("city", "Explosion-High"); // explosion
+        MakeSound(SoundId::ExplosionHigh, AudioChannel::City); // explosion
             
         int x = (sprite.position.x / 16) + 3;
         int y = (sprite.position.y / 16);
