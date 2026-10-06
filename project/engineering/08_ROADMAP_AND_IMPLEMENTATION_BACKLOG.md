@@ -386,6 +386,19 @@ non-fatal and teardown is clean. Record hardware and any unresolved acceptance l
 manual evidence. Outstanding required desktop checks prevent claiming complete acceptance;
 external rights/brand/signing gates remain separately recorded until cleared.
 
+**M8 implementation checkpoint (6 October 2026):** `codex/m8-faithfulness-windows-polish`
+delivers all six items' software scope: [audit](../FAITHFULNESS_AUDIT.md), source/data
+contract and mechanics regressions; original-gameplay interface with M7 saves/CLI;
+documented historical format mismatch; Windows chord/focus/native-owner/save-location
+fixes; expanded software/Direct3D 11 display and lifecycle matrix; version 0.8.0-dev
+and current documentation. Application Debug/Release/ASan pass 55/55 and headless
+Debug/ASan 45/45 locally; retained Visual Studio Release passes. Default-device
+opening succeeds. Required physical visibility/input/dialog/audibility/mixed-DPI
+checks remain pending because desktop capture/input access is unavailable.
+[M8 evidence/checklist](../../tests/baseline/M8_2026-10-06.md) records results and
+delivery/CI progress. This is an implementation checkpoint, not full milestone
+acceptance. Keep the candidate PR a draft until required desktop evidence exists.
+
 ## 11. Milestone 9 - Optional enhanced graphics
 
 **Status:** planned, optional, after M8; graphics adoption/art direction must be agreed

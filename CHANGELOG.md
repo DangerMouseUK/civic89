@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.8.0-dev — M8 faithfulness and Windows polish
+
+- Original-gameplay new-city flow/status; Files retains both M7 save formats and import/export.
+- Save As commits its destination after publication; cancellation/failure preserves the earlier location.
+- Windows key chords no longer activate panel controls; focus loss clears keyboard capture and gestures.
+- Audited mechanics/data, tool/economy/network regressions and safe rejection of 24 historical cities.
+- Expanded 1080p/1440p/4K/ultrawide layouts at 100–200% scale and compatibility/desktop evidence.
+
+No simulation algorithm, golden result or city payload/schema change. Physical
+display/audibility acceptance remains pending; see M8 evidence. Optional M9 graphics
+are planned. Enhanced gameplay expansion is withdrawn by ADR 0009.
+
 ## 0.7.0-dev — M7 Enhanced Mode foundation
 
 - Supported Classic v1 development contract with explicit historical/replay limits.
@@ -9,8 +21,8 @@
 - Native mode-selection acceptance, malformed/unknown-version save rejection and fresh-process parity tests.
 
 Enhanced v1 currently uses Classic mechanics and the 120 by 100 map. All existing
-Classic golden results are retained. Later Enhanced gameplay and public-release
-clearance remain future work.
+Classic golden results are retained. The future gameplay-expansion direction was
+subsequently withdrawn by ADR 0009; public-release clearance remains separate work.
 
 ## 0.6.0-dev — M6 development candidates
 

@@ -1,7 +1,8 @@
 # ADR 0009 — Faithful modernisation and optional graphics
 
 Date: 6 October 2026. Base: merged M7 `eb73f64` (PR #12).
-Status: accepted project scope; M8/M9 implementation is planned.
+Status: accepted project scope; M8 implementation delivered on its branch with
+physical acceptance pending. Optional M9 graphics remain planned.
 
 The user clarified that Civic 89 must preserve the original game's gameplay and
 mechanics while modernising its appearance and Windows experience. The only
@@ -41,16 +42,20 @@ ADR-007, the former post-M7 candidate backlog and the future-candidate clauses o
 M7 remains completed and merged. Neither the M7 implementation nor its acceptance
 evidence is retroactively removed. Its interface adjustment is part of M8.
 
-The current `0.7.0-dev` application still exposes M7's Classic/Enhanced city modes;
-both use the same mechanics. Documentation must distinguish that delivered behaviour
-from the planned M8 interface and optional M9 graphics preference.
+M7 `0.7.0-dev` exposed Classic/Enhanced city modes with the same mechanics.
+M8 `0.8.0-dev` starts one original-gameplay city path, shows the current extension
+in Files and keeps M7 load/save/import/export/recovery and CLI identities. A failed
+Save As retains the previous destination; no existing city is forcibly retagged.
 
 ## Delivery and acceptance
 
 The [roadmap](../engineering/08_ROADMAP_AND_IMPLEMENTATION_BACKLOG.md) defines complete
 M8/M9 backlog items and acceptance. Deliver one whole milestone per engineering
-branch/PR. This planning update changes documentation only; neither M8 nor M9 is
-implemented by it. [Project status](../../PROJECT_STATUS.md) records progress.
+branch/PR. The initial scope commit was documentation only; the M8 branch now
+includes the runtime adjustment, [audit](../FAITHFULNESS_AUDIT.md), regression
+checks and [evidence](../../tests/baseline/M8_2026-10-06.md). M8 acceptance remains
+pending until the required physical checks have actual evidence. M9 is not
+implemented. [Project status](../../PROJECT_STATUS.md) records progress.
 
 Historical file variants and exact replay remain limited by the supported snapshot
 format. Do not invent format compatibility without verified references/fixtures.

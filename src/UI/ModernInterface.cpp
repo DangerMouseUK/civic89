@@ -146,8 +146,8 @@ void ModernInterface::dashboard()
     for (size_t i = 0; i < commands.size(); ++i)
     {
         const auto id = commands[i];
-        const std::string label = id == 0 ? (paused() ? "Resume" : "Pause") : commandNames[id];
-        button(label,{14 + i * width,43,width-4,29},[this,id] { if (command) { command(static_cast<UiCommand>(id)); } },false,true,id==4 ? "Eval" : id==5 ? "Scenario" : nullptr);
+        const std::string label = id == 0 ? (paused() ? "Resume" : "Pause") : id == 2 ? "Files" : commandNames[id];
+        button(label,{14 + i * width,43,width-4,29},[this,id] { if (command) { command(id == 2 ? UiCommand::Files : static_cast<UiCommand>(id)); } },false,true,id==4 ? "Eval" : id==5 ? "Scenario" : nullptr);
     }
     button(std::string(OverlayNames[static_cast<size_t>(selectedOverlay)]),{14,77,150,26},[this] { show(Panel::Overlays); },selectedOverlay != DataOverlay::None);
     button("-",{170,77,26,26},[this] { settings.overlayOpacity = std::max(.1f,settings.overlayOpacity-.1f); if(settingsChanged) settingsChanged(); });
@@ -214,7 +214,6 @@ void ModernInterface::minimap(const Camera2D& camera)
 }
 void ModernInterface::show(Panel value)
 {
-    if (value==Panel::NewCity) { selectedRuleset=city.rulesetId(); }
     panel = value; focus = -1; binding = -1; minimapDragging = false; controls.clear();
 }
 void ModernInterface::budgetPanel(SDL_FRect area)
@@ -358,7 +357,7 @@ void ModernInterface::sheet()
     const auto area=panelArea();
     fill({0,0,size.x,size.y-32},{0,0,0,135});
     fill(area,settings.highContrast ? SDL_Color{0,0,0,255} : SDL_Color{22,34,48,255});
-    constexpr std::array<const char*,9> titles{"","CITY BUDGET","CITY EVALUATION","CITY HISTORY","SETTINGS","ZONE QUERY","CITY DATA","SCENARIOS","NEW CITY"};
+    constexpr std::array<const char*,10> titles{"","CITY BUDGET","CITY EVALUATION","CITY HISTORY","SETTINGS","ZONE QUERY","CITY DATA","SCENARIOS","NEW CITY","CITY FILES"};
     text(titles[static_cast<size_t>(panel)],{area.x+20,area.y+8,area.w-90,32},true,accent);
     button("Close",{area.x+area.w-76,area.y+8,60,30},[this] {show(Panel::None);});
     const SDL_FRect content{area.x+20,area.y+52,area.w-40,area.h-65};
@@ -370,7 +369,7 @@ void ModernInterface::sheet()
     case Panel::Settings: settingsPanel(content); break;
     case Panel::Overlays: overlaysPanel(content); break;
     case Panel::Scenarios:
-        text("Classic v1 scenarios replace this city. Save first if needed.",{content.x,content.y,content.w,32},false,muted);
+        text("Scenarios replace this city. Save first if needed.",{content.x,content.y,content.w,32},false,muted);
         for (size_t i=0;i<ScenarioDefinitions.size();++i)
         {
             const auto& scenario=ScenarioDefinitions[i];
@@ -382,14 +381,21 @@ void ModernInterface::sheet()
         break;
     case Panel::NewCity:
     {
-        const float row=std::min(44.f,content.h/6), height=row-4;
-        text("New city/import replaces this city. Save first.",{content.x,content.y,content.w,height},false,muted);
-        button("Classic mode",{content.x,content.y+row,content.w/2-4,height},[this] {selectedRuleset=RulesetId::ClassicV1;},selectedRuleset==RulesetId::ClassicV1);
-        button("Enhanced mode",{content.x+content.w/2,content.y+row,content.w/2-4,height},[this] {selectedRuleset=RulesetId::EnhancedV1;},selectedRuleset==RulesetId::EnhancedV1);
-        text("Enhanced v1 uses Classic mechanics; saves use .c89.",{content.x,content.y+row*2,content.w,height},false,muted);
-        button("Start new city",{content.x,content.y+row*3,content.w,height},[this] {if(command) command(UiCommand::StartNewCity);show(Panel::None);});
-        button("Import Classic to Enhanced",{content.x,content.y+row*4,content.w,height},[this] {if(command) command(UiCommand::ImportClassic);});
-        button("Export Classic copy",{content.x,content.y+row*5,content.w,height},[this] {if(command) command(UiCommand::ExportClassic);});
+        text("Start a city with original gameplay and mechanics.",{content.x,content.y,content.w,32},false,muted);
+        text("Your current city will be replaced. Save first if needed.",{content.x,content.y+40,content.w,32},false,muted);
+        button("Start new city",{content.x,content.y+96,content.w,40},[this] {if(command) command(UiCommand::StartNewCity);show(Panel::None);});
+        break;
+    }
+    case Panel::Files:
+    {
+        const float row=std::min(44.f,content.h/7), height=row-4;
+        text("Both city formats use the same original gameplay.",{content.x,content.y,content.w,height},false,muted);
+        text(std::string("Current save format: ")+std::string(findRuleset(city.rulesetId())->extension),{content.x,content.y+row,content.w,height},false,muted);
+        button("Open city",{content.x,content.y+row*2,content.w,height},[this] {if(command) command(UiCommand::Open);});
+        button("Save city",{content.x,content.y+row*3,content.w,height},[this] {if(command) command(UiCommand::Save);});
+        button("Import .cty copy",{content.x,content.y+row*4,content.w,height},[this] {if(command) command(UiCommand::ImportClassic);});
+        button("Export .cty copy",{content.x,content.y+row*5,content.w,height},[this] {if(command) command(UiCommand::ExportClassic);});
+        text("Import preserves the source and saves the copy as .c89.",{content.x,content.y+row*6,content.w,height},false,muted);
         break;
     }
     case Panel::Query:
@@ -424,8 +430,8 @@ void ModernInterface::draw(const Camera2D& camera)
     }
     fill({0,size.y-32,size.x,32},settings.highContrast ? SDL_Color{0,0,0,255} : SDL_Color{20,30,43,255});
     const bool showStatus = tooltip.empty() || SDL_GetTicks() < statusUntil;
-    text(showStatus ? status : tooltip,{14,size.y-29,size.x-180,25},false,showStatus ? ink : accent);
-    text(findRuleset(city.rulesetId())->label,{size.x-150,size.y-29,136,25},true,accent);
+    text(showStatus ? status : tooltip,{14,size.y-29,size.x-205,25},false,showStatus ? ink : accent);
+    text("Original gameplay",{size.x-180,size.y-29,166,25},true,accent);
 }
 bool ModernInterface::pointInWindow(Point<int> point) const
 {
@@ -468,6 +474,8 @@ bool ModernInterface::keyDown(SDL_Keycode key, SDL_Keymod modifiers)
             {message("That key is reserved or already assigned.");return true;}
         binding=-1;message("Key binding saved.");if(settingsChanged) settingsChanged();return true;
     }
+    // Leave Windows/application chords alone, including Alt+Tab and Alt+Enter.
+    if(modifiers & (SDL_KMOD_CTRL|SDL_KMOD_ALT|SDL_KMOD_GUI)) return false;
     if(key==SDLK_ESCAPE) {show(panel==Panel::None ? Panel::Settings : Panel::None);return true;}
     if(key==SDLK_TAB)
     {
@@ -485,7 +493,6 @@ bool ModernInterface::keyDown(SDL_Keycode key, SDL_Keymod modifiers)
     {
         const auto action=controls[focus].action; if(controls[focus].enabled) action();return true;
     }
-    if(modifiers & (SDL_KMOD_CTRL|SDL_KMOD_ALT|SDL_KMOD_GUI)) return false;
     if(modalWindowVisible()) return true;
     for(size_t i=0;i<26;++i)
     {

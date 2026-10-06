@@ -12,9 +12,11 @@
 #include "MapRenderer.h"
 #include "Map.h"
 #include "ToolManager.h"
+#include "FileIo.h"
 #include "main.h"
 #include <SDL3_image/SDL_image.h>
 #include <filesystem>
+#include <fstream>
 #include <iostream>
 #include <stdexcept>
 
@@ -30,6 +32,8 @@ void rebuildPresentationGraphics();
 void windowResized();
 void gameInit(std::optional<Scenario>);
 void advancePresentation(Uint64);
+CityIoResult applicationSaveCityTo(const std::filesystem::path&);
+std::string applicationSaveDestination();
 
 namespace
 {
@@ -68,7 +72,7 @@ void runModernUiAcceptance(Budget& budget,CityProperties& city,ToolManager& tool
     budget.CurrentFunds(20000);ResetMap();
     auto& camera=applicationCamera();camera.position({});camera.zoomAt(1,{});
     applicationMapRenderer().invalidate();
-    for(const auto pixels : {Vector<int>{800,600},Vector<int>{1366,768},Vector<int>{1920,1080},Vector<int>{3440,1440}})
+    for(const auto pixels : {Vector<int>{800,600},Vector<int>{1366,768},Vector<int>{1920,1080},Vector<int>{2560,1440},Vector<int>{3440,1440},Vector<int>{3840,2160}})
     {
         require(SDL_SetWindowSize(MainWindow,pixels.x,pixels.y),"Responsive UI output resize");windowResized();
         for(float density : {1.f,1.25f,1.5f,2.f})
@@ -78,7 +82,7 @@ void runModernUiAcceptance(Budget& budget,CityProperties& city,ToolManager& tool
             camera.displayScale(layout.scale);camera.viewport(layout.logical);
             auto& ui=applicationInterface();ui.layout(layout.logical,layout.scale);ui.hideAllWindows();
             const auto before=engineStateDigest(city,budget);
-            for(const auto panel : {ModernInterface::Panel::None,ModernInterface::Panel::Budget,ModernInterface::Panel::Evaluation,ModernInterface::Panel::Graphs,ModernInterface::Panel::Settings,ModernInterface::Panel::Overlays})
+            for(const auto panel : {ModernInterface::Panel::None,ModernInterface::Panel::Budget,ModernInterface::Panel::Evaluation,ModernInterface::Panel::Graphs,ModernInterface::Panel::Settings,ModernInterface::Panel::Overlays,ModernInterface::Panel::NewCity,ModernInterface::Panel::Files,ModernInterface::Panel::Scenarios})
             {
                 ui.show(panel);render();
                 const auto area=ui.panelArea();require(area.x>=0 && area.x+area.w<=layout.logical.x && area.y+area.h<=layout.logical.y-32,"Responsive panel clipped");
@@ -168,27 +172,52 @@ void runModernUiAcceptance(Budget& budget,CityProperties& city,ToolManager& tool
     require(restored.currentPanel()==ModernInterface::Panel::Query,"Query tool did not open inspection");snapshot("wide-query");restored.hideAllWindows();
     control("New city");require(restored.currentPanel()==ModernInterface::Panel::NewCity,"New city confirmation missing");snapshot("wide-new-city");control("Close");
     const auto modeBefore=city.rulesetId(); const auto stateBeforeMode=engineStateDigest(city,budget);
-    control("New city");control("Enhanced mode");
-    require(restored.newCityRuleset()==RulesetId::EnhancedV1 && city.rulesetId()==modeBefore &&
-        engineStateDigest(city,budget)==stateBeforeMode,"Pending new-city choice retagged the live city");
     for (const auto pixels : {Vector<int>{800,600},Vector<int>{1366,768}})
     {
-        require(SDL_SetWindowSize(MainWindow,pixels.x,pixels.y),"M7 mode UI resize");windowResized();render();
+        require(SDL_SetWindowSize(MainWindow,pixels.x,pixels.y),"M8 files UI resize");windowResized();
+        control("New city");render();
+        require(restored.controlArea("Classic mode").w==0 && restored.controlArea("Enhanced mode").w==0,
+            "New-city workflow still offers alternate gameplay modes");
+        snapshot(pixels.x==800 ? "m8-compact-new-city" : "m8-wide-new-city");control("Close");
+        control("Files");render();
         const auto area=restored.panelArea();
-        for (const auto* label : {"Classic mode","Enhanced mode","Start new city","Import Classic to Enhanced","Export Classic copy"})
+        for (const auto* label : {"Open city","Save city","Import .cty copy","Export .cty copy"})
         {
             const auto controlArea=restored.controlArea(label);
             require(controlArea.w>0 && controlArea.h>0 && controlArea.y>=area.y &&
-                controlArea.y+controlArea.h<=area.y+area.h,"Mode/import/export control escaped the panel");
+                controlArea.y+controlArea.h<=area.y+area.h,"Save compatibility control escaped the panel");
         }
-        snapshot(pixels.x==800 ? "m7-compact-mode" : "m7-wide-mode");
+        snapshot(pixels.x==800 ? "m8-compact-files" : "m8-wide-files");control("Close");
     }
-    control("Close");require(city.rulesetId()==modeBefore && engineStateDigest(city,budget)==stateBeforeMode,"Cancelling mode selection changed the city");
-    control("New city");control("Enhanced mode");control("Start new city");
-    require(city.rulesetId()==RulesetId::EnhancedV1 && restored.currentPanel()==ModernInterface::Panel::None,"New Enhanced city did not start");
-    snapshot("m7-enhanced-city");
-    control("New city");control("Classic mode");control("Start new city");
-    require(city.rulesetId()==RulesetId::ClassicV1,"Explicit Classic restart retained Enhanced identity");
+    require(city.rulesetId()==modeBefore && engineStateDigest(city,budget)==stateBeforeMode,"Inspecting/cancelling files/new-city changed the session");
+    require(static_cast<bool>(ImportClassicCity("scenarios/snro.666",city,budget)),"M7 import compatibility failed");
+    control("New city");control("Close");
+    require(city.rulesetId()==RulesetId::EnhancedV1,"Cancelling new city retagged an existing M7 city");
+    control("Files");snapshot("m8-c89-files");control("Close");
+    control("New city");control("Start new city");
+    require(city.rulesetId()==RulesetId::ClassicV1 && restored.currentPanel()==ModernInterface::Panel::None,
+        "New-city path did not return to the faithful default");
+    snapshot("m8-original-gameplay");
+    control("Budget");render();key(SDLK_TAB);
+    key(SDLK_RETURN,SDL_KMOD_ALT);key(SDLK_ESCAPE,SDL_KMOD_CTRL);
+    require(restored.currentPanel()==ModernInterface::Panel::Budget,"Windows chords activated or closed a panel");
+    SDL_Event focusLost{};focusLost.type=SDL_EVENT_WINDOW_FOCUS_LOST;focusLost.window.windowID=MainWindowId;
+    handleWindowEvent(focusLost);key(SDLK_RETURN);
+    require(restored.currentPanel()==ModernInterface::Panel::Budget,"Restoring focus activated a stale control");
+    control("Close");
+    const auto savePath=std::filesystem::current_path()/"ui-captures"/std::filesystem::path(L"M8-city-\u57ce\u5e02.cty");
+    const auto beforeSave=engineStateDigest(city,budget);
+    require(static_cast<bool>(applicationSaveCityTo(savePath)),"Application Unicode save failed");
+    const auto previousDestination=applicationSaveDestination();
+    std::ifstream saved(savePath,std::ios::binary);
+    const std::string originalBytes{std::istreambuf_iterator<char>(saved),{}};saved.close();
+    require(!applicationSaveCityTo(savePath.parent_path()/"missing-m8-directory"/"city.cty"),"Save to missing directory succeeded");
+    require(!applicationSaveCityTo(savePath.parent_path()/"wrong-format.c89"),"Save silently converted the active city");
+    require(applicationSaveDestination()==previousDestination && engineStateDigest(city,budget)==beforeSave,
+        "Failed Save As changed the active city or previous destination");
+    require(static_cast<bool>(applicationSaveCityTo(pathFromUtf8(previousDestination))),"Retry at previous destination failed");
+    std::ifstream retried(savePath,std::ios::binary);
+    require(std::string{std::istreambuf_iterator<char>(retried),{}}==originalBytes,"Failed Save As changed existing save bytes");
     // Exercise the animation option against actual scheduler/tile behavior, with no
     // simulation deadline between the 100 ms and 150 ms observations.
     gameInit(std::nullopt);simSpeed(SimulationSpeed::Slow);
@@ -201,5 +230,5 @@ void runModernUiAcceptance(Budget& budget,CityProperties& city,ToolManager& tool
     gameplayOptions().animationEnabled=true;advancePresentation(now+300);
     require(maskedTileValue(tileValue(40,40))!=Radar0,"Enabled animation did not advance radar tile");
     pause();
-    std::cout<<"M5 responsive panels, tool affordability, minimap isolation, overlays, settings, rebinding, keyboard and graphics reset passed\n";
+    std::cout<<"M5/M8 responsive panels, faithful city workflow, save destination isolation, Windows chords/focus, tools, overlays, settings and graphics reset passed\n";
 }

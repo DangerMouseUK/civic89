@@ -301,7 +301,7 @@ reviewed captures and exact commands are in [M5 evidence](../tests/baseline/M5_2
 ## M6 release and ARM64 paths
 
 The root README now describes Civic 89 rather than upstream SDLPP. Release builds
-identify version `0.7.0-dev`, full/short Git revision, architecture and dirty state.
+identify version `0.8.0-dev`, full/short Git revision, architecture and dirty state.
 `civic89.exe --version` does not initialise SDL or user files. CMake executables
 find assets beside themselves, so a shortcut or an unrelated working directory
 works. The retained comparison executable still permits repository-relative assets.
@@ -324,24 +324,48 @@ signing, release gates and crash-safe offline updates. `cmake --install` remains
 an intermediate development stage; complete release tooling adds CRT and manifest
 verification. No simulation algorithm, golden digest or city format changes in M6.
 
-## M7 modes and save compatibility
+## M7 save compatibility with the M8 interface
 
-F7 opens the city panel. Choose Classic v1 or Enhanced v1 before starting a new
-city; selecting a button or cancelling never retags the current city. The status
-bar shows the active mode. `civic89.exe --mode enhanced` starts an Enhanced city;
+F7 confirms a new original-gameplay Classic v1 city. Cancelling never retags the
+current city. The status bar shows original gameplay; Files shows the save format.
+`civic89.exe --mode enhanced` retains the M7 save-format identity;
 `--scenario 1..8` requires Classic. All inherited scenarios remain Classic v1.
 
 Enhanced v1 intentionally shares Classic mechanics and map size. Ordinary Enhanced
 saves require `.c89`; Classic saves keep the existing 51,360-byte `.cty` layout.
 The native Open picker accepts both, and successful load selects the file's ruleset.
-The city panel's **Import Classic to Enhanced** preserves the original `.cty` and
-requires Save As for the Enhanced city. **Export Classic copy** preserves the active
+The Files panel's **Import .cty copy** preserves the original `.cty` and
+requires Save As for the Enhanced city. **Export .cty copy** preserves the active
 mode and ordinary save destination. Classic import names must fit 1–255 UTF-8 bytes.
 
 Autosave uses separate `autosave.cty` and `autosave.c89` slots. Startup offers the
-newest valid slot with its mode; a corrupt slot does not hide the other valid slot.
+newest valid slot with its file format; a corrupt slot does not hide the other valid slot.
 Both formats retain ordinary-city snapshot/replay limitations. Unknown versions,
 dimensions, invalid metadata and corrupt payloads fail before city/mode mutation.
 See [Classic compatibility](CLASSIC_COMPATIBILITY.md),
 [Enhanced format](ENHANCED_CITY_FORMAT.md), [ADR 0008](decisions/0008_M7_ENHANCED_FOUNDATION.md)
 and [M7 evidence](../tests/baseline/M7_2026-10-06.md).
+
+## M8 fidelity and Windows acceptance
+
+Application presets now have 55 checks and SDL-free presets 45. Use the existing
+configure/build/test presets; no new production dependency is introduced. New
+`original-mechanics` and `fidelity-source-contract` checks preserve the audited
+tool/economy/network and baseline data contract without changing algorithms.
+The UI matrix renders nine panel states at 800x600, 1366x768, 1080p, 1440p,
+3440x1440 and 4K, at 100/125/150/200% requested density, with unchanged digests.
+Tests cover modified keys, focus recovery, Unicode saves and failed Save As
+retaining the previous destination.
+
+See [audit](FAITHFULNESS_AUDIT.md) and [M8 evidence](../tests/baseline/M8_2026-10-06.md)
+for results and pending physical checks. SDL panels do not expose a Windows UI
+Automation accessibility tree; keyboard navigation/high contrast/larger text do
+not establish screen-reader support. Historical 27,120-byte cities remain unsupported.
+`--mode` is a compatibility option, not graphics selection; M9 remains planned.
+
+`civic89.exe --desktop-test` opens a visible Detroit session using a fresh
+`%TEMP%\civic89-desktop-test-<pid>-<time>` directory for preferences, diagnostics
+and recovery. The path is printed at startup and recorded in its log. Normal
+user data is untouched; the test directory is retained for inspection. File
+pickers use the locations you explicitly choose. Use new test filenames for
+desktop acceptance rather than overwriting a real city.

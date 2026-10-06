@@ -58,12 +58,13 @@ offers the newest valid ordinary-city recovery with its mode.
 
 The typed registry defines `classic/1` (family 1/version 1) and `enhanced/1`
 (family 2/version 1). Both currently support Classic import/export. New-city
-selection changes only the pending choice until the user starts the city.
+selection was delivered in M7. M8 removes that interface choice and starts Classic
+v1 through F7; existing CLI identities remain compatible.
 Scenarios are always Classic v1. Opening `.cty` selects Classic; opening `.c89`
 selects its supported recorded Enhanced ruleset.
 
-**Import Classic to Enhanced** is explicit, preserves the source file and clears
-the normal save destination. **Export Classic copy** writes an ordinary `.cty`
+The Files panel's **Import .cty copy** is explicit, preserves the source file and clears
+the normal save destination. **Export .cty copy** writes an ordinary `.cty`
 snapshot while preserving the Enhanced mode and normal save destination.
 Ordinary Enhanced saves require `.c89`, preventing accidental replacement of a
 Classic file. Export cannot restore fields absent from the legacy layout.
@@ -73,7 +74,7 @@ them. Portable rollback preserves both formats without converting either one.
 RNG, sprites, scenario objectives/timers and transient state remain unserialized;
 load scans can recompute fields. Scenario exports remain ordinary cities and
 automatic scenario recovery is disabled. Larger maps, wider values and new mechanics
-are outside the agreed scope. M8 will adjust the city-mode interface while retaining
+are outside the agreed scope. M8 adjusts the city-mode interface while retaining
 known M7 saves, supported export/recovery and unknown-input rejection. No forced
 conversion or file rewrite is required. M9's optional graphics must not change this
 schema, city state, ruleset identity, RNG, simulation/animation timing or save bytes.

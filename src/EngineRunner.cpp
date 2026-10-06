@@ -29,7 +29,8 @@ namespace
     {
         std::cerr << "Usage: civic89_runner (--city FILE | --scenario 1..8 | --generate) "
             "[--scenario-dir DIR] [--seed UINT32] [--speed 1..4] [--ticks 0..1000000] [--mode classic|enhanced]\n"
-            "A tick is one inherited SimFrame phase; 16 phases advance the city clock once.\n";
+            "A tick is one inherited SimFrame phase; 16 phases advance the city clock once.\n"
+            "--mode retains M7 save identities; both use the same original gameplay.\n";
         return 2;
     }
 }

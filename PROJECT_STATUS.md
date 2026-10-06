@@ -67,16 +67,21 @@
 [Classic contract](project/CLASSIC_COMPATIBILITY.md),
 [Enhanced format](project/ENHANCED_CITY_FORMAT.md) and
 [M7 evidence](tests/baseline/M7_2026-10-06.md) record the foundation and acceptance.
-M0–M7 are merged. The current application still exposes the M7 city-mode interface;
-both identities use Classic mechanics. Its adjustment is planned in M8, not a redo
-of M7. Public asset/brand/physical acceptance and trusted signing provisioning remain
+M0–M7 are merged. M8 now presents one original-gameplay path while retaining both
+M7 save identities and CLI compatibility. This adjusts M7's interface, not its
+completed foundation. Public asset/brand/physical acceptance and trusted signing provisioning remain
 external gates; development candidates are unsigned.
 
 ## Current engineering task and remaining milestones
 
-Deliver the complete M8 scope alongside the user's revised roadmap, charter, agent
-instructions, README and compatibility documents. Record implementation, tests and
-actual desktop evidence before claiming acceptance.
+The M8 branch includes all six items' software work: fidelity source/data audit and
+regressions, historical format investigation, one gameplay path/retained saves,
+Windows chord/focus/save-location fixes, expanded display matrix and documentation.
+Local application Debug/Release/ASan pass 55/55; headless Debug/ASan pass 45/45.
+Native hidden Direct3D 11 and default audio-device checks pass. Required physical
+acceptance remains pending: the desktop bridge returned black capture and denied
+input access. See [M8 evidence/checklist](tests/baseline/M8_2026-10-06.md). Keep its
+PR a candidate/draft until those checks have evidence; do not mark M8 fully accepted.
 The [roadmap](project/engineering/08_ROADMAP_AND_IMPLEMENTATION_BACKLOG.md) defines:
 
 - [ ] **M8 - Faithfulness and Windows polish:** original-mechanics audit/regressions,
@@ -114,7 +119,7 @@ No upstream push, history rewrite or tag modification occurred.
 ## Inherited limitations and release gates
 
 - Missing fonts were an inherited packaging defect, not a Civic 89 regression. Startup now works with approved fonts/substitute. Original developer font versions and pixel-identical text metrics cannot be established.
-- **Historical `.cty` compatibility is unproven.** The inherited writer uses native 32-bit arrays and produced a **51,360-byte** save; some supplied cities are **27,120 bytes**. M2 rejects wrong-size/corrupt city input before mutation using the existing 32-bit decoder. Current-version serialization/load tests do not establish historical import compatibility or full-state restoration. M3 fixes history/difficulty restoration and safe publication without changing the byte layout. Post-load scans still run; RNG, sprites and scenario progress are not serialized.
+- **Historical 27,120-byte `.cty` import remains unsupported.** M8 verified the differing 16-bit/history/metadata layout against a pinned Micropolis reference and tests rejection of all 24 inherited files before mutation. No faithful history mapping/decoder is claimed. The current 51,360-byte writer stays unchanged; see [audit](project/FAITHFULNESS_AUDIT.md). Post-load scans still run; RNG, sprites and scenario progress are not serialized.
 - `icons/LICENSE.txt` supplies OpenSVG attribution without identifying original icon sets/licences. Public binary redistribution remains blocked on that audit. Other retained graphics/fixtures preserve inherited project-level GPL/additional-terms provenance, not a completed per-asset rights review.
 - M3 supplies functional audio, mute/volume, resource teardown and reliable native city saves. M4 supplies camera auto-goto, timed earthquake presentation, DPI and rendering changes. Original procedural effects are used; no music asset is introduced.
 - Autosave/recovery covers ordinary cities. Automatic scenario autosave is skipped because the inherited format cannot restore scenario objectives/deadlines. Explicit scenario exports retain ordinary-city behavior. Desktop audibility/native-dialog interaction are not established by dummy-driver tests.

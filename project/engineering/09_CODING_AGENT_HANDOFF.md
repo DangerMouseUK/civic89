@@ -9,7 +9,7 @@
 
 Build **Civic 89** from the authentic open-source Micropolis simulation into a polished native Windows game while preserving the original gameplay and mechanics. The user's 6 October 2026 decision permits optional improved graphics only; use [ADR 0009](../decisions/0009_FAITHFUL_MODERNISATION_AND_GRAPHICS.md) and the current roadmap.
 
-**Current handoff:** M0–M7 are merged. M8 is the next implementation milestone: faithfulness/Windows polish plus the merged M7 interface adjustment. M9 is optional graphics, subject to agreed art direction. Existing M7 `.c89` compatibility and the `.cty` writer must remain intact; graphics cannot alter city state, RNG, timing or saves. This update records the plan; neither milestone is implemented yet. Read `PROJECT_STATUS.md` for the active task/branch.
+**Current handoff:** M0–M7 are merged. The M8 branch delivers faithfulness/Windows polish and the merged M7 interface adjustment; required physical desktop acceptance remains pending. Read [M8 evidence](../../tests/baseline/M8_2026-10-06.md) and `PROJECT_STATUS.md` before marking it complete. M9 is optional graphics, subject to agreed art direction. Existing M7 `.c89` compatibility and the `.cty` writer remain intact; graphics cannot alter city state, RNG, timing or saves. No M9 implementation is present.
 
 The first-assignment, bootstrap inspection and ready-to-paste prompts below are
 historical bootstrap instructions. Current delivery is one whole roadmap milestone

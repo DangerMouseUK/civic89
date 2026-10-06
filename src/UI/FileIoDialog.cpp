@@ -17,7 +17,7 @@
 #include "nfd.hpp"
 
 
-FileIoDialog::FileIoDialog(SDL_Window&)
+FileIoDialog::FileIoDialog(SDL_Window& window) : mWindow(&window)
 {
     if(NFD::Init() != NFD_OKAY)
     {
@@ -37,6 +37,12 @@ FileIoDialog::~FileIoDialog()
 void FileIoDialog::clearSaveFilename()
 {
     mFileName.clear();
+}
+
+void FileIoDialog::saveDestination(const std::filesystem::path& path)
+{
+    mSavePath = pathUtf8(path.parent_path());
+    mFileName = pathUtf8(path.filename());
 }
 
 
@@ -79,12 +85,15 @@ bool FileIoDialog::showFileDialog(FileOperation operation, RulesetId ruleset)
     const auto* definition=findRuleset(ruleset);
     if (!definition) { return false; }
     NFD::UniquePath outPath;
-    nfdfilteritem_t filterItem[2] = {{"Classic city", "cty"},{"Enhanced city", "c89"}};
+    nfdfilteritem_t filterItem[2] = {{"City (.cty)", "cty"},{"Civic 89 city (.c89)", "c89"}};
     const bool opening=operation==FileOperation::Open || operation==FileOperation::Import;
     const nfdfiltersize_t count=operation==FileOperation::Open ? 2 : 1;
     if (operation==FileOperation::Save && ruleset==RulesetId::EnhancedV1) { filterItem[0]=filterItem[1]; }
        
-    const auto result = opening ? NFD::OpenDialog(outPath, filterItem, count) : NFD::SaveDialog(outPath, filterItem, count);
+    const auto handle=SDL_GetPointerProperty(SDL_GetWindowProperties(mWindow),SDL_PROP_WINDOW_WIN32_HWND_POINTER,nullptr);
+    const nfdwindowhandle_t parent{static_cast<size_t>(handle ? NFD_WINDOW_HANDLE_TYPE_WINDOWS : NFD_WINDOW_HANDLE_TYPE_UNSET),handle};
+    const auto result = opening ? NFD::OpenDialog(outPath, filterItem, count, nullptr, parent) :
+        NFD::SaveDialog(outPath, filterItem, count, nullptr, nullptr, parent);
     if (result == NFD_CANCEL) { return false; }
     if (result != NFD_OKAY)
     {
@@ -97,11 +106,8 @@ bool FileIoDialog::showFileDialog(FileOperation operation, RulesetId ruleset)
     const auto selectedUtf8=selected.u8string();
     const std::string filename(selectedUtf8.begin(),selectedUtf8.end());
     if (operation==FileOperation::Export) { mExportPath=filename; return true; }
-    mFileName = filename;
-    
-    std::size_t location = mFileName.find_last_of(mSeparator);
-    mSavePath = mFileName.substr(0, location);
-    mFileName = mFileName.substr(location + 1);
+    // A selection becomes the current destination only after successful publication.
+    mPickedSavePath = filename;
 
     return true;
 }

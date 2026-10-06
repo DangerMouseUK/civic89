@@ -7,8 +7,8 @@ signing and physical desktop gates in `packaging/release-gates.json`.
 **Scope update (6 October 2026):** [ADR 0009](decisions/0009_FAITHFUL_MODERNISATION_AND_GRAPHICS.md)
 requires faithful original gameplay throughout the project. Optional graphics are an
 application preference, not a new simulation contract. The M7 identities and file
-workflows below describe the delivered version; M8 will adjust their presentation
-while retaining existing saves and recovery support.
+workflows below retain save compatibility. M8 presents one original-gameplay path
+while keeping existing saves, CLI identities and recovery support.
 
 ## Rules and execution
 
@@ -64,7 +64,13 @@ force conversion, rewriting or deletion of existing files.
 Enhanced containers identify their schema, exact ruleset, dimensions and bounded
 UTF-8 city name, and checksum the header/metadata/payload. They do not serialize RNG
 or claim exact replay. Autosave uses separate Classic and Enhanced slots; recovery
-is offered explicitly with its mode. Public publication remains a separate gated action.
+is offered explicitly with its file format. Public publication remains a separate gated action.
+
+M8's [faithfulness audit](FAITHFULNESS_AUDIT.md) records the inherited source/data
+comparison and historical format mismatch. Files shows the current extension;
+F7 starts Classic v1 without offering an alternative gameplay mode. Failed Save As
+also retains the previous destination. Existing `.c89` sessions remain Enhanced v1
+until explicitly replaced, with the same original mechanics.
 
 ## Required verification
 
