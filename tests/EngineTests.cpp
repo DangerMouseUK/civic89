@@ -6,6 +6,7 @@
 #include "EngineState.h"
 #include "EngineStep.h"
 #include "FileIo.h"
+#include "WindowsFileStorage.h"
 #include "Map.h"
 #include "ScenarioData.h"
 #include "Sprite.h"
@@ -99,7 +100,8 @@ namespace
 
         TemporaryDirectory temporary;
         const auto save = temporary.path / "headless.cty";
-        SaveCity(save.string(), properties, budget);
+        WindowsFileStorage storage;
+        require(static_cast<bool>(SaveCity(save, properties, budget, storage)), "Atomic city save failed");
         require(std::filesystem::file_size(save) == ScenarioFileSize, "Legacy writer layout changed");
         ScenarioData saved;
         require(readScenarioData(save, saved) == ScenarioResult::Success, "Own-save bytes cannot be decoded");

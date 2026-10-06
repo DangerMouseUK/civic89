@@ -48,18 +48,7 @@ ToolPalette::ToolPalette(SDL_Renderer* renderer) :
 
 ToolPalette::~ToolPalette()
 {
-    for (auto& item : mToolButtons)
-    {
-        if (item.ghost.texture)
-        {
-            SDL_DestroyTexture(item.ghost.texture);
-        }
-    }
-
-    if (mIcons.texture)
-    {
-        SDL_DestroyTexture(mIcons.texture);
-    }
+// Textures release automatically before their renderer.
 }
 
 

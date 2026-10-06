@@ -68,7 +68,7 @@ Texture buildTexture(SDL_Texture* texture)
             static_cast<int>(SDL_GetNumberProperty(textureProperties, SDL_PROP_TEXTURE_HEIGHT_NUMBER, 0))
     };
 
-    SDL_DestroyProperties(textureProperties);
+    // Texture properties are borrowed; SDL owns their lifetime.
 
     const SDL_FRect area{
         0.0f, 0.0f,

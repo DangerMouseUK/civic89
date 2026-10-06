@@ -29,10 +29,6 @@ namespace
 	constexpr int WindowMiddleX = 375;
     constexpr int WindowTitleBuffer = 20;
 
-    std::unique_ptr<Font> TitleFont;
-	std::unique_ptr<Font> MessageFont;
-
-
     const std::unordered_map<DashboardWindow::ButtonId, Vector<int>> ButtonPositionOffset
     {
         { DashboardWindow::ButtonId::Budget, { 692, 24 } },
@@ -85,14 +81,14 @@ namespace
     }
 
 
-    void drawTitle(SDL_Renderer* renderer, StringRender& stringRenderer, const Rectangle<int>& area, int titleHalfWidth, const std::string& cityName)
+    void drawTitle(SDL_Renderer* renderer, StringRender& stringRenderer, const Rectangle<int>& area, int titleHalfWidth, const std::string& cityName, Font& titleFont)
     {
         const Point<int> titlePosition{
             area.position.x + WindowMiddleX - titleHalfWidth,
             area.position.y + 4
         };
 
-        stringRenderer.drawString(*TitleFont, cityName, titlePosition);
+        stringRenderer.drawString(titleFont, cityName, titlePosition);
     }
 
 
@@ -119,16 +115,16 @@ DashboardWindow::DashboardWindow(SDL_Renderer* renderer, const Budget& budget, c
 	fillButtonRects(mButtonRects);
     fillButtonHandlersWithStubs(mButtonHandlers);
 
-    if (!TitleFont)
+    if (!mTitleFont)
     {
-		TitleFont = std::make_unique<Font>("res/virtue.ttf", 12);
-        SDL_SetTextureColorMod(TitleFont->texture(), 0, 0, 0);
+		mTitleFont = std::make_unique<Font>("res/virtue.ttf", 12);
+        SDL_SetTextureColorMod(mTitleFont->texture(), 0, 0, 0);
     }
 
-    if(!MessageFont)
+    if(!mMessageFont)
     {
-        MessageFont = std::make_unique<Font>("res/Raleway-Medium.ttf", 12);
-        SDL_SetTextureColorMod(MessageFont->texture(), 0, 0, 0);
+        mMessageFont = std::make_unique<Font>("res/Raleway-Medium.ttf", 12);
+        SDL_SetTextureColorMod(mMessageFont->texture(), 0, 0, 0);
 	}
 }
 
@@ -136,9 +132,9 @@ DashboardWindow::DashboardWindow(SDL_Renderer* renderer, const Budget& budget, c
 void DashboardWindow::cityName(const std::string& name)
 {
 	mCityName = name;
-	const auto titleWidth = TitleFont->width(mCityName);
+	const auto titleWidth = mTitleFont->width(mCityName);
 
-    mTitleHalfWidth = TitleFont->width(mCityName) / 2;
+    mTitleHalfWidth = mTitleFont->width(mCityName) / 2;
 }
 
 
@@ -186,16 +182,16 @@ void DashboardWindow::draw()
 	
     renderTitleBackground(mRenderer, rect, mTitleHalfWidth);
     
-	drawTitle(mRenderer, mStringRenderer, area(), mTitleHalfWidth, mCityName);
+	drawTitle(mRenderer, mStringRenderer, area(), mTitleHalfWidth, mCityName, *mTitleFont);
     drawDate();
     drawBudget();
     drawMessage();
 
     const Point<int> toolAndCostPosition{
-        area().position.x + 662 - MessageFont->width(mToolAndCost),
-        area().position.y + 69 - MessageFont->height()
+        area().position.x + 662 - mMessageFont->width(mToolAndCost),
+        area().position.y + 69 - mMessageFont->height()
     };
-	mStringRenderer.drawString(*MessageFont, mToolAndCost, toolAndCostPosition);
+	mStringRenderer.drawString(*mMessageFont, mToolAndCost, toolAndCostPosition);
     drawValve();
 }
 
@@ -208,11 +204,11 @@ void DashboardWindow::drawBudget()
 {
     const std::string currentBudget = numberToDollarDecimal(mBudget.CurrentFunds());
     const Point<int> budgetPosition{
-        area().position.x + 662 - MessageFont->width(currentBudget),
+        area().position.x + 662 - mMessageFont->width(currentBudget),
         area().position.y + 27
     };
 
-    mStringRenderer.drawString(*MessageFont, currentBudget, budgetPosition);
+    mStringRenderer.drawString(*mMessageFont, currentBudget, budgetPosition);
 }
 
 
@@ -220,7 +216,7 @@ void DashboardWindow::drawDate()
 {
     const std::string currentDate = Month::toString(mCurrentMonth) + " " + std::to_string(mCurrentYear);
     const Point<int> datePosition{ area().position.x + 54, area().position.y + 27 };
-    mStringRenderer.drawString(*MessageFont, currentDate, datePosition);
+    mStringRenderer.drawString(*mMessageFont, currentDate, datePosition);
 }
 
 
@@ -228,10 +224,10 @@ void DashboardWindow::drawMessage()
 {
 	const Point<int> messagePosition{
         area().position.x + 54,
-        area().position.y + 69 - MessageFont->height()
+        area().position.y + 69 - mMessageFont->height()
     };
     
-    mStringRenderer.drawString(*MessageFont, mMessage, messagePosition);
+    mStringRenderer.drawString(*mMessageFont, mMessage, messagePosition);
 }
 
 

@@ -46,6 +46,7 @@ void initWillStuff()
 
 void initializeEngine(CityProperties& cityProperties, Budget& budget)
 {
+    SoundOff(); // A new city must release the previous session's loops.
     userSoundOn(true);
 
     ScenarioID = 0;

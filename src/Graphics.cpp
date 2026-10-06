@@ -47,7 +47,7 @@ void drawRect(SDL_Renderer& renderer, const SDL_Rect& rect, const SDL_Color& col
 
 void initTexture(SDL_Renderer& renderer, Texture& texture, const Vector<int>& dimensions)
 {
-    texture.texture = SDL_CreateTexture(&renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, dimensions.x, dimensions.y);
+    texture = newTexture(&renderer, dimensions);
 
     auto textureProperties = SDL_GetTextureProperties(texture.texture);
     texture.area = {

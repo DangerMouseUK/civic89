@@ -15,9 +15,22 @@
 #include <SDL3/SDL.h>
 
 #include <string>
+#include <utility>
 
 struct Texture final
 {
+    Texture() = default;
+    Texture(SDL_Texture* value, SDL_FRect rect, Vector<int> size) : texture(value), area(rect), dimensions(size) {}
+    Texture(const Texture&) = delete;
+    Texture& operator=(const Texture&) = delete;
+    Texture(Texture&& other) noexcept : texture(std::exchange(other.texture, nullptr)), area(other.area), dimensions(other.dimensions) {}
+    Texture& operator=(Texture&& other) noexcept
+    {
+        if (this != &other) { reset(); texture = std::exchange(other.texture, nullptr); area = other.area; dimensions = other.dimensions; }
+        return *this;
+    }
+    ~Texture() { reset(); }
+    void reset() noexcept { if (texture) { SDL_DestroyTexture(std::exchange(texture, nullptr)); } }
     SDL_Texture* texture{ nullptr };
     SDL_FRect area{};
 

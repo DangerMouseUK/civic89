@@ -1,5 +1,9 @@
-# Exact application ClCompile list from micropolis-cpp.vcxproj, including M2 adapter splits.
+# Exact application ClCompile list from micropolis-cpp.vcxproj, including M2 splits and M3 services.
 set(CIVIC89_INHERITED_SOURCES
+    src/AudioManager.cpp
+    src/DiagnosticLog.cpp
+    src/WindowsFileStorage.cpp
+    src/RecoveryStore.cpp
     src/EngineState.cpp
     src/EngineServices.cpp
     src/EngineStep.cpp

@@ -15,6 +15,13 @@
 #include "main.h"
 
 #include "AudioService.h"
+#include "AudioManager.h"
+#include "DiagnosticLog.h"
+#include "RecoveryStore.h"
+#include "WindowsFileStorage.h"
+#include "SdlResources.h"
+#include <SDL3_ttf/SDL_ttf.h>
+#include <fstream>
 #include "Budget.h"
 #include "CityProperties.h"
 #include "Colors.h"
@@ -126,13 +133,58 @@ namespace
 
     Budget budget{};
     CityProperties cityProperties{};
-    NullAudioService audioService;
+    NullAudioService silentAudio;
+    NullPresentationEvents silentPresentation;
+    std::unique_ptr<AudioManager> audioService;
+    std::unique_ptr<DiagnosticLog> diagnostics;
+    std::unique_ptr<RecoveryStore> recovery;
+    WindowsFileStorage fileStorage;
+    std::filesystem::path userDirectory;
+    Uint64 lastAutosave{};
+    void reportCityError(const CityIoResult& result, DiagnosticCode code)
+    {
+        diagnostics->write(Severity::Error, code, result.detail, result.path);
+        const auto message = std::string(code == DiagnosticCode::CityLoad ? "Could not open the city. Your current city is unchanged.\n" :
+            "Could not save the city. Choose another location and try again.\n") + pathUtf8(result.path) + "\n" + result.detail;
+#if !defined(CIVIC89_MILESTONE_TESTS)
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Civic 89", message.c_str(), MainWindow);
+#endif
+    }
+    void syncAudioOptions()
+    {
+        audioService->enabled(userSoundOn());
+        if (!userSoundOn()) { SoundOff(); }
+    }
+    void audioSettings()
+    {
+        const std::array<SDL_MessageBoxButtonData,4> categories{{{0,0,"Master"}, {0,1,"City effects"}, {0,2,"Construction"}, {SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT,3,"Close"}}};
+        const SDL_MessageBoxData categoryBox{SDL_MESSAGEBOX_INFORMATION, MainWindow, "Civic 89 sound", "Choose a volume category.", 4, categories.data(), nullptr};
+        int category = 3;
+        if (!SDL_ShowMessageBox(&categoryBox, &category) || category < 0 || category > 2) { return; }
+        const std::array<SDL_MessageBoxButtonData,6> levels{{{0,0,"Mute"}, {0,1,"25%"}, {0,2,"50%"}, {0,3,"75%"}, {0,4,"100%"}, {SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT,5,"Cancel"}}};
+        const SDL_MessageBoxData volumeBox{SDL_MESSAGEBOX_INFORMATION, MainWindow, "Civic 89 sound", "Choose the volume.", 6, levels.data(), nullptr};
+        int level = 5;
+        if (!SDL_ShowMessageBox(&volumeBox, &level) || level < 0 || level > 4) { return; }
+        const float gain = level * .25f;
+        if (category == 0) { audioService->masterVolume(gain); }
+        else { audioService->channelVolume(category == 1 ? AudioChannel::City : AudioChannel::Construction, gain); }
+        std::ostringstream values;
+        values << audioService->masterVolume() << ' ' << audioService->channelVolume(AudioChannel::City) << ' ' << audioService->channelVolume(AudioChannel::Construction);
+        const auto bytes = values.str();
+        const auto result = fileStorage.write(userDirectory / "audio.cfg", std::span<const char>(bytes.data(), bytes.size()));
+        if (!result)
+        {
+            diagnostics->write(Severity::Error, DiagnosticCode::Settings, result.detail, result.path);
+            SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Civic 89 sound",
+                "Could not save sound settings. They will apply for this session.", MainWindow);
+        }
+    }
     class ApplicationPresentationEvents final : public PresentationEvents
     {
     public:
         void toolsReset() override;
         void budgetRequested() override;
-        void earthquakeStarted() override {} // Visual backend remains M3 work.
+        void earthquakeStarted() override {} // Camera/disaster rendering belongs to M4.
         void focusMap(Point<int>) override {} // Preserve the inherited no-op navigation.
         void generationStarted() override {} // Notification precedes GenerateMap.
         void showMessage(const std::string& message) override;
@@ -182,14 +234,14 @@ namespace
         Timers.push_back(SDL_AddTimer(1000, redrawMiniMapTick, nullptr));
         Timers.push_back(SDL_AddTimer(SimStepDefaultTime, simulationTick, nullptr));
         Timers.push_back(SDL_AddTimer(AnimationStepDefaultTime, animationTick, nullptr));
+        if (std::ranges::any_of(Timers, [](auto timer) { return timer == 0; }))
+            { throw std::runtime_error(std::string("Unable to start application timers: ") + SDL_GetError()); }
     }
 
     void deinitTimers()
     {
-        for (auto timer : Timers)
-        {
-            SDL_RemoveTimer(timer);
-        }
+        for (auto timer : Timers) { if (timer) { SDL_RemoveTimer(timer); } }
+        Timers.clear();
     }
 
     void showBudgetIfNeeded()
@@ -233,6 +285,7 @@ void showBudgetWindow()
 void simInit()
 {
     initializeEngine(cityProperties, budget);
+    syncAudioOptions();
     Exit = false;
 }
 
@@ -432,9 +485,13 @@ void openGame()
 {
     if (interfaceManager->fileIoDialog().pickOpenFile())
     {
-        resetGame();
-        LoadCity(interfaceManager->fileIoDialog().fullPath(), cityProperties, budget);
+        const auto result = LoadCityDetailed(pathFromUtf8(interfaceManager->fileIoDialog().openPath()), cityProperties, budget);
+        if (!result) { reportCityError(result, DiagnosticCode::CityLoad); return; }
+        interfaceManager->fileIoDialog().clearSaveFilename();
+        syncAudioOptions();
+        interfaceManager->toolPalette().cancelTool();
         interfaceManager->dashboardWindow().cityName(cityProperties.CityName());
+        updateDate();
         drawBigMap();
     }
 }
@@ -452,14 +509,23 @@ void saveGame()
         }
     }
 
-    SaveCity(interfaceManager->fileIoDialog().fullPath(), cityProperties, budget);
+    const auto result = SaveCity(pathFromUtf8(interfaceManager->fileIoDialog().fullPath()), cityProperties, budget, fileStorage);
+    if (!result)
+    {
+        interfaceManager->fileIoDialog().clearSaveFilename();
+        reportCityError(result, DiagnosticCode::CitySave);
+    }
+    else { diagnostics->write(Severity::Info, DiagnosticCode::CitySave, "City saved", result.path); }
 }
 
 
 void buildBigTileset()
 {
-    SDL_Surface* srcSurface = IMG_Load("images/tiles.xpm");
-    SDL_Surface* dstSurface = SDL_CreateSurface(512, 512, SDL_PIXELFORMAT_RGBA32);
+    SurfaceOwner source(IMG_Load("images/tiles.xpm"));
+    SurfaceOwner destination(SDL_CreateSurface(512, 512, SDL_PIXELFORMAT_RGBA32));
+    if (!source || !destination) { throw std::runtime_error(std::string("Unable to create tileset: ") + SDL_GetError()); }
+    auto* srcSurface = source.get();
+    auto* dstSurface = destination.get();
 
     SDL_Rect srcRect{ 0, 0, TileSize, TileSize };
     SDL_Rect dstRect{ 0, 0, TileSize, TileSize };
@@ -472,9 +538,6 @@ void buildBigTileset()
     }
 
     SDL_Texture* texture = SDL_CreateTextureFromSurface(MainWindowRenderer, dstSurface);
-
-    SDL_DestroySurface(srcSurface);
-    SDL_DestroySurface(dstSurface);
 
     if (!texture)
     {
@@ -689,6 +752,10 @@ void handleKeyEvent(SDL_Event& event)
         newGame();
         break;
 
+    case SDLK_F8:
+        audioSettings();
+        break;
+
     case SDLK_F9:
         interfaceManager->showWindow(InterfaceManager::Window::Graph);
         break;
@@ -865,7 +932,7 @@ void pumpEvents()
 
 void initMainWindow()
 {
-	MainWindow = SDL_CreateWindow("Micropolis", 800, 600, SDL_WINDOW_RESIZABLE);
+	MainWindow = SDL_CreateWindow("Civic 89", 800, 600, SDL_WINDOW_RESIZABLE);
     if (!MainWindow)
     {
         throw std::runtime_error("initRenderer(): Unable to create primary window: " + std::string(SDL_GetError()));
@@ -897,8 +964,7 @@ void initViewParamters()
 {
     windowSize();
 
-    MainMapTexture.texture = SDL_CreateTexture(MainWindowRenderer, SDL_PIXELFORMAT_ARGB32, SDL_TEXTUREACCESS_TARGET, SimWidth * 16, SimHeight * 16);
-    MainMapTexture.dimensions = { SimWidth * 16, SimHeight * 16 };
+    MainMapTexture = newTexture(MainWindowRenderer, {SimWidth * 16, SimHeight * 16});
 }
 
 
@@ -1001,6 +1067,8 @@ void gameInit(std::optional<Scenario> scenario)
 void optionsChanged(const GameOptions& options)
 {
 	gameplayOptions() = options;
+    userSoundOn(options.soundEnabled);
+    syncAudioOptions();
 }
 
 
@@ -1071,7 +1139,7 @@ void initUI()
 
     interfaceManager = std::make_shared<InterfaceManager>(MainWindowRenderer, MainWindow, budget, currentRCI(), *toolManager);
 	sharePresentationEvents(presentationEvents);
-    shareAudioService(audioService);
+    shareAudioService(*audioService);
     setEngineClock([]() { return static_cast<int>(SDL_GetTicks()); });
 
     positionDashboardWindow();
@@ -1086,6 +1154,10 @@ void initUI()
         interfaceManager->dashboardWindow().onToolChanged(interfaceManager->toolPalette().tool());
         });
 
+    interfaceManager->fileIoDialog().errorHandler([](const std::string& message) {
+        diagnostics->write(Severity::Error, DiagnosticCode::FileDialog, message);
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Civic 89 file picker", message.c_str(), MainWindow);
+    });
     registerCallbacks();
 }
 
@@ -1099,11 +1171,18 @@ void cleanUp()
     interfaceManager.reset();
     toolManager.reset();
 
-    SDL_DestroyTexture(BigTileset.texture);
+    shareAudioService(silentAudio);
+    sharePresentationEvents(silentPresentation);
+    setEngineClock(nullptr);
+    audioService.reset();
+    ShutDownSound();
+    destroyAllSprites();
+    BigTileset.reset();
+    MainMapTexture.reset();
 
     clearSpriteImages();
-    SDL_DestroyRenderer(MainWindowRenderer);
-    SDL_DestroyWindow(MainWindow);
+    if (MainWindowRenderer) { SDL_DestroyRenderer(MainWindowRenderer); MainWindowRenderer = nullptr; }
+    if (MainWindow) { SDL_DestroyWindow(MainWindow); MainWindow = nullptr; }
 
     clearNewMonthCallbacks();
 	clearNewYearCallbacks();
@@ -1118,6 +1197,14 @@ void GameLoop()
     while (!Exit)
     {
         pumpEvents();
+        if (ScenarioID == 0 && SDL_GetTicks() - lastAutosave >= 300000)
+        {
+            lastAutosave = SDL_GetTicks();
+            const auto result = recovery->save(cityProperties, budget, fileStorage);
+            diagnostics->write(result ? Severity::Info : Severity::Error, DiagnosticCode::Autosave,
+                result ? "Recovery city saved" : result.detail, result.path);
+            if (!result) { interfaceManager->dashboardWindow().setMessage("Autosave failed. Please save your city manually."); }
+        }
 
         SDL_RenderClear(MainWindowRenderer);
         SDL_RenderTexture(MainWindowRenderer, MainMapTexture.texture, &FullMapViewRect, nullptr);
@@ -1174,54 +1261,124 @@ int main(int argc, char* argv[])
     }
     setLocale();
 
-    std::cout << "Starting Micropolis-SDLPP version " << MicropolisVersion << " originally by Will Wright and Don Hopkins." << std::endl;
+    std::cout << "Starting Civic 89, based on Micropolis-SDLPP version " << MicropolisVersion << " originally by Will Wright and Don Hopkins." << std::endl;
     std::cout << "Original code Copyright (C) 2002 by Electronic Arts, Maxis. Released under the GPL v3" << std::endl;
     std::cout << "Modifications Copyright (C) 2022 - 2026 by Leeor Dicker. Available under the terms of the GPL v3" << std::endl << std::endl;
 
     std::cout << "Micropolis-SDLPP is not afiliated with Electronic Arts." << std::endl << std::endl;
     try
     {
-        if (!SDL_Init(SDL_INIT_VIDEO))
-        {
-            throw std::runtime_error(std::string("Unable to initialize SDL: ") + SDL_GetError());
-        }
-
-        initRenderer();
-        loadGraphics();
-
-        toolManager = std::make_shared<ToolManager>(); // \todo Find a sane place for this
-
-        initViewParamters();
-        initUI();
-
 #if defined(CIVIC89_MILESTONE_TESTS)
-        void runMilestoneTests(Budget&, CityProperties&, PresentationEvents&);
-        simInit();
-        runMilestoneTests(budget, cityProperties, presentationEvents);
+        userDirectory = std::filesystem::temp_directory_path() / ("civic89-session-" + std::to_string(GetCurrentProcessId()));
 #else
-        gameInit(startupScenario);
-        GameLoop();
+        std::unique_ptr<char, SdlDeleter<char, SDL_free>> preferencePath(SDL_GetPrefPath("Civic89", "Civic89"));
+        if (!preferencePath) { throw std::runtime_error("Unable to locate Civic 89 user data."); }
+        userDirectory = pathFromUtf8(preferencePath.get());
 #endif
-
-        cleanUp();
-
-        SDL_Quit();
-    }
-    catch(const std::exception& e)
-    {
+        std::filesystem::create_directories(userDirectory);
+        diagnostics = std::make_unique<DiagnosticLog>(userDirectory / "civic89.log");
+        diagnostics->write(Severity::Info, DiagnosticCode::Startup, "Civic 89 starting");
+        recovery = std::make_unique<RecoveryStore>(userDirectory);
 #if defined(CIVIC89_MILESTONE_TESTS)
-        std::cerr << e.what() << std::endl;
+        constexpr int sessions = 12;
 #else
-        std::string message(std::string(e.what()) + "\n\nMicropolis-SDLPP will now close.");
-        
-        #if defined(_WIN32)
-        MessageBoxA(nullptr, message.c_str(), "Micropolis-SDLPP", MB_ICONERROR | MB_OK);
-        #else
-        std::cout << message << std::endl;
-        #endif
+        constexpr int sessions = 1;
+#endif
+#if defined(CIVIC89_MILESTONE_TESTS)
+        for (int stage = 0; stage < 3; ++stage)
+        {
+            try
+            {
+                struct FailedStartupLifetime
+                {
+                    ~FailedStartupLifetime() { cleanUp(); if (TTF_WasInit()) { TTF_Quit(); } SDL_Quit(); }
+                } lifetime;
+                if (!SDL_Init(SDL_INIT_VIDEO)) { throw std::runtime_error(SDL_GetError()); }
+                audioService = std::make_unique<AudioManager>(*diagnostics);
+                initRenderer();
+                if (stage > 0) { loadGraphics(); }
+                if (stage > 1)
+                {
+                    toolManager = std::make_shared<ToolManager>();
+                    initViewParamters(); initUI();
+                }
+                throw std::runtime_error("M3 injected startup failure");
+            }
+            catch (const std::runtime_error& error)
+            {
+                if (std::string_view(error.what()) != "M3 injected startup failure") { throw; }
+                if (SDL_WasInit(0) || TTF_WasInit() || MainWindow || MainWindowRenderer || audioService ||
+                    interfaceManager || miniMapWindow || BigTileset.texture || MainMapTexture.texture)
+                    { throw std::runtime_error("Partial startup retained resources"); }
+            }
+        }
+#endif
+        for (int session = 0; session < sessions; ++session)
+        {
+            struct ApplicationLifetime
+            {
+                ~ApplicationLifetime() { cleanUp(); if (TTF_WasInit()) { TTF_Quit(); } SDL_Quit(); }
+            } lifetime;
+            if (!SDL_Init(SDL_INIT_VIDEO)) { throw std::runtime_error(std::string("Unable to initialize SDL: ") + SDL_GetError()); }
+            audioService = std::make_unique<AudioManager>(*diagnostics);
+            std::ifstream settings(userDirectory / "audio.cfg");
+            float master, city, construction;
+            if (settings >> master >> city >> construction)
+            {
+                audioService->masterVolume(master);
+                audioService->channelVolume(AudioChannel::City, city);
+                audioService->channelVolume(AudioChannel::Construction, construction);
+            }
+            initRenderer();
+            loadGraphics();
+            toolManager = std::make_shared<ToolManager>();
+            initViewParamters();
+            initUI();
+#if defined(CIVIC89_MILESTONE_TESTS)
+            void runMilestoneTests(Budget&, CityProperties&, PresentationEvents&);
+            simInit();
+            initTimers();
+            runMilestoneTests(budget, cityProperties, presentationEvents);
+            const auto result = recovery->save(cityProperties, budget, fileStorage);
+            if (!result || !LoadCityDetailed(recovery->path(), cityProperties, budget)) { throw std::runtime_error("Session save/reload failed"); }
+#else
+            gameInit(startupScenario);
+            if (!startupScenario && recovery->available())
+            {
+                const std::array<SDL_MessageBoxButtonData,2> buttons{{{SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT,1,"Recover"}, {SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT,0,"Start new city"}}};
+                const SDL_MessageBoxData box{SDL_MESSAGEBOX_INFORMATION, MainWindow, "Civic 89 recovery", "A previous autosave is available. Recover it?", 2, buttons.data(), nullptr};
+                int selected = 0;
+                if (SDL_ShowMessageBox(&box, &selected) && selected == 1)
+                {
+                    const auto result = LoadCityDetailed(recovery->path(), cityProperties, budget);
+                    if (!result) { reportCityError(result, DiagnosticCode::CityLoad); }
+                    else { syncAudioOptions(); interfaceManager->dashboardWindow().cityName(cityProperties.CityName()); }
+                }
+            }
+            lastAutosave = SDL_GetTicks();
+            GameLoop();
+#endif
+        }
+#if defined(CIVIC89_MILESTONE_TESTS)
+        diagnostics->write(Severity::Info, DiagnosticCode::Shutdown, "12 application sessions closed");
+        diagnostics.reset();
+        recovery.reset();
+        std::filesystem::remove_all(userDirectory);
+        std::cout << "12 complete SDL application sessions with new/scenario/save/load/quit passed\n";
+#else
+        diagnostics->write(Severity::Info, DiagnosticCode::Shutdown, "Civic 89 closed");
+#endif
+    }
+    catch(const std::exception& error)
+    {
+        if (diagnostics) { diagnostics->write(Severity::Error, DiagnosticCode::Startup, error.what()); }
+#if defined(CIVIC89_MILESTONE_TESTS)
+        std::cerr << error.what() << '\n';
+#else
+        const std::string message = std::string(error.what()) + "\n\nCivic 89 will now close.";
+        MessageBoxA(nullptr, message.c_str(), "Civic 89", MB_ICONERROR | MB_OK);
 #endif
         return 1;
     }
-
     return 0;
 }

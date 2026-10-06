@@ -51,3 +51,13 @@ assets:
     modification: subject to provenance and branding review
     requirements: Preserve upstream attribution; replace or clear inherited product branding before public release.
     notes: Compiled into the original RC for build comparison only; no new branding assets added.
+  - id: civic89-synthesized-effects
+    paths: [src/AudioManager.cpp]
+    name: Original Civic 89 procedural effect bank
+    source: Civic 89 M3 source, Effects table and synthesize function
+    author: Civic 89 contributors
+    licence: GPL-3.0-or-later
+    redistribution: conditional on project GPL terms
+    modification: conditional on project GPL terms
+    requirements: Include corresponding source and GPL notices.
+    notes: PCM is generated locally and loaded by SDL3_mixer. No external recording, retail asset or inherited sounds/*.wav is used or staged. It does not consume simulation RNG.

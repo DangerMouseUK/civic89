@@ -27,7 +27,7 @@ cmake --build --preset windows-x64-release -- /m
 ctest --preset windows-x64-release --output-on-failure
 ```
 
-Presets use `Visual Studio 18 2026`, x64, separate directories and one configuration per directory. Original direct dependencies at the pinned baseline are SDL3 3.4.18, SDL3_image 3.4.4#1, SDL3_ttf 3.2.2#1, nativefiledialog-extended 1.4.1 and nlohmann-json 3.12.0#2. The local vcpkg executable version string is distinct from its registry commit.
+Presets use `Visual Studio 18 2026`, x64, separate directories and one configuration per directory. Original direct dependencies at the pinned baseline are SDL3 3.4.18, SDL3_image 3.4.4#1, SDL3_ttf 3.2.2#1, nativefiledialog-extended 1.4.1 and nlohmann-json 3.12.0#2. M3 adds SDL3_mixer 3.2.4 with optional codec features disabled. The local vcpkg executable version string is distinct from its registry commit.
 
 Executable paths:
 
@@ -76,7 +76,7 @@ Global MSBuild vcpkg integration remains available for that inherited comparison
 
 | Inherited project | CMake |
 |---|---|
-| 55 `ClCompile` entries (47 original + 8 support/splits) | Explicit source parity list; 31 engine units in `civic89_engine`, 24 application units in `civic89` |
+| 59 `ClCompile` entries (47 original + 8 M2 splits + 4 M3 services) | Explicit source parity list; 31 engine units in `civic89_engine`, 28 application units in `civic89` |
 | `micropolis-sdlpp.rc` | Same embedded PNG/icon and notices |
 | C++20 / WINDOWS / Unicode | C++20 / WINDOWS / UNICODE / _UNICODE |
 | `/W3`, `/sdl`, conformance | `/W4`, `/sdl`, `/permissive-`; warning debt recorded |
@@ -85,7 +85,7 @@ Global MSBuild vcpkg integration remains available for that inherited comparison
 | Global auto-link/restore | Explicit vcpkg package targets/toolchain |
 | Debug forces Release dependencies | Normal matching Debug CRT/dependency DLLs |
 | Repository cwd / no asset staging | Inventoried assets beside executable, explicit debugger/run cwd |
-| Unrelated OGG DLL post-build copy | Actual dependency DLL deployment by vcpkg; audio still stubbed |
+| Unrelated OGG DLL post-build copy | Actual dependency DLL deployment by vcpkg; SDL3_mixer playback and actual dependency deployment |
 
 ## Headless build and runner
 
@@ -131,12 +131,12 @@ cmake --build --preset windows-x64-asan -- /m
 ctest --preset windows-x64-asan --output-on-failure
 ```
 
-GitHub Actions runs application Debug/Release and headless ASan. Only application
+GitHub Actions runs application Debug/Release, headless ASan and application ASan. Only application
 jobs bootstrap the existing pinned external vcpkg checkout.
 
 ## Tests and limits
 
-Application presets run **39** CTests; separate headless/ASan presets run **32**:
+Application presets run **41** CTests; separate headless/ASan presets run **33**:
 
 - `civic89_tests` covers headless load/step/pause/edit/save-byte-layout/reload,
   transactional invalid-file rejection, seeded terrain generation and sprites.
@@ -154,20 +154,54 @@ Application presets run **39** CTests; separate headless/ASan presets run **32**
   invalid startup arguments. Lifecycle checks also draw, clear and reconstruct
   renderer-owned sprite images.
 
-All 47 original translation-unit paths remain; the split/support entries also
-build in the retained Visual Studio project. No new production dependency or
-asset is added. Tests do not establish historical 27,120-byte city import,
-complete save-state restoration, atomic save safety, interactive desktop/DPI
-compatibility or the wider M3 audio/resource work. The city reader rejects
-wrong-size/corrupt data; its valid-city initialization order and the writer's
-51,360-byte array layout remain inherited behavior.
+All 47 original translation-unit paths remain. M2 adds eight support/split files;
+M3 adds four service implementations, for **59** entries shared with the retained
+Visual Studio project. The engine retains 31 files, with 28 application files.
+`civic89_storage` implements the Windows atomic writer for persistence tests;
+the engine consumes only the platform-free writer interface.
 
-See [ADR 0003](decisions/0003_M2_ENGINE_BOUNDARY.md),
-[dependency audit](reference/ENGINE_DEPENDENCIES.md) and
-[M2 evidence](../tests/baseline/M2_2026-10-06.md) for exact references, local results,
-warning debt and compatibility decisions. Raw logs remain in ignored `out/audit/`.
-Earlier [bootstrap](../tests/baseline/BOOTSTRAP_2026-10-05.md) and
-[M1](../tests/baseline/M1_2026-10-06.md) records describe their historical checkpoints.
+M3 acceptance includes `functional-persistence` (100 new/save/load cycles,
+Unicode filenames, metadata/history preservation, failed replacement and
+recovery), `mixer-backend` (all 12 effects, actual sample energy/gain, loops,
+mute, 32 mixer lifetimes and device failure), and three partial startup failures
+plus 12 complete native application sessions. Existing parity cases are retained.
+
+The full application sanitizer preset uses the same pinned SDL dependencies:
+
+```powershell
+cmake --preset windows-x64-app-asan
+cmake --build --preset windows-x64-app-asan -- /m
+ctest --preset windows-x64-app-asan --output-on-failure
+```
+
+## M3 audio, saving and diagnostics
+
+Press **F8** for native master, city-effect and construction volume controls
+(0/25/50/75/100%). The options window's sound checkbox controls effects and loops.
+Master defaults to 70%; category gains default to 100%. Twelve original effects
+are synthesised/loaded at startup; inherited WAV files are not shipped. Device
+failure leaves a playable silent session and records the reason.
+
+User files use `SDL_GetPrefPath("Civic89", "Civic89")`, normally
+`%APPDATA%\Civic89\Civic89` on Windows: `audio.cfg`, `autosave.cty`, `civic89.log`.
+Ordinary cities autosave every five minutes. Startup offers the last valid
+recovery. Scenario autosave is skipped because the retained city format does
+not store scenario progress; explicit scenario exports remain ordinary cities.
+F2 saves, Shift+F2 selects a new destination, and F3 opens. Opening a city requires
+Save As on the next save so opening a packaged fixture cannot silently overwrite
+it. Failures preserve the current city/existing destination and report the cause.
+
+Save publication writes a same-directory temporary file, checks/flushes/closes
+it, and replaces the target. The 51,360-byte native 32-bit layout is retained;
+loaded histories and difficulty are restored correctly. The post-load scan and
+format's omitted RNG/sprite/scenario state preclude exact replay. Older 27,120-byte
+files remain unsupported. Automated checks use dummy SDL drivers; desktop sound,
+native dialog interaction and DPI are not established by these tests.
+
+See [ADR 0004](decisions/0004_M3_FUNCTIONAL_COMPLETION.md) and
+[M3 evidence](../tests/baseline/M3_2026-10-06.md). M2's [ADR](decisions/0003_M2_ENGINE_BOUNDARY.md),
+[dependency audit](reference/ENGINE_DEPENDENCIES.md) and [evidence](../tests/baseline/M2_2026-10-06.md)
+remain the pre-M3 extraction records. Raw logs remain in ignored `out/audit/`.
 
 ## Milestone 1 checkpoint (merged)
 

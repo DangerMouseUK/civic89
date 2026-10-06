@@ -14,6 +14,7 @@
 //#include <SDL3/SDL_syswm.h>
 
 #include <string>
+#include <functional>
 
 class FileIoDialog
 {
@@ -30,6 +31,8 @@ public:
 	const std::string fullPath() const { return mSavePath + mSeparator + mFileName; }
 
     void clearSaveFilename();
+    const std::string& openPath() const { return mOpenPath; }
+    void errorHandler(std::function<void(const std::string&)> handler) { mErrorHandler = std::move(handler); }
     
 	bool pickSaveFile();
 	bool pickOpenFile();
@@ -40,9 +43,10 @@ private:
 	enum class FileOperation { Open, Save };
 
 	bool showFileDialog(FileOperation);
-	void extractFileName();
 
 	std::string mSavePath;
+    std::string mOpenPath;
+    std::function<void(const std::string&)> mErrorHandler;
 	std::string mFileName;
     std::string mSeparator;
 };

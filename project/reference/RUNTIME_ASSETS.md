@@ -42,3 +42,12 @@ The inherited `.vcxproj` still runs with the repository as its default working d
 ## Remaining release questions
 
 `icons/LICENSE.txt` says only “Icons by OpenSVG” and links an aggregator. It does not identify individual icon collections or licence terms. Public redistribution of those atlases remains unresolved. The remaining graphics/fixtures preserve their inherited project-level GPL/additional-terms provenance; individual rights should be audited before public binary release. No retail-game or arbitrary matching-name assets were imported.
+
+## M3 procedural audio
+
+The 122-file staged inventory is unchanged. M3 generates twelve original effects
+from `src/AudioManager.cpp` and loads their PCM through SDL3_mixer. The effect bank
+is completely defined by the GPL source; it needs no packaged WAV/codec content.
+Inherited `sounds/*.wav` have no established per-asset licence record in the
+inventory and remain unstaged. SDL3_mixer's pinned dependency copyright is staged
+with the other dependency notices. The existing icon/per-asset audit gate remains.

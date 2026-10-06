@@ -12,6 +12,7 @@
 
 #include <string>
 #include <filesystem>
+#include "CityIo.h"
 
 enum class Scenario
 {
@@ -31,6 +32,7 @@ class CityProperties;
 enum class ScenarioResult { Success, InvalidScenario, MissingFile, InvalidFile };
 
 bool LoadCity(const std::string& filename, CityProperties&, Budget&);
-void SaveCity(const std::string&, const CityProperties&, const Budget&);
+CityIoResult LoadCityDetailed(const std::filesystem::path&, CityProperties&, Budget&);
+CityIoResult SaveCity(const std::filesystem::path&, const CityProperties&, const Budget&, AtomicFileWriter&);
 ScenarioResult LoadScenario(Scenario, CityProperties&, Budget&,
     const std::filesystem::path& directory = "scenarios");

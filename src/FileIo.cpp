@@ -26,22 +26,14 @@
 
 #include <algorithm>
 #include <filesystem>
-#include <fstream>
-#include <iostream>
 #include <limits>
 #include <string>
-
+#include <vector>
 
 namespace
 {
-    bool loadFile(const std::string filename)
+    void restoreData(const ScenarioData& data)
     {
-        ScenarioData data;
-        if (readScenarioData(filename, data) != ScenarioResult::Success) { return false; }
-        const auto& misc = data.histories[6];
-        if (misc[57] < 0 || misc[57] > static_cast<int>(SimulationSpeed::AfricanSwallow) ||
-            misc[58] < 0 || misc[58] > 100 || misc[60] < 0 || misc[60] > 100 ||
-            misc[62] < 0 || misc[62] > 100) { return false; }
         ResidentialPopulationHistory = data.histories[0];
         CommercialPopulationHistory = data.histories[1];
         IndustrialPopulationHistory = data.histories[2];
@@ -49,115 +41,93 @@ namespace
         PollutionHistory = data.histories[4];
         MoneyHis = data.histories[5];
         MiscHistory = data.histories[6];
-        const auto map = getMapData();
-        std::copy(data.tiles.begin(), data.tiles.end(), reinterpret_cast<int*>(const_cast<char*>(map.data)));
-        return true;
-    }
-
-
-    bool loadGame(const std::string& filename, CityProperties& properties, Budget& budget)
-    {
-        if (!loadFile(filename))
-        {
-            return false;
-        }
-
-        CityTime = std::clamp(MiscHistory[8], 0, std::numeric_limits<int>::max());
-        budget.CurrentFunds(MiscHistory[50]);
-        budget.PreviousFunds(MiscHistory[51]);
-        gameplayOptions().autoBulldoze = MiscHistory[52];
-        gameplayOptions().autoBudget = MiscHistory[53];
-        gameplayOptions().autoGoto = MiscHistory[54];
-
-        userSoundOn(MiscHistory[55]);
-        budget.TaxRate(std::clamp(MiscHistory[56], 0, 20));
-        simSpeed(static_cast<SimulationSpeed>(MiscHistory[57]));
-
-        budget.PolicePercent(static_cast<float>(MiscHistory[58] / 100.0f));
-        budget.FirePercent(static_cast<float>(MiscHistory[60] / 100.0f));
-        budget.RoadPercent(static_cast<float>(MiscHistory[62] / 100.0f));
-
-        initWillStuff();
-        ScenarioID = 0;
-        initSimulation(properties, budget);
-
-        return true;
-    }
-
-
-    bool saveGame(const std::string& filename, const CityProperties&, const Budget& budget)
-    {
-        std::ofstream outfile(filename, std::ofstream::binary);
-        if (outfile.fail())
-        {
-            outfile.close();
-            return false;
-        }
-
-        MiscHistory[8] = CityTime;
-        MiscHistory[50] = budget.CurrentFunds();
-        MiscHistory[51] = budget.PreviousFunds();
-
-        MiscHistory[52] = gameplayOptions().autoBulldoze;
-        MiscHistory[53] = gameplayOptions().autoBudget;
-        MiscHistory[54] = gameplayOptions().autoGoto;
-        MiscHistory[55] = userSoundOn();
-        MiscHistory[57] = static_cast<int>(simSpeed());
-        MiscHistory[56] = budget.TaxRate();
-
-        MiscHistory[58] = static_cast<int>(budget.PolicePercent() * 100.0f);
-        MiscHistory[60] = static_cast<int>(budget.FirePercent() * 100.0f);
-        MiscHistory[62] = static_cast<int>(budget.RoadPercent() * 100.0f);
-
-        outfile.write(reinterpret_cast<char*>(ResidentialPopulationHistory.data()), sizeof(GraphHistory));
-        outfile.write(reinterpret_cast<char*>(CommercialPopulationHistory.data()), sizeof(GraphHistory));
-        outfile.write(reinterpret_cast<char*>(IndustrialPopulationHistory.data()), sizeof(GraphHistory));
-        outfile.write(reinterpret_cast<char*>(CrimeHistory.data()), sizeof(GraphHistory));
-        outfile.write(reinterpret_cast<char*>(PollutionHistory.data()), sizeof(GraphHistory));
-        outfile.write(reinterpret_cast<char*>(MoneyHis.data()), sizeof(GraphHistory));
-        outfile.write(reinterpret_cast<char*>(MiscHistory.data()), sizeof(GraphHistory));
-
-        const auto mapData = getMapData();
-        outfile.write(mapData.data, mapData.size);
-
-        outfile.close();
-        return true;
-    }
-
-
-    std::string extractFilenameWithoutExtension(const std::string& filepath)
-    {
-        return std::filesystem::path(filepath).stem().string();
+        for (int x = 0; x < SimWidth; ++x)
+            for (int y = 0; y < SimHeight; ++y)
+                tileValue(x,y) = data.tiles[static_cast<size_t>(x) * SimHeight + y];
     }
 }
 
+CityIoResult LoadCityDetailed(const std::filesystem::path& filename, CityProperties& properties, Budget& budget)
+{
+    ScenarioData data;
+    const auto read = readScenarioData(filename, data);
+    if (read != ScenarioResult::Success)
+        { return {read == ScenarioResult::MissingFile ? CityIoCode::MissingFile : CityIoCode::InvalidFormat,
+            filename, "City file is missing, unreadable, or has an unsupported size/tile layout."}; }
+    const auto& misc = data.histories[6];
+    if (misc[57] < 0 || misc[57] > static_cast<int>(SimulationSpeed::AfricanSwallow) ||
+        misc[58] < 0 || misc[58] > 100 || misc[60] < 0 || misc[60] > 100 || misc[62] < 0 || misc[62] > 100 ||
+        misc[8] < 0 || misc[8] > std::numeric_limits<int>::max() - 1000000)
+        { return {CityIoCode::InvalidData, filename, "City contains invalid speed, funding, or time values."}; }
+    for (int index : {2,3,4,10,11,12,13,14})
+        if (misc[index] < 0 || misc[index] > 1000000)
+            { return {CityIoCode::InvalidData, filename, "City contains invalid population or census values."}; }
+    for (int index : {5,6,7})
+        if (misc[index] < -1000000 || misc[index] > 1000000)
+            { return {CityIoCode::InvalidData, filename, "City contains invalid demand values."}; }
+    // No session mutation occurs until the entire candidate is validated.
+    const auto name = pathUtf8(filename.stem());
+    SoundOff();
+    StopEarthquake();
+    ClearMes();
+    initWillStuff();
+    restoreData(data);
+    CityTime = misc[8];
+    budget.CurrentFunds(misc[50]);
+    budget.PreviousFunds(misc[51]);
+    gameplayOptions().autoBulldoze = misc[52] != 0;
+    gameplayOptions().autoBudget = misc[53] != 0;
+    gameplayOptions().autoGoto = misc[54] != 0;
+    userSoundOn(misc[55] != 0);
+    gameplayOptions().soundEnabled = userSoundOn();
+    budget.TaxRate(std::clamp(misc[56], 0, 20));
+    simSpeed(static_cast<SimulationSpeed>(misc[57]));
+    budget.PolicePercent(misc[58] / 100.0f);
+    budget.FirePercent(misc[60] / 100.0f);
+    budget.RoadPercent(misc[62] / 100.0f);
+    ScenarioID = 0;
+    InitSimLoad = 1;
+    DoInitialEval = false;
+    initSimulation(properties, budget);
+    properties.CityName(name);
+    return {CityIoCode::Success, filename, {}};
+}
 
 bool LoadCity(const std::string& filename, CityProperties& properties, Budget& budget)
 {
-    if(!loadGame(filename, properties, budget))
-    {
-        std::cout << "Unable to load a city from the file named '" << filename << "'" << std::endl;
-        return false;
-    }
-
-    properties.CityName(extractFilenameWithoutExtension(filename));
-
-    return true;
+    return static_cast<bool>(LoadCityDetailed(pathFromUtf8(filename), properties, budget));
 }
 
-
-void SaveCity(const std::string& filename, const CityProperties& properties, const Budget& budget)
+CityIoResult SaveCity(const std::filesystem::path& filename, const CityProperties& properties, const Budget& budget, AtomicFileWriter& writer)
 {
-    if (saveGame(filename, properties, budget))
+    // Serialize a snapshot: a failed save must not alter live history/options.
+    std::array<GraphHistory, 7> histories{ResidentialPopulationHistory, CommercialPopulationHistory,
+        IndustrialPopulationHistory, CrimeHistory, PollutionHistory, MoneyHis, MiscHistory};
+    auto& misc = histories[6];
+    misc[8] = CityTime;
+    misc[15] = properties.GameLevel();
+    misc[50] = budget.CurrentFunds();
+    misc[51] = budget.PreviousFunds();
+    misc[52] = gameplayOptions().autoBulldoze;
+    misc[53] = gameplayOptions().autoBudget;
+    misc[54] = gameplayOptions().autoGoto;
+    misc[55] = userSoundOn();
+    misc[56] = budget.TaxRate();
+    misc[57] = static_cast<int>(simSpeed());
+    misc[58] = static_cast<int>(budget.PolicePercent() * 100.0f);
+    misc[60] = static_cast<int>(budget.FirePercent() * 100.0f);
+    misc[62] = static_cast<int>(budget.RoadPercent() * 100.0f);
+    std::vector<char> bytes;
+    bytes.reserve(static_cast<size_t>(ScenarioFileSize));
+    for (const auto& history : histories)
     {
-        std::cout << "City saved as '" << filename << "'" << std::endl;
+        const auto* begin = reinterpret_cast<const char*>(history.data());
+        bytes.insert(bytes.end(), begin, begin + sizeof(history));
     }
-    else
-    {
-        std::cout << "Unable to save the city to the file named '" << filename << "'" << std::endl;
-    }
+    const auto map = getMapData();
+    bytes.insert(bytes.end(), map.data, map.data + map.size);
+    return writer.write(filename, bytes);
 }
-
 
 ScenarioResult LoadScenario(Scenario scenario, CityProperties& properties, Budget& budget,
     const std::filesystem::path& directory)
@@ -169,6 +139,7 @@ ScenarioResult LoadScenario(Scenario scenario, CityProperties& properties, Budge
     if (result != ScenarioResult::Success) { return result; }
 
     // Validation is complete before any active session state changes.
+    SoundOff();
     StopEarthquake();
     ClearMes();
     properties.GameLevel(0);
