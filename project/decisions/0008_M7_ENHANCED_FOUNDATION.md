@@ -18,8 +18,8 @@ the product a stable public release or waive the existing release gates.
    the active identity. Inherited scenarios are Classic v1; their outcomes stay intact.
 4. Preserve `.cty` bytes. Enhanced v1 uses a bounded, checksummed `.c89` container
    around the existing ordinary-city payload with its ruleset and UTF-8 city name.
-   Explicit import/export preserves originals and does not silently retag the active
-   session. Different modes have different autosave slots; recovery identifies the mode.
+   Explicit import preserves the source and selects Enhanced; explicit export leaves
+   the active mode unchanged. Modes have separate autosave slots; recovery identifies the mode.
 5. Test the complete boundary and retain unchanged Classic goldens, fresh-process
    generated-city baselines, source parity and all M6 native delivery checks.
 
@@ -31,6 +31,8 @@ or richer-traffic implementation. Those features, new buildings/scenarios, data/
 exploration, visual cycles and achievements remain the future candidate backlog.
 Every future ruleset/feature must state its Classic import/export capability.
 
-Implementation and final acceptance are recorded in PROJECT_STATUS.md and the M7
-evidence before delivery of the whole milestone PR. Signing provisioning and public
+All five items are delivered in [PR #12](https://github.com/DangerMouseUK/civic89/pull/12).
+[PROJECT_STATUS.md](../../PROJECT_STATUS.md) and [M7 evidence](../../tests/baseline/M7_2026-10-06.md)
+record 53 application/43 headless checks, native ARM64 and complete delivery acceptance.
+All 25 Classic goldens remain unchanged; Enhanced gameplay candidates remain future work. Signing provisioning and public
 asset/brand/physical acceptance remain external gates.

@@ -155,6 +155,8 @@ directory is selected. Rollback switches to the preserved previous package.
 Running old processes can finish using their old files; close/save before launching
 the new version. No transaction changes city bytes or settings. Orphaned staging
 and older directories are retained for inspection; no automatic cleanup deletes saves.
+Rolling back to a version before 0.7.0 preserves `.c89` files but cannot open them;
+use M7's explicit Classic export before playing the city in an older version.
 
 Automated acceptance repeats a real delivery to exercise distinct generations,
 rollback, a locked pointer during publication, wrong checksum, tampered content,

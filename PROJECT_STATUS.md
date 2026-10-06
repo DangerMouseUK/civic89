@@ -1,6 +1,6 @@
 # Civic 89 - Project Status
 
-**Current phase:** M0–M6 merged; complete M7 Enhanced foundation in validation on `codex/m7-enhanced-foundation`
+**Current phase:** M0–M6 merged; complete M7 Enhanced foundation delivered on `codex/m7-enhanced-foundation` in PR #12
 **Updated:** 6 October 2026
 **Current product name:** Civic 89  
 **Repository root:** `C:\Dev\Projects\civic89`  
@@ -10,7 +10,7 @@
 
 - Engineering branch: `codex/m7-enhanced-foundation`, delivering M7-01 through M7-05 together.
 - Scope selected by the user: Classic contract, versioned rulesets, mode selection, save compatibility and tests. Enhanced gameplay candidates remain future work.
-- Delivery: local implementation/validation in progress; the complete milestone PR will be linked here before handoff.
+- Delivery: [PR #12](https://github.com/DangerMouseUK/civic89/pull/12). Hosted [run 37493323959](https://github.com/DangerMouseUK/civic89/actions/runs/37493323959) passes all five jobs at `105ddc9`: application Debug/Release/ASan and native ARM64 **53/53**, headless ASan **43/43**. Both Release jobs pass complete packaging/update/install acceptance. Final compatibility/evidence commit checks are tracked on the PR.
 - Local and remote `main`: `fa3534bcda2ae6080eb91ac4c799413d40781213`, user-merged [PR #11](https://github.com/DangerMouseUK/civic89/pull/11). Merged-main [run 37487642898](https://github.com/DangerMouseUK/civic89/actions/runs/37487642898) passes all five jobs.
 - Synced with fetch/prune and ff-only pull; verified M6 branch-head ancestry and deleted merged `codex/m6-release-engineering`. Origin had already deleted it. Only main and the active M7 branch remain locally; upstream refs/tag are preserved.
 - `.git`: confirmed at `C:\Dev\Projects\civic89\.git`.
@@ -61,7 +61,7 @@
 - [x] M7-02: typed versioned registry, exact ruleset identities/capabilities and rejection of unknown modes before mutation. Enhanced v1 currently uses Classic mechanics.
 - [x] M7-03: new-city mode selection, active UI/runner identity, CLI selection and Classic scenario policy; cancelling a pending selection preserves the live mode.
 - [x] M7-04: unchanged `.cty` layout, bounded/checksummed `.c89`, explicit import/export, atomic failure preservation and separate mode-aware recovery slots.
-- [ ] M7-05: complete acceptance/delivery validation in progress. Initial local Debug and Release each pass **53/53**, including all 25 unchanged Classic goldens and four generated-city parity checks.
+- [x] M7-05: complete local and hosted native acceptance. Debug/Release and application ASan pass **53/53** each; headless ASan and corresponding-source export pass **43/43**. All 25 Classic goldens and four generated-city parity cases are unchanged. Real ZIP/installer/update/rollback, both save formats' retention, production Enhanced smoke under ASan and retained Visual Studio Release pass.
 
 [ADR 0008](project/decisions/0008_M7_ENHANCED_FOUNDATION.md),
 [Classic contract](project/CLASSIC_COMPATIBILITY.md),

@@ -101,6 +101,11 @@ function Test-ReleaseTree([string]$Root, [bool]$Installed = $false) {
 
 function Invoke-PackagedSmoke([string]$Root) {
     $exe = Join-Path ([IO.Path]::GetFullPath($Root)) 'civic89.exe'
+    # M6 deliveries have only the original smoke marker. Keep old-version install
+    # and rollback usable while requiring the Enhanced path in M7 and later.
+    $build = Get-Content -LiteralPath (Join-Path $Root 'build-info.json') -Raw | ConvertFrom-Json
+    Assert-ReleaseVersion $build.version
+    $requiresEnhanced = [version]($build.version.Split('-')[0]) -ge [version]'0.7.0'
     $testDirectory = Join-Path ([IO.Path]::GetTempPath()) ('civic89-launch-' + [guid]::NewGuid())
     New-Item -ItemType Directory -Path $testDirectory | Out-Null
     $oldVideo = $env:SDL_VIDEODRIVER; $oldRender = $env:SDL_RENDER_DRIVER; $oldAudio = $env:SDL_AUDIODRIVER
@@ -116,7 +121,7 @@ function Invoke-PackagedSmoke([string]$Root) {
             $process.WaitForExit()
             $output = Get-Content -LiteralPath (Join-Path $testDirectory 'stdout.txt') -Raw
             if ($process.ExitCode -ne 0 -or $output -notmatch 'Packaged startup, scenario, render, save/reload and shutdown passed' -or
-                $output -notmatch 'Enhanced ruleset, tagged save/load and Classic export passed') {
+                ($requiresEnhanced -and $output -notmatch 'Enhanced ruleset, tagged save/load and Classic export passed')) {
                 $errors = Get-Content -LiteralPath (Join-Path $testDirectory 'stderr.txt') -Raw
                 throw "Packaged smoke failed ($($process.ExitCode)): $errors"
             }

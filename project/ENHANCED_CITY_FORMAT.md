@@ -65,6 +65,8 @@ the normal save destination. **Export Classic copy** writes an ordinary `.cty`
 snapshot while preserving the Enhanced mode and normal save destination.
 Ordinary Enhanced saves require `.c89`, preventing accidental replacement of a
 Classic file. Export cannot restore fields absent from the legacy layout.
+Earlier Civic 89 versions cannot load `.c89`; export a `.cty` copy before using
+them. Portable rollback preserves both formats without converting either one.
 
 RNG, sprites, scenario objectives/timers and transient state remain unserialized;
 load scans can recompute fields. Scenario exports remain ordinary cities and
