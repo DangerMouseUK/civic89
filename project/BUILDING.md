@@ -89,11 +89,14 @@ Global MSBuild vcpkg integration remains available for that inherited comparison
 
 ## Tests and limits
 
-The presets run three CTest checks:
+The presets run seven CTest checks:
 
 - `runtime-assets-and-data`: `civic89_tests` uses inherited `Font.cpp`/`GameDataLoader.cpp`, a small C++ runner, SDL dummy video and software rendering. It decodes, uploads and renders all 82 required textures, constructs every startup font size and validates months/tool data.
 - `inherited-source-list`: compares all application sources with the retained `.vcxproj`.
-- `legacy-audio-and-earthquake`: `civic89_legacy_tests` links the actual `w_sound.cpp`/`w_tk.cpp`, checks remaining legacy routing/state and known stub defects, and verifies typed default effects, earthquake audio/presentation and bulldozer/sound-off controls with recording/null adapters. It covers sound-before-presentation-before-state ordering, initialization, inherited mute behavior, stop guards and repeated start/stop/restart. It opens no window or audio device and needs no runtime assets. It does not execute sprite/tool callers, scenario loading, earthquake damage/RNG, actual visual shake/timeout or audible playback; see the [inventory and migration gates](reference/LEGACY_EVAL_INVENTORY.md).
+- `legacy-audio-and-earthquake`: actual `w_sound.cpp` / `w_tk.cpp` with recording/null adapters; all typed effects, loop controls, sound initialization and earthquake audio/presentation ordering.
+- `milestone-lifecycle`: the same 47 application sources with a test entry path and SDL dummy video/software rendering. Checks all eight packaged scenario digests/decoded data, native startup/deadlines, 64 frames per scenario, missing/invalid/truncated/oversized/corrupt inputs and preserved session state; also checks message/focus/expiry, generation timing, score boundaries and the application startup adapter.
+- `no-legacy-command-bridge`: rejects `Eval` or string sound calls anywhere in production headers/sources.
+- `invalid-scenario-argument` and `malformed-scenario-argument`: the actual application rejects out-of-range IDs and trailing argument text with a failing exit status before initializing SDL.
 
 To run just the new characterization check in either configuration:
 
@@ -107,3 +110,11 @@ ctest --preset windows-x64-release -R '^legacy-audio-and-earthquake$' --output-o
 See `tests/baseline/BOOTSTRAP_2026-10-05.md` for checkpoint results; raw local configure/build/test/run logs are in ignored `out/audit/`. See `project/reference/RUNTIME_ASSETS.md` for complete resource and licence details.
 
 Earthquake presentation also uses a header-only interface and application-owned null adapter. The configured Debug/Release presets and retained Visual Studio Release build pass after migration; build/test logs are `out/audit/typed-presentation-*`. Reversing only the presentation include, parameter and dispatch restores `w_tk.cpp` exactly from merged `main` (`out/audit/typed-presentation-source-check.log`). Recording tests observe state at event dispatch; real renderer timing/cancellation remains deferred. No new translation unit or dependency is added.
+
+## Milestone 1 completion
+
+Use **F6** during play for the native scenario selector, or start with `civic89.exe --scenario 1` through `--scenario 8` from the executable's asset directory. Selection replaces the current city on success; save it first if needed. Cancel or missing/invalid scenario data preserves the current session. A successful start clears the old save filename. Scenario win/loss appears on the dashboard; play continues. Invalid startup arguments return exit code 2; startup exceptions return 1.
+
+M1 retains all 47 production translation units, project files, dependencies, simulation/disaster/RNG algorithms and city-file writer. It adds header-only typed interfaces/validated scenario data and compiles the same sources again for the native lifecycle test, using `CIVIC89_MILESTONE_TESTS` only in that test target. This is not the future headless engine target.
+
+Both preset builds pass 7/7 tests, and the retained Visual Studio Release build passes. Baseline characterization and final results are in [M1_2026-10-06.md](../tests/baseline/M1_2026-10-06.md); logs use `out/audit/m1-*`. Source comparisons verify mechanical call-site changes and unchanged existing city load/save functions. Audio remains silent, focus/shake remain no-ops, and deterministic simulation/historical file compatibility are not claimed. Interactive selector verification was unavailable due to monitor capture/access errors; the automated tests cover native lifecycle under dummy/software SDL, not desktop layout/DPI.

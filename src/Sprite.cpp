@@ -840,7 +840,7 @@ void updateShip(SimSprite& sprite)
             if ((ScenarioID == 2) && /* San Francisco */
                 (randomRange(0, 10) < 5))
             {
-                MakeSound("city", "HonkHonk-Low -speed 80");
+                MakeSound(SoundId::ShipHorn, AudioChannel::City);
             }
             else
             {
@@ -1008,7 +1008,7 @@ void updateMonster(SimSprite& sprite)
             d = 4;
             if (!sprite.sound_count)
             {
-                MakeSound("city", "Monster -speed [MonsterSpeed]");
+                MakeSound(SoundId::Monster, AudioChannel::City);
                 sprite.sound_count = 50 + randomRange(0, 100);
             }
         }

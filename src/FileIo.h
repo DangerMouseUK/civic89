@@ -11,6 +11,7 @@
 #pragma once
 
 #include <string>
+#include <filesystem>
 
 enum class Scenario
 {
@@ -27,6 +28,9 @@ enum class Scenario
 class Budget;
 class CityProperties;
 
+enum class ScenarioResult { Success, InvalidScenario, MissingFile, InvalidFile };
+
 bool LoadCity(const std::string& filename, CityProperties&, Budget&);
 void SaveCity(const std::string&, const CityProperties&, const Budget&);
-void LoadScenario(Scenario, CityProperties&, Budget&);
+ScenarioResult LoadScenario(Scenario, CityProperties&, Budget&,
+    const std::filesystem::path& directory = "scenarios");

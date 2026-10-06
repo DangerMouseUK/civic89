@@ -83,7 +83,7 @@ if(BUILD_TESTING)
         "-DSOURCE_DIR=${CMAKE_SOURCE_DIR}" -P "${CMAKE_SOURCE_DIR}/cmake/VerifySourceParity.cmake"
     )
 
-    # Characterize the actual legacy bridge without constructing the game/UI.
+    # Exercise typed audio/earthquake helpers without constructing the game/UI.
     add_executable(civic89_legacy_tests
         tests/LegacyBridge.cpp src/w_tk.cpp src/w_sound.cpp
     )
@@ -115,6 +115,12 @@ if(BUILD_TESTING)
         ENVIRONMENT "SDL_VIDEODRIVER=dummy;SDL_RENDER_DRIVER=software"
         TIMEOUT 60
     )
+    add_test(NAME no-legacy-command-bridge COMMAND "${CMAKE_COMMAND}"
+        "-DSOURCE_DIR=${CMAKE_SOURCE_DIR}" -P "${CMAKE_SOURCE_DIR}/cmake/VerifyNoLegacyCommands.cmake")
+    add_test(NAME invalid-scenario-argument COMMAND civic89 --scenario 9)
+    set_tests_properties(invalid-scenario-argument PROPERTIES WILL_FAIL TRUE TIMEOUT 10)
+    add_test(NAME malformed-scenario-argument COMMAND civic89 --scenario 1junk)
+    set_tests_properties(malformed-scenario-argument PROPERTIES WILL_FAIL TRUE TIMEOUT 10)
 endif()
 
 # Install only the application, pinned dependencies and inventoried assets.

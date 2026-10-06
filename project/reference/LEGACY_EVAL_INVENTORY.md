@@ -1,108 +1,56 @@
-# Legacy Eval inventory
+# Legacy command inventory - Milestone 1 complete
 
-Initially audited 5 October 2026 against merged bootstrap `b6fc77e561bb3bbcc60c75603b942e755f4992a9`, when inherited C++ was still identical to `upstream-sdlpp-baseline` (`9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad`). This completes the documented inventory for M1-01. Subsequent progress below records typed earthquake audio/presentation, audio controls and default city effects; scenario startup and complete bridge removal remain open.
+Initial audit: 5 October 2026 against `b6fc77e`, with inherited C++ identical to `upstream-sdlpp-baseline` (`9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad`). Initial count: 12 live `Eval` expressions, plus one inactive options call. The bridge only printed commands and returned false; no interpreter or return-value consumer existed.
 
-[`Eval()`](../../src/w_tk.cpp) prints `Eval: <command>` to `std::cout` and always returns `false`. There is no interpreter, command dispatch or consumer of its return value. Initial count: **12 live call expressions**. Current count after migrating three audio controls and earthquake presentation: **8 live call expressions**, **one commented-out call**, one definition and one declaration. A live expression inside an otherwise uncalled function is distinguished below from a reachable game path.
+**Current state:** zero `Eval` declarations, definitions or calls in `src/`; no string sound overload or `MakeSoundOn` remains. M1-01 through M1-04 are complete. The following table accounts for every former live path and the inactive options command.
 
-## Calls and intended replacements
-
-Replacement names refer to the [typed boundary design and implementation record](../decisions/0001_TYPED_PRESENTATION_BOUNDARY.md). Default sprite/bulldozing effects, earthquake audio/presentation and bulldozer/sound-off controls are implemented; the table below lists remaining live calls.
-
-| Command actually emitted | Call site | Reachability and current effect | Intended effect / replacement |
-|---|---|---|---|
-| `UIStartScenario <integer>` | [main.cpp](../../src/main.cpp), `doStartScenario` | Only reached through the scenario arm of `primeGame`; both current callers pass `-1` (new city). Logs only; does not call `LoadScenario`. | Application `ScenarioController::start(Scenario)`, followed by a typed start notification after successful loading. |
-| `UIDidGenerateNewCity` | [s_gen.cpp](../../src/s_gen.cpp), `GenerateCityFromSeed` | Reachable during new city generation. Logs **before** `GenerateMap(seed)`, after simulation initialization. | Typed generation notification; decide and test its timing before naming it a completed-generation event. |
-| `UIAutoGoto <x> <y>` | [s_msg.cpp](../../src/s_msg.cpp), `DoAutoGoto` | Reachable from `doMessage`. First updates the actual dashboard message through `SetMessageField`; the command never moves the camera. | `PresentationEvents::focusMap(MapPosition)`; retain the existing message update independently. |
-| `UIShowPicture <id>` | [s_msg.cpp](../../src/s_msg.cpp), `DoShowPicture` | Function contains a live call; its only caller is inside the commented-out picture-message block in `doMessage`. Logs if called directly. | Explicit typed notification/picture presentation if retained; otherwise remove the dormant wrapper after confirming no use. |
-| `UILoseGame` | [s_msg.cpp](../../src/s_msg.cpp), `DoLoseGame` | `DoScenarioScore` calls it on loss. No scenario launcher currently reaches normal scenario play. Logs only. | `PresentationEvents::scenarioFinished(ScenarioOutcome::Lost)`. |
-| `UIWinGame` | [s_msg.cpp](../../src/s_msg.cpp), `DoWinGame` | No caller. A passing `DoScenarioScore` does **not** call this wrapper. | Typed won outcome after an explicit, tested lifecycle correction; do not infer that changing only this wrapper fixes scenario wins. |
-| `UIMakeSound "<channel>" "<id>"` | [w_sound.cpp](../../src/w_sound.cpp), string `MakeSound` overload | Reachable from the two rate-bearing sprite calls; lazily sets sound initialization and logs. Default sprite/bulldozing and earthquake effects now use typed overloads. Dormant message-audio callers are discussed below. No samples/devices are used. | Implemented `AudioService::playEffect(SoundId, AudioChannel)` for default effects; explicit `PlaybackRate` remains proposed for deferred operands. |
-| Empty string | [w_sound.cpp](../../src/w_sound.cpp), `MakeSoundOn` | Reachable from `ToolActions::executeTool` for `RequiresBulldozing` / `InsufficientFunds`. Its formatting is commented out, so both operands are lost and output is `Eval: ` alone. | Typed UI/construction error effects, subject to an explicit behavior correction. The intended commented command was `UIMakeSoundOn <window> "<channel>" "<id>"`; no window string belongs in the replacement. |
-
-The inactive `Eval(buf)` in [`w_update.cpp`](../../src/w_update.cpp), `UpdateOptionsMenu`, remains commented out with its whole body, including formatting `UISetOptions` with eight option-bit booleans. There is no caller or runtime options command to migrate. Native options already access `GameOptions`; do not revive this command merely to replace it.
-
-## Retired command paths
-
-| Former command / wrapper | Current typed route | Preserved behavior |
+| Former command | Source / replacement | Behavior and evidence |
 |---|---|---|
-| `UISoundOff` / `SoundOff` | `SoundOff(AudioService&)` -> `stopAll()` | Lazily initializes, dispatches before clearing `Dozing`, and does not mute subsequent effects. |
-| `UIStartSound edit 1` / `DoStartSound` | `StartBulldozer(AudioService&)` -> `startLoop(Bulldozer, Construction)` | Enable/initialization guards remain; repeated starts emit once while `Dozing` is set. |
-| `UIStopSound 1` / `DoStopSound` | `StopBulldozer(AudioService&)` -> `stopLoop(Construction)` | An uninitialized stop returns without changing `Dozing`; initialized repeated stops still dispatch. |
-| `UIEarthQuake` / earthquake helper | `DoEarthQuake(AudioService&, PresentationEvents&)` -> `earthquakeStarted()` | Audio precedes the event; shake/timer state updates follow it. Explicit stop and disabled timers remain; the application-owned null adapter preserves no-op visuals. |
+| `UIMakeSound` | `w_sound.cpp`; typed `MakeSound(SoundId, AudioChannel[, AudioService&])` | Lazy initialization, ordering and the saved sound flag are retained; null playback stays silent. Sprite/tool caller source comparisons preserve RNG/map/cost logic. |
+| Empty tool-error command | `ToolActions.cpp`; `MustBulldoze` / `InsufficientFunds` on `Construction` | Restores the intended typed request, without a window string or playback. Tool errors still update the existing messages first. |
+| `UISoundOff` | `SoundOff(AudioService&)` -> `stopAll()` | Initializes before dispatch, clears `Dozing` afterwards; existing ineffective mute semantics stay unchanged. |
+| `UIStartSound edit 1` | `StartBulldozer(AudioService&)` -> `startLoop(Bulldozer, Construction)` | Original enable/initialization guards and repeated-start suppression are covered. |
+| `UIStopSound 1` | `StopBulldozer(AudioService&)` -> `stopLoop(Construction)` | Cold stop returns without clearing `Dozing`; initialized repeated stops dispatch before clearing it. |
+| `UIEarthQuake` | `DoEarthQuake(AudioService&, PresentationEvents&)` -> `earthquakeStarted()` | Sound -> event -> shake/timer state order; repeated start/stop/restart tests. Visual adapter remains a no-op and the old timer remains disabled. |
+| `UIStartScenario` | `ScenarioController::start(Scenario)` -> validated `LoadScenario` -> `scenarioStarted()` | All eight fixtures load and advance with native simulation code. Invalid enum/file inputs preserve the session and emit no start event. F6 and `--scenario 1..8` use this controller. |
+| `UIDidGenerateNewCity` | `s_gen.cpp`; `notifyGenerationStarted()` -> `generationStarted()` | Keeps dispatch before `GenerateMap`. Test observes reset state before generation; complete source comparison confirms no generation/RNG algorithm changes. |
+| `UIAutoGoto` | `s_msg.cpp`; `focusMap(Point<int>)` | Dashboard message precedes focus request; coordinates clear after dispatch. Production focus stays a no-op. Enabled/disabled/duplicate/expiry tests cover the message flow. |
+| `UIShowPicture` | Unused `DoShowPicture` and inactive caller block removed | No functioning caller or native picture feature existed. No picture-message route is activated. |
+| `UILoseGame` | `DoScenarioScore` -> `scenarioFinished(Lost)` | Existing scoring predicates retained, message cleared first, outcome shown on the dashboard. |
+| `UIWinGame` | Uncalled wrapper removed; `DoScenarioScore` -> `scenarioFinished(Won)` | Corrects the missing winning notification; all eight threshold boundaries and actual win/loss dispatch are tested. |
+| Inactive `UISetOptions` | Empty, uncalled `UpdateOptionsMenu` removed | Native `GameOptions` continues unchanged. |
 
-The application supplies its null audio adapter through the retained no-argument control entry points. The three audio controls still have no game callers; no UI activation is introduced. `DoStartSound` and `DoStopSound` declarations/definitions were removed only after their internal callers migrated and characterization passed. The former `DoStartSound` header/definition parameter mismatch is retired with them.
+## Sound identities and dormant paths
 
-## Audio operands and state
+`ExplosionLow`, `ExplosionHigh`, `HeavyTraffic`, `HonkLow`, `Bulldozer`, `ShipHorn`, `Monster`, `HonkMedium`, `HonkHigh`, `Siren`, `MustBulldoze` and `InsufficientFunds` are typed IDs. Channels remain `City` and `Construction`; the application owns the null audio adapter.
 
-| Legacy operand | Sources at the initial audit | Typed sound design |
-|---|---|---|
-| `Explosion-Low` / `Explosion-High` | `w_tk.cpp`, `Sprite.cpp`, `ToolActions.cpp`, dormant message-audio cases | `ExplosionLow` / `ExplosionHigh` |
-| `HeavyTraffic` | `Sprite.cpp`, helicopter path | `HeavyTraffic` |
-| `HonkHonk-Low`, `HonkHonk-Med`, `HonkHonk-High` | `Sprite.cpp` (low), dormant message-audio cases (all three) | `HonkLow`, `HonkMedium`, `HonkHigh` |
-| `HonkHonk-Low -speed 80` | `Sprite.cpp`, ship path | `HonkLow` plus an explicit rate; the legacy unit is unresolved. |
-| `Monster -speed [MonsterSpeed]` | `Sprite.cpp`, monster path; dormant message-audio case | `Monster` plus a computed rate after its semantics are established. `MonsterSpeed` has no implementation in this repository. |
-| `Siren` | Dormant message-audio cases | `Siren` |
-| `UhUh` / `Sorry` | `ToolActions.cpp`, tool failure paths via `MakeSoundOn` | `MustBulldoze` / `InsufficientFunds` |
-| `1` | Dormant bulldozer loop wrappers | `Bulldozer` |
+The old `-speed 80` and `[MonsterSpeed]` texts were never evaluated: they were characters inside a quoted sound ID. M1 deliberately retires those script modifiers without inventing native rate units. `ShipHorn` preserves the distinct ship request and `Monster` the roar; the future audio backend must define sample/rate policy with evidence. No parser or replacement string-command API exists.
 
-The initial legacy channels were `city` and `edit`; typed routes use `City` and `Construction`. The `-speed` operands are still literal text enclosed inside the quoted ID, not parsed playback options. Do not carry script syntax into the typed API or guess its conversion to a playback multiplier.
+Notification sounds remain inside the inherited unreachable `firstTime == false` branch. Their calls now use typed IDs, but no extra RNG calls or sounds are activated. Tests confirm traffic/monster messages leave an uninitialized sound service uninitialized. The `userSoundOn` getter/setter still addresses initialization rather than the private mute flag; `MiscHistory[55]` and `.cty` writing remain unchanged. Fixing sound settings and providing licensed playback belong to later milestones.
 
-Additional inherited behavior relevant to migration:
+## Native scenario contract
 
-- `doMessage` initializes its local `firstTime` to `false` and never sets it to `true`; its sound switch is unreachable. Activating those sounds would be a separate behavior change and could introduce new RNG calls, so it must not accompany a mechanical bridge migration.
-- `userSoundOn()` and its setter access `SoundInitialized`, while the private `UserSoundOn` remains `true`. Calling `userSoundOn(false)` does not suppress a later `MakeSound`, which reinitializes. `ShutDownSound` does not clear initialization either.
-- `FileIo.cpp` persists `userSoundOn()` in `MiscHistory[55]`. Correcting the sound setting also touches save semantics; isolate that decision and test legacy round trips without changing the binary format.
-- No inventoried sound files or audio backend implement these requests. The application-owned `NullAudioService` preserves silent default/earthquake effects and controls while licensed assets and SDL3_mixer remain a later milestone; deferred sound paths still use the stub.
+| Existing enum | Legacy ID | Fixture | Year | Funds |
+|---|---:|---|---:|---:|
+| `Dullsville` | 1 | `snro.111` | 1900 | 5,000 |
+| `SanFransisco` (inherited spelling) | 2 | `snro.222` | 1906 | 20,000 |
+| `Hamburg` | 3 | `snro.333` | 1944 | 20,000 |
+| `Bern` | 4 | `snro.444` | 1965 | 20,000 |
+| `Tokyo` | 5 | `snro.555` | 1957 | 20,000 |
+| `Detroit` | 6 | `snro.666` | 1972 | 20,000 |
+| `Boston` | 7 | `snro.777` | 2010 | 20,000 |
+| `Rio` | 8 | `snro.888` | 2047 | 20,000 |
 
-## Scenario baseline
+The `Scenario` enum remains numbered 0-7; explicit catalog mapping handles legacy IDs 1-8. Time remains `(year - 1900) * 48 + 2`. The catalog supplies difficulty 0, name, funds, time and ID. Actual simulation initialization supplies the unchanged disaster/scoring deadlines.
 
-There is no native scenario-selection UI, and [`LoadScenario`](../../src/FileIo.cpp) has no caller. `primeGame(-1)` runs at application startup and reset. Passing a positive number to `doStartScenario` would only print the command. Consequently, there is **no successful scenario-start smoke path to claim** at this checkpoint.
+Bundled `scenarios/` files are 51,360-byte little-endian 32-bit Windows data: seven history arrays of 120 words and 12,000 x-major map words. Validation requires exact size, complete read, valid tile/flag range and valid serialized difficulty before any session mutation. All eight byte digests are pinned in native tests. `scenarios_old/` and historical 27,120-byte cities are not reinterpreted; the inherited city reader/writer is unchanged.
 
-The existing data table is authoritative for a later typed controller:
+The old loader ignored reads and reset histories after loading. Baseline commit `1f49500` reproduces missing-file startup overwriting the session with a blank map. The new route validates first and resets arrays before restoring histories. Tests cover missing, empty, truncated, oversized, old-format and corrupt input, invalid selections, state preservation and recovery after failure. Success cancels stale earthquake state, initializes, then emits one start event. The application clears the old save filename only after success.
 
-| Existing `Scenario` enumerator | Enum value | Legacy scenario ID | File | Year | Starting funds |
-|---|---:|---:|---|---:|---:|
-| `Dullsville` | 0 | 1 | `snro.111` | 1900 | 5,000 |
-| `SanFransisco` (inherited spelling) | 1 | 2 | `snro.222` | 1906 | 20,000 |
-| `Hamburg` | 2 | 3 | `snro.333` | 1944 | 20,000 |
-| `Bern` | 3 | 4 | `snro.444` | 1965 | 20,000 |
-| `Tokyo` | 4 | 5 | `snro.555` | 1957 | 20,000 |
-| `Detroit` | 5 | 6 | `snro.666` | 1972 | 20,000 |
-| `Boston` | 6 | 7 | `snro.777` | 2010 | 20,000 |
-| `Rio` | 7 | 8 | `snro.888` | 2047 | 20,000 |
+## Verification and limits
 
-Files live under `scenarios/`; table time is `(year - 1900) * 48 + 2`. **Enum ordinals and legacy IDs differ by one**; do not cast the startup integer directly to `Scenario`. The loader sets level/name/funds/time/ID, resets the map, ignores the `loadFile` result, sets normal speed, calls UI-dependent `initWillStuff` and initializes simulation. `loadFile` also does not reject short reads. All eight scenarios need fixture checks and actual start tests before enabling this route or deleting its legacy caller. These defects were found by source inspection, not reproduced scenario play.
+`tests/LegacyBridge.cpp` exercises actual audio/earthquake helper code with recording/null adapters. `tests/MilestoneLifecycle.cpp` compiles the same 47 application sources with an alternate test entry path under SDL dummy video/software rendering. It checks all eight scenario fixtures/startups, 64 simulation frames per scenario, message/focus/expiry order, generation timing, scoring and the real application startup adapter.
 
-## Characterization and migration gates
+The source gate `cmake/VerifyNoLegacyCommands.cmake` rejects any reintroduced `Eval` expression or string sound call. Debug and Release pass all seven CTests, and the retained Visual Studio Release build passes. Exact commands/paths are in [BUILDING.md](../BUILDING.md); [milestone evidence](../../tests/baseline/M1_2026-10-06.md) records results.
 
-[`tests/LegacyBridge.cpp`](../../tests/LegacyBridge.cpp) links the **actual** `w_tk.cpp` and `w_sound.cpp`. It supplies only the simulation-owned `ShakeNow` storage and captures standard output. It checks lazy initialization, literal speed operands, empty tool-error requests and the inherited mute/shutdown behavior. Recording/null adapters check typed default/earthquake effects, earthquake presentation and audio-control routing, repeated start/stop, cold SoundOff and stop guards, and dispatch before state updates. CTest name: `legacy-audio-and-earthquake`. It needs no SDL initialization, window, audio device or asset working directory.
-
-## First migration checkpoint
-
-The first `DoEarthQuake(AudioService&)` overload routed the low explosion sound through `MakeSound(SoundId::ExplosionLow, AudioChannel::City, audio)`. The application owned the null adapter and supplied it through the inherited no-argument entry point; there was no global service registry. Its typed overload preserved lazy sound initialization and the private enable guard. The old string effect overload initially remained for all other callers. This first migration left 12 live `Eval` expressions; audio controls subsequently reduced that count to 9, with the visual call still present at that checkpoint.
-
-Tests record the typed event plus console/shake/timer state at dispatch. This verifies one low explosion on the city channel before the visual command/state changes, including repeated earthquakes. The null route produces no sound command and preserves the saved initialization flag. `MakeEarthquake`, damage/RNG, save code and visual timers are untouched. See [ADR 0001](../decisions/0001_TYPED_PRESENTATION_BOUNDARY.md) for the compatibility record.
-
-## Default-effect migration checkpoint
-
-Four sprite calls (crash/explosion audio, traffic reporting and the ordinary low horn) and eight bulldozing explosion calls now use typed IDs through the application's `MakeSound(SoundId, AudioChannel)` adapter. `ExplosionHigh`, `HeavyTraffic` and `HonkLow` join the existing `ExplosionLow` / `Bulldozer`; all effect calls retain `City`. Tests characterize their old operands before migration and then verify typed order, initialization, mute semantics and null behavior through the actual explicit-service helper.
-
-Reversing the 12 sound-operand replacements exactly reproduces `Sprite.cpp` and `ToolActions.cpp` from merged `main` (`3e30b82`). Conditions, messages, costs, rubble/map updates and RNG calls are unchanged. This comparison supplements helper tests; it is not an integration test of the caller branches or a simulation digest. The two rate-bearing sprite calls and dormant message audio remain on the string overload; this checkpoint left nine live `Eval` expressions.
-
-## Earthquake-presentation migration checkpoint
-
-The application owns a `NullPresentationEvents` beside its audio service. Its no-argument earthquake adapter passes both to `DoEarthQuake(AudioService&, PresentationEvents&)`. The helper dispatches typed low-explosion audio, then `earthquakeStarted()`, then its existing shake/timer mutations. Recording tests snapshot audio count, console, initialization and state at visual-event dispatch for first, repeated and restarted earthquakes. Actual null adapters preserve state and remove the string visual log; explicit stop remains covered.
-
-Reversing only the new include, parameter and dispatch reproduces `w_tk.cpp` from merged `main` (`4ee280c`) exactly. `MakeEarthquake` damage/RNG, the 3,000 ms delay and disabled timer creation/cancellation remain unchanged. No renderer implements shake yet; timing/cancellation is a separate application-owned contract. This retires `UIEarthQuake`, leaving **eight** live bridge expressions. See [ADR 0001](../decisions/0001_TYPED_PRESENTATION_BOUNDARY.md) for the compatibility record and validation.
-
-These tests document the current defects; they do not endorse them as permanent compatibility requirements. Change the expectations only with the matching reviewed behavior decision and replacement tests. They do not validate sprite/tool execution, real playback, visual shaking, automatic timer expiry, scenario loading or earthquake simulation damage/RNG.
-
-Before deleting live bridge calls:
-
-1. Introduce typed interfaces and recording/null adapters, then migrate one covered path at a time.
-2. Preserve existing message updates and simulation call order, including all RNG calls and map mutations.
-3. Add a scenario-loading seam and tests for all eight fixtures, enum-to-ID mapping, lifecycle state and missing/truncated input before routing native startup.
-4. Establish a deliberate timing contract for generation and earthquake presentation; verify timer ownership and cancellation without changing the damage algorithm.
-5. Replace bridge-output assertions with typed recording-adapter assertions as paths migrate; remove each legacy call only after its new tests pass.
-
-Reproduce the audit with `rg -n '\bEval\s*\(' src`, then inspect surrounding comments and callers. Text search alone counts the inactive options call and does not establish reachability.
+These tests do not establish deterministic whole-simulation parity, historical save compatibility, resource leak freedom, audible playback, actual camera/earthquake visuals or interactive selector layout/DPI behavior. The attempted interactive capture failed on this desktop; no visual smoke success is claimed. [ADR 0002](../decisions/0002_M1_COMPLETION.md) records the deliberate compatibility decisions and remaining milestone boundaries.

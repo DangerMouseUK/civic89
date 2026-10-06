@@ -1,6 +1,6 @@
 # Civic 89 - Project Status
 
-**Current phase:** M1-02 typed earthquake presentation on `codex/typed-earthquake-presentation`
+**Current phase:** Milestone 1 complete on `codex/m1-remove-legacy-plumbing`; publication/CI pending
 **Updated:** 6 October 2026
 **Current product name:** Civic 89  
 **Repository root:** `C:\Dev\Projects\civic89`  
@@ -8,9 +8,9 @@
 
 ## Authoritative local repository state
 
-- Branch: `codex/typed-earthquake-presentation`, created from synchronized `main` and published at the user's request; tracks `origin/codex/typed-earthquake-presentation`.
-- Local and remote `main`: merge commit `4ee280ca42ef289c769e2465f1b6b1d9538a654d` from [PR #4](https://github.com/DangerMouseUK/civic89/pull/4), merged by the user on 6 October 2026. Bootstrap and earlier typed audio routes remain in its history.
-- The merged local `codex/typed-city-effects` was safely deleted with `git branch -d`; GitHub had already deleted its remote branch. Earlier merged engineering branches are also deleted. At cleanup, origin had only `main`; no other stale feature branches existed. Upstream refs and the baseline tag are preserved.
+- Branch: `codex/m1-remove-legacy-plumbing`, created from synchronized `main` to complete all of M1 in one PR. The user has authorized milestone-sized branches/PRs going forward.
+- Local and remote `main`: merge commit `d2b278a357293d35fb1d4f21efcaa990cfc54c93` from [PR #5](https://github.com/DangerMouseUK/civic89/pull/5), merged by the user on 6 October 2026. Bootstrap and earlier typed routes remain in its history.
+- The merged local `codex/typed-earthquake-presentation` was safely deleted with `git branch -d`; its deleted remote reference was pruned. At cleanup, origin had only `main`; no stale feature branches remained. Upstream refs and the baseline tag are preserved.
 - `.git`: confirmed at `C:\Dev\Projects\civic89\.git`.
 - Baseline SHA: `9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad`.
 - Baseline tag: `upstream-sdlpp-baseline` (annotated; verified locally and on origin).
@@ -53,43 +53,24 @@
 
 ## Current engineering task
 
-Baseline Bootstrap and [PR #2](https://github.com/DangerMouseUK/civic89/pull/2) are merged. **M1-01** inventory/design (`8f7d3e1` / `8b4d5c2`) and the first **M1-02** earthquake audio route (`9baadda`) are now on `main`. PR #2's [second CI attempt](https://github.com/DangerMouseUK/civic89/actions/runs/37371023429/attempts/2) passed both configurations after the initial runner-allocation failure. [Merged-main CI](https://github.com/DangerMouseUK/civic89/actions/runs/37379422558) also passed for `b066399`.
+**M1 - Remove Legacy Command Plumbing is complete.** The user's delivery unit is now one whole milestone per branch/PR, recorded in `AGENTS.md` and the roadmap. M2 engine extraction is the next milestone and is not mixed into this PR.
 
-The audio-control increment (`f25acee` / `7b9f948`) is also merged through PR #3. Its [PR CI](https://github.com/DangerMouseUK/civic89/actions/runs/37395624345) and [merged-main CI](https://github.com/DangerMouseUK/civic89/actions/runs/37396351461) passed both configurations for `2d2fca3` and `3e30b82`, respectively.
+Earlier typed increments are merged through PRs #2-#5. PR #5's [CI](https://github.com/DangerMouseUK/civic89/actions/runs/37428051380) and [merged-main CI](https://github.com/DangerMouseUK/civic89/actions/runs/37429117027) passed both configurations for `4f12745` and `d2b278a`.
 
-Default city effects (`3985437` / `95d338f`) are merged through PR #4. Its [PR CI](https://github.com/DangerMouseUK/civic89/actions/runs/37398177333) and [merged-main CI](https://github.com/DangerMouseUK/civic89/actions/runs/37398694878) passed for `3f0a9f9` and `4ee280c`, respectively. The current local increment migrates the earthquake's visual command to a typed presentation event with a null adapter.
+- [x] **M1-01:** Complete command inventory, with all former routes and retirement decisions recorded in [LEGACY_EVAL_INVENTORY.md](project/reference/LEGACY_EVAL_INVENTORY.md).
+- [x] **M1-02:** All audio calls are typed; dashboard messages, navigation requests, generation, earthquake and scenario outcomes use application-owned presentation interfaces. Null audio/navigation/visual behavior is preserved; dormant notification audio is not activated.
+- [x] **M1-03:** Native `ScenarioController` validates/loads/starts all eight packaged scenarios. F6 opens a native selector; `civic89.exe --scenario 1..8` selects at startup. Successful starts clear stale earthquake state and old save selection. Missing/invalid inputs preserve the active session and emit no started event. Won/lost outcomes retain thresholds and reach the dashboard.
+- [x] **M1-04:** Remove the `Eval` declaration/definition and all call expressions, string sound wrappers, unused picture wrapper and inactive options command. CTest prevents reintroduction.
+- [x] Characterize all eight inherited loads, metadata, disaster/scoring deadlines and the missing-file failure before implementation (`1f49500`), in both configurations.
+- [x] Pin all eight fixture byte digests, check decoding and actual initialized state, then run 64 native simulation frames per scenario. Cover invalid IDs, missing/empty/truncated/oversized/old-format/corrupt files, session preservation, restart and initialized-event ordering.
+- [x] Verify message/focus order, message expiry, dormant audio, generation-before-map ordering, all scoring boundaries and actual won/lost dispatch.
+- [x] Pass **7/7 CTests in Debug and Release**, including actual application lifecycle under SDL dummy video/software rendering. Retained Visual Studio Release also builds.
+- [x] Source comparisons reproduce complete sprite/tool/generation files by reversing only typed replacements. Simulation, disaster/RNG, existing city load/save functions, 47-source list, dependencies and inherited project files are unchanged (`out/audit/m1-source-parity.log`).
+- [ ] Publish this whole milestone as one PR and verify hosted Debug/Release CI.
 
-- [x] [Inventory](project/reference/LEGACY_EVAL_INVENTORY.md) all 12 live `Eval` calls plus the inactive options call, including reachability, operands and intended replacements.
-- [x] [Record typed interfaces](project/decisions/0001_TYPED_PRESENTATION_BOUNDARY.md) and the migration/compatibility decisions. The first audio seam is implemented; the broader design remains proposed.
-- [x] Link actual inherited `w_sound.cpp` and `w_tk.cpp` into `civic89_legacy_tests`; characterize routing, mute/initialization defects, bulldozer loop state and earthquake start/stop ordering.
-- [x] Configure/build Debug and Release; all **3/3 CTest checks pass in each configuration**. Exact commands remain in [project/BUILDING.md](project/BUILDING.md); logs are `out/audit/eval-{configure,build,test}-{debug,release}.log`.
-- [x] Add the minimal typed `AudioService` and application-owned null adapter; inject it into the earthquake helper through the inherited application entry point.
-- [x] Migrate only the earthquake low-explosion sound request, retaining lazy initialization, sound-before-visual order and the existing shake/timer state changes. The visual `Eval` and other audio paths remain.
-- [x] Verify the typed sound/channel and dispatch-time state with a recording test adapter; verify the production null adapter stays silent and preserves the saved sound flag.
-- [x] Build Debug/Release and pass **3/3 CTests in each** after migration; retained Visual Studio Release also builds. Commands are in [project/BUILDING.md](project/BUILDING.md); logs are `out/audit/typed-audio-{build,test}-{debug,release}.log` and `out/audit/typed-audio-inherited-release.log`.
-- [x] Synchronize local `main` with `git pull --ff-only` after PR #2 and delete the merged branch.
-- [x] Characterize cold `SoundOff` and uninitialized stop guards before migration (`f25acee`); targeted tests pass against the old controls in both configurations.
-- [x] Add typed loop-start, loop-stop and stop-all methods to the recording/null adapters; migrate `StartBulldozer`, `StopBulldozer` and `SoundOff` with their existing guards/state ordering.
-- [x] Retire the internal `DoStartSound` / `DoStopSound` string wrappers after their callers migrate. Live `Eval` expressions decrease from **12 to 9**. No dormant control is enabled in the UI.
-- [x] Build Debug/Release and pass **3/3 CTests in each** after control migration; retained Visual Studio Release also builds. Logs are `out/audit/typed-control-{build,test}-{debug,release}.log` and `out/audit/typed-control-inherited-release.log`.
-- [x] Synchronize local `main` with `git pull --ff-only` after PR #3 and delete the merged branch.
-- [x] Characterize default high/low explosions, traffic reports and low horns before migration (`3985437`); targeted tests pass against the old string helper in both configurations.
-- [x] Add typed `ExplosionHigh`, `HeavyTraffic` and `HonkLow` IDs and an application adapter to the existing explicit-service helper. Migrate four sprite and eight bulldozing calls in place.
-- [x] Verify typed request order, initialization before dispatch, inherited mute semantics and silent null playback. The two rate-bearing sprite effects and dormant message audio retain their old operands.
-- [x] Reverse only the sound-operand replacements and compare both complete caller files against merged `main`; they match exactly (`out/audit/typed-city-callsite-check.log`). This verifies a mechanical caller edit, not a deterministic simulation digest.
-- [x] Build Debug/Release and pass **3/3 CTests in each** after default-effect migration; retained Visual Studio Release also builds. Logs are `out/audit/typed-city-{build,test}-{debug,release}.log` and `out/audit/typed-city-inherited-release.log`.
-- [x] Synchronize local `main` with `git pull --ff-only` after PR #4 and delete the merged branch.
-- [x] Extend earthquake restart characterization before production edits (`3bbda3a`); targeted tests pass against the old visual command in both configurations.
-- [x] Add header-only `PresentationEvents::earthquakeStarted()` and application-owned null adapter; inject it beside audio through the inherited no-argument entry point.
-- [x] Replace only `UIEarthQuake` with typed dispatch, preserving sound-before-event-before-state ordering, repeated start, explicit stop and disabled timers. Live `Eval` expressions decrease from **9 to 8**.
-- [x] Recording tests verify dispatch-time audio count, initialization and shake/timer state for first, repeated and restarted earthquakes; actual null adapters preserve state without string commands.
-- [x] Reverse only the presentation include/parameter/dispatch changes and compare `w_tk.cpp` with merged `main`; it matches exactly (`out/audit/typed-presentation-source-check.log`). Disaster damage/RNG code is untouched.
-- [x] Build Debug/Release and pass **3/3 CTests in each** after presentation migration; retained Visual Studio Release also builds. Logs are `out/audit/typed-presentation-{build,test}-{debug,release}.log` and `out/audit/typed-presentation-inherited-release.log`.
-- [ ] Migrate remaining audio operands and introduce typed presentation/navigation adapters with tests (M1-02).
-- [ ] Establish a scenario loader seam, validate all eight fixtures and test native start/failure paths (M1-03). There is currently no working scenario startup smoke path.
-- [ ] Delete the bridge only after all entries are covered or deliberately retired (M1-04).
+[ADR 0002](project/decisions/0002_M1_COMPLETION.md) records deliberate startup repairs: validate before committing data, reset arrays before restoring histories, catalog difficulty before initialization, and emit the formerly absent win notification. Script speed modifiers are retired without guessing a multiplier; typed `ShipHorn` and `Monster` identities retain intent for the future backend. Existing sound setting/serialization behavior is preserved.
 
-The current production increment touches only `main.cpp`, `w_tk.cpp` / `.h` and new `PresentationEvents.h`. The application owns audio/presentation null adapters; tests inject recording adapters into the helper. The 47 translation units, retained `.sln`/`.vcxproj`, audio implementations, sprite/tool callers, disaster damage/RNG, save implementation and disabled timers are unchanged. `Eval: UIEarthQuake` is no longer logged; `DoEarthQuake` still logs, and actual audio/visual behavior remains silent/no-op. New presentation/test code compiles without warnings; CMake rebuilds emit existing inherited warnings. The inherited Release build completed without warnings in this run.
+Exact commands and paths are in [BUILDING.md](project/BUILDING.md). [Milestone evidence](tests/baseline/M1_2026-10-06.md) records fixture checks, tests, warnings, source comparisons and UI limits. The interactive GUI smoke could not be completed: computer-use capture returned `IGraphicsCaptureItemInterop.CreateForMonitor ... 0x80070057`, and activation returned `GetCursorPos ... 0x80070005`. Only the task-created smoke process was closed. The selector has not been visually verified on this desktop; automated native lifecycle tests do not establish interactive layout/DPI behavior.
 
 ## Verified environment and dependency baseline
 
@@ -101,15 +82,15 @@ The current production increment touches only `main.cpp`, `w_tk.cpp` / `.h` and 
 
 Exact commands/target mapping: [project/BUILDING.md](project/BUILDING.md). Local evidence: [tests/baseline/BOOTSTRAP_2026-10-05.md](tests/baseline/BOOTSTRAP_2026-10-05.md). Asset provenance and replacement decision: [project/reference/RUNTIME_ASSETS.md](project/reference/RUNTIME_ASSETS.md), `assets/runtime-assets.json`, `assets/ASSET-LICENSES.yml`.
 
-Bootstrap and the implemented audio routes are merged, with local and hosted build/test evidence retained. No upstream push or history/tag rewrite occurred. Hosted CI verifies separate clean runner builds; manual GUI testing remains on the primary workstation. The current presentation increment (`3bbda3a` / `9db9f8c`) is published for a pull request at the user's request; hosted CI is pending. No new GUI, renderer timing, actual audio-device or deterministic simulation test was run for this routing change; recording/null helper tests, source comparison and both build paths provide its evidence.
+Bootstrap and earlier typed increments are merged. This branch completes M1 without source moves, new production translation units or new dependencies. Hosted milestone CI is pending publication. No upstream push or history/tag rewrite occurred.
 
 ## Inherited limitations and release gates
 
 - Missing fonts were an inherited packaging defect, not a Civic 89 regression. Startup now works with approved fonts/substitute. Original developer font versions and pixel-identical text metrics cannot be established.
-- **Historical `.cty` compatibility is unproven.** The inherited writer uses native 32-bit arrays and produced a **51,360-byte** save; some supplied cities are **27,120 bytes**. `FileIo.cpp` does not validate short reads. A current-version round trip does not establish historical/scenario compatibility. Investigate separately with tests; no format change is made here.
+- **Historical `.cty` compatibility is unproven.** The inherited writer uses native 32-bit arrays and produced a **51,360-byte** save; some supplied cities are **27,120 bytes**. The existing city reader in `FileIo.cpp` does not validate short reads. A current-version round trip does not establish historical save compatibility; M1 validates the eight packaged Windows scenario files separately. Investigate separately with tests; no format change is made here.
 - `icons/LICENSE.txt` supplies OpenSVG attribution without identifying original icon sets/licences. Public binary redistribution remains blocked on that audit. Other retained graphics/fixtures preserve inherited project-level GPL/additional-terms provenance, not a completed per-asset rights review.
-- Remaining rate-bearing/dormant string effects, scenario, navigation and generation paths retain the stubbed `Eval()` bridge. Default sprite/bulldozing effects, earthquake sound and the dormant bulldozer/sound-off controls use typed audio; earthquake presentation uses a typed null event. The [inventory](project/reference/LEGACY_EVAL_INVENTORY.md) records disconnected scenario startup, empty tool-error commands, an ineffective mute setter, dormant message audio/win paths and disabled earthquake timers. Tests cover the audio/earthquake helpers, not sprite/tool execution, real playback, visual shake/timing or scenario loading. Resource lifetime concerns remain inherited; normal GUI exit testing does not prove leak-free teardown.
-- `/W4` exposes **50 inherited warnings per configuration**: 40 C4100, one C4189, two C4389, one C4456, six C4459. The inherited `/W3` comparison build reported none. No warning-as-error policy introduced.
+- Audio playback, camera auto-goto and earthquake shake/timing remain silent/no-op presentation adapters for later milestones. M1 removes all command plumbing and adds working native scenario startup; it does not add an audio/renderer backend. Dormant notification audio and inherited mute/initialization semantics remain unchanged. Simulation RNG seeding, deterministic digests, save safety beyond scenario startup, and resource lifetime are later milestones.
+- Historical bootstrap `/W4` capture exposed **50 inherited warnings per configuration**: 40 C4100, one C4189, two C4389, one C4456, six C4459. The inherited `/W3` comparison build reported none. No warning-as-error policy introduced.
 - A final inherited MSBuild rerun passed after the manifest change with four CS1668 environment warnings: two missing `LIB` search directories reported twice by Roslyn inline tasks (Enterprise ATL/MFC and `lib\um\x64`). These are workstation/global-integration warnings, not C++ errors; no unrelated environment repair was made.
 - Original UI/window/resource branding is retained for comparison. `civic89.exe` is the new target name; public product branding/packaging remains later work.
 - Retained `.sln`/`.vcxproj` remain unedited and build after the implemented typed routes. Catch2, engine extraction, deterministic simulation digests, ASan and exhaustive UI/asset compliance testing remain later milestones.

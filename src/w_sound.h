@@ -12,14 +12,11 @@
 
 #include "AudioService.h"
 
-#include <string>
 
 void InitializeSound();
 void ShutDownSound();
-void MakeSound(const std::string& channel, const std::string& id);
 void MakeSound(SoundId sound, AudioChannel channel); // Application-owned audio adapter.
 void MakeSound(SoundId sound, AudioChannel channel, AudioService& audio);
-void MakeSoundOn(const char* channel, const char* id);
 void StartBulldozer();
 void StopBulldozer();
 void SoundOff();

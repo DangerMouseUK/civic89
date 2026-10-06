@@ -15,7 +15,9 @@
 
 #include "s_alloc.h"
 #include "FileIo.h"
+#include "ScenarioData.h"
 #include "s_sim.h"
+#include "s_msg.h"
 
 #include "w_sound.h"
 #include "w_tk.h"
@@ -27,34 +29,11 @@
 #include <fstream>
 #include <iostream>
 #include <limits>
-#include <map>
 #include <string>
 
 
 namespace
 {
-    struct ScenarioProperties
-    {
-        const std::string FileName{};
-        const std::string CityName{};
-        const int Time{};
-        const int StartingFunds{};
-        const int Id{};
-    };
-
-    std::map<Scenario, ScenarioProperties> ScenarioPropertiesTable
-    {
-        { Scenario::Dullsville, { "snro.111", "Dullsville", ((1900 - 1900) * 48) + 2, 5000, 1 } },
-        { Scenario::SanFransisco, { "snro.222", "San Francisco", ((1906 - 1900) * 48) + 2, 20000, 2 } },
-        { Scenario::Hamburg, { "snro.333", "Hamburg", ((1944 - 1900) * 48) + 2, 20000, 3 } },
-        { Scenario::Bern, { "snro.444", "Bern", ((1965 - 1900) * 48) + 2, 20000, 4 } },
-        { Scenario::Tokyo, { "snro.555", "Tokyo", ((1957 - 1900) * 48) + 2, 20000, 5 } },
-        { Scenario::Detroit, { "snro.666", "Detroit", ((1972 - 1900) * 48) + 2, 20000, 6 } },
-        { Scenario::Boston, { "snro.777", "Boston", ((2010 - 1900) * 48) + 2, 20000, 7 } },
-        { Scenario::Rio, { "snro.888", "Rio de Janeiro", ((2047 - 1900) * 48) + 2, 20000, 8 } }
-    };
-
-
     void copyBufIntoArray(const int(&buf)[HistoryLength], GraphHistory& graph)
     {
         for (size_t i = 0; i < ResidentialPopulationHistory.size(); ++i)
@@ -209,25 +188,46 @@ void SaveCity(const std::string& filename, const CityProperties& properties, con
 }
 
 
-void LoadScenario(Scenario scenario, CityProperties& properties, Budget& budget)
+ScenarioResult LoadScenario(Scenario scenario, CityProperties& properties, Budget& budget,
+    const std::filesystem::path& directory)
 {
+    const auto* definition = scenarioDefinition(scenario);
+    if (!definition) { return ScenarioResult::InvalidScenario; }
+    ScenarioData data;
+    const auto result = readScenarioData(directory / definition->filename, data);
+    if (result != ScenarioResult::Success) { return result; }
+
+    // Validation is complete before any active session state changes.
+    StopEarthquake();
+    ClearMes();
     properties.GameLevel(0);
-
-    const auto& scenarioProperties = ScenarioPropertiesTable.at(scenario);
-
-    properties.CityName(scenarioProperties.CityName);
-    budget.CurrentFunds(scenarioProperties.StartingFunds);
-    CityTime = scenarioProperties.Time;
-    ScenarioID = scenarioProperties.Id;
+    properties.CityName(definition->cityName);
+    budget.CurrentFunds(definition->funds);
+    CityTime = (definition->year - 1900) * 48 + 2;
+    ScenarioID = definition->legacyId;
 
     ResetMap();
-    loadFile("scenarios/" + scenarioProperties.FileName);
+    initWillStuff(); // Reset arrays before restoring the validated histories.
+    ResidentialPopulationHistory = data.histories[0];
+    CommercialPopulationHistory = data.histories[1];
+    IndustrialPopulationHistory = data.histories[2];
+    CrimeHistory = data.histories[3];
+    PollutionHistory = data.histories[4];
+    MoneyHis = data.histories[5];
+    MiscHistory = data.histories[6];
+    MiscHistory[15] = 0; // Catalog difficulty must be applied before SimLoadInit.
+    for (int x = 0; x < SimWidth; ++x)
+    {
+        for (int y = 0; y < SimHeight; ++y)
+        {
+            tileValue(x, y) = data.tiles[static_cast<size_t>(x) * SimHeight + y];
+        }
+    }
 
     simSpeed(SimulationSpeed::Normal);
-
-    initWillStuff();
     updateFunds(budget);
     InitSimLoad = 1;
     DoInitialEval = false;
     initSimulation(properties, budget);
+    return ScenarioResult::Success;
 }

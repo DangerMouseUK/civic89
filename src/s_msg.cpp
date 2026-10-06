@@ -17,15 +17,15 @@
 #include "s_sim.h"
 #include "w_resrc.h"
 #include "w_sound.h"
-#include "w_tk.h"
+#include "PresentationEvents.h"
+#include "ScenarioController.h"
+#include "ScenarioData.h"
 #include "Util.h"
 
 #include "Math/Point.h"
 
-#include "UI/InterfaceManager.h"
 
 #include <algorithm>
-#include <memory>
 #include <string>
 
 
@@ -47,7 +47,8 @@ namespace
 
     int messageDisplayTime{ DefaultMessageDisplayTime };
 
-	std::weak_ptr<InterfaceManager> interfaceManager;
+    NullPresentationEvents nullPresentation;
+    PresentationEvents* presentation = &nullPresentation;
 
     int TickCount()
     {
@@ -57,11 +58,15 @@ namespace
 };
 
 
-void shareInterfaceManager(std::weak_ptr<InterfaceManager> manager)
+void sharePresentationEvents(PresentationEvents& events)
 {
-	interfaceManager = manager;
+    presentation = &events;
 }
 
+void notifyGenerationStarted()
+{
+    presentation->generationStarted();
+}
 
 void MessageDisplayTime(int time)
 {
@@ -142,7 +147,7 @@ void ClearMes()
     LastPictureId = 0;
     LastMessageTime(0);
     LastMessage("");
-    interfaceManager.lock()->dashboardWindow().setMessage("");
+    presentation->showMessage("");
 }
 
 
@@ -175,7 +180,7 @@ void SetMessageField(const std::string& msg)
     if (LastMessage() != msg)
     {
         LastMessage(msg);
-		interfaceManager.lock()->dashboardWindow().setMessage(msg);
+		presentation->showMessage(msg);
     }
 }
 
@@ -183,99 +188,17 @@ void SetMessageField(const std::string& msg)
 void DoAutoGoto(int x, int y, const std::string& msg)
 {
     SetMessageField(msg);
-    Eval(std::string("UIAutoGoto " + std::to_string(x) + " " + std::to_string(y)).c_str());
+    presentation->focusMap({x, y});
 }
-
-
-void DoShowPicture(int id)
-{
-    Eval(std::string("UIShowPicture " + std::to_string(id)).c_str());
-}
-
-
-void DoLoseGame()
-{
-    Eval("UILoseGame");
-}
-
-
-void DoWinGame()
-{
-    Eval("UIWinGame");
-}
-
 
 void DoScenarioScore(int type)
 {
-    int z;
-
-    z = -200;	/* you lose */
-    switch (type)
-    {
-    case 1:	/* Dullsville */
-        if (cityClass() >= CityClass::Metropolis)
-        {
-            z = -100;
-        }
-        break;
-
-    case 2:	/* San Francisco */
-        if (cityClass() >= CityClass::Metropolis)
-        {
-            z = -100;
-        }
-        break;
-
-    case 3:	/* Hamburg */
-        if (cityClass() >= CityClass::Metropolis)
-        {
-            z = -100;
-        }
-        break;
-
-    case 4:	/* Bern */
-        if (trafficAverage() < 80)
-        {
-            z = -100;
-        }
-        break;
-
-    case 5:	/* Tokyo */
-        if (cityScore() > 500)
-        {
-            z = -100;
-        }
-        break;
-
-    case 6:	/* Detroit */
-        if (CrimeAverage < 60)
-        {
-            z = -100;
-        }
-        break;
-
-    case 7:	/* Boston */
-        if (cityScore() > 500)
-        {
-            z = -100;
-        }
-        break;
-
-    case 8:	/* Rio de Janeiro */
-        if (cityScore() > 500)
-        {
-            z = -100;
-        }
-        break;
-    }
-
+    const auto scenario = scenarioFromLegacyId(type);
+    if (!scenario) { return; }
+    const auto outcome = scenarioOutcome(*scenario,
+        {cityClass() >= CityClass::Metropolis, trafficAverage(), cityScore(), CrimeAverage});
     ClearMes();
-    //SendMes(z);
-
-    if (z == -200)
-    {
-        DoLoseGame();
-    }
+    presentation->scenarioFinished(outcome);
 }
 
 
@@ -517,15 +440,15 @@ void doMessage()
         case NotificationId::TrafficJamsReported:
             if (randomRange(0, 5) == 1)
             {
-                MakeSound("city", "HonkHonk-Med");
+                MakeSound(SoundId::HonkMedium, AudioChannel::City);
             }
             else if (randomRange(0, 5) == 1)
             {
-                MakeSound("city", "HonkHonk-Low");
+                MakeSound(SoundId::HonkLow, AudioChannel::City);
             }
             else if (randomRange(0, 5) == 1)
             {
-                MakeSound("city", "HonkHonk-High");
+                MakeSound(SoundId::HonkHigh, AudioChannel::City);
             }
             break;
 
@@ -537,26 +460,26 @@ void doMessage()
         case NotificationId::ShipWrecked:
         case NotificationId::TrainCrashed:
         case NotificationId::HelicopterCrashed:
-            MakeSound("city", "Siren");
+            MakeSound(SoundId::Siren, AudioChannel::City);
             break;
 
         case NotificationId::MonsterReported:
-            MakeSound("city", "Monster -speed [MonsterSpeed]");
+            MakeSound(SoundId::Monster, AudioChannel::City);
             break;
 
         case NotificationId::FirebombingReported:
-            MakeSound("city", "Explosion-Low");
-            MakeSound("city", "Siren");
+            MakeSound(SoundId::ExplosionLow, AudioChannel::City);
+            MakeSound(SoundId::Siren, AudioChannel::City);
             break;
 
         case  NotificationId::NuclearMeltdownReported:
-            MakeSound("city", "Explosion-High");
-            MakeSound("city", "Explosion-Low");
-            MakeSound("city", "Siren");
+            MakeSound(SoundId::ExplosionHigh, AudioChannel::City);
+            MakeSound(SoundId::ExplosionLow, AudioChannel::City);
+            MakeSound(SoundId::Siren, AudioChannel::City);
             break;
 
         case  NotificationId::RiotsReported:
-            MakeSound("city", "Siren");
+            MakeSound(SoundId::Siren, AudioChannel::City);
             break;
                 
             default:
@@ -583,22 +506,5 @@ void doMessage()
             SetMessageField(NotificationString(MessageId()));
         }
     }
-    else
-    {
-        /*
-        // picture message
-        int pictId = -(MesNum);
 
-        DoShowPicture(pictId);
-
-        MessagePort = pictId; // resend text message
-
-        if (AutoGo && (MesX || MesY))
-        {
-            DoAutoGoto(MesX, MesY, NotificationString(pictId));
-            MesX = 0;
-            MesY = 0;
-        }
-        */
-    }
 }

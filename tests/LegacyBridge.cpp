@@ -122,6 +122,12 @@ namespace
                 earthquake_timer_set, userSoundOn() });
         }
 
+        void showMessage(const std::string&) override {}
+        void focusMap(Point<int>) override {}
+        void generationStarted() override {}
+        void scenarioStarted(Scenario) override {}
+        void scenarioFinished(ScenarioOutcome) override {}
+
         std::vector<RecordedEarthquake> requests;
 
     private:
@@ -136,47 +142,34 @@ namespace
         StopEarthquake();
     }
 
-    void checkEvalStub()
-    {
-        ConsoleCapture console;
-        require(!Eval("unsupported command"), "The inherited Eval stub must report false");
-        require(console.take() == "Eval: unsupported command\n", "Eval logging changed");
-    }
-
     void checkSoundRouting()
     {
         resetBridge();
         ConsoleCapture console;
-        require(!userSoundOn(), "Sound should begin uninitialized");
-        MakeSound("city", "Explosion-Low");
-        require(userSoundOn(), "MakeSound should lazily initialize sound");
-        require(console.take() == "Eval: UIMakeSound \"city\" \"Explosion-Low\"\n",
-            "City effect routing changed");
-
-        // These are literal legacy operands, not parsed rates or filenames.
-        MakeSound("city", "HonkHonk-Low -speed 80");
-        MakeSound("city", "Monster -speed [MonsterSpeed]");
-        require(console.take() ==
-            "Eval: UIMakeSound \"city\" \"HonkHonk-Low -speed 80\"\n"
-            "Eval: UIMakeSound \"city\" \"Monster -speed [MonsterSpeed]\"\n",
-            "Legacy speed operands changed before a compatibility decision");
-
-        // Characterize inherited defects so a later fix has an explicit baseline.
-        // userSoundOn accesses initialization state, not the private mute flag.
+        RecordingAudioService audio(console);
+        constexpr std::array sounds{SoundId::ShipHorn, SoundId::Monster, SoundId::HonkMedium,
+            SoundId::HonkHigh, SoundId::Siren, SoundId::MustBulldoze, SoundId::InsufficientFunds};
+        for (const auto sound : sounds)
+        {
+            const auto channel = sound == SoundId::MustBulldoze || sound == SoundId::InsufficientFunds ?
+                AudioChannel::Construction : AudioChannel::City;
+            MakeSound(sound, channel, audio);
+            require(userSoundOn() && audio.requests.back().sound == sound &&
+                audio.requests.back().channel == channel && audio.requests.back().soundInitialized,
+                "Additional effects must preserve identity/channel and initialize before dispatch");
+        }
+        require(audio.requests.size() == sounds.size(), "Each additional sound must dispatch once");
         userSoundOn(false);
-        MakeSound("city", "Siren");
-        require(userSoundOn() && console.take() == "Eval: UIMakeSound \"city\" \"Siren\"\n",
+        MakeSound(SoundId::Siren, AudioChannel::City, audio);
+        require(userSoundOn() && audio.requests.size() == sounds.size() + 1,
             "The inherited mute/initialization behavior changed");
         ShutDownSound();
         require(userSoundOn(), "Inherited shutdown does not clear initialization state");
-        require(console.take().empty(), "Inherited shutdown should not emit a command");
-
+        require(console.take().empty(), "Typed audio must emit no commands");
+        NullAudioService nullAudio;
         userSoundOn(false);
-        MakeSoundOn("edit", "UhUh");
-        MakeSoundOn("edit", "Sorry");
-        require(userSoundOn(), "Tool error sound should lazily initialize sound");
-        require(console.take() == "Eval: \nEval: \n",
-            "Inherited MakeSoundOn emits empty commands; migration must address this explicitly");
+        MakeSound(SoundId::MustBulldoze, AudioChannel::Construction, nullAudio);
+        require(userSoundOn() && console.take().empty(), "Null tool-error playback must stay silent");
     }
 
     void checkDefaultEffects()
@@ -263,8 +256,9 @@ namespace
             audio.requests[1].soundInitialized && !audio.requests[1].sound && !audio.requests[1].channel,
             "SoundOff must stop all before clearing loop state");
         require(console.take().empty(), "Typed controls must not emit legacy string commands");
-        MakeSound("city", "Siren");
-        require(console.take() == "Eval: UIMakeSound \"city\" \"Siren\"\n",
+        const auto countAfterStop = audio.requests.size();
+        MakeSound(SoundId::Siren, AudioChannel::City, audio);
+        require(audio.requests.size() == countAfterStop + 1 && console.take().empty(),
             "Inherited SoundOff does not prevent later effect requests");
 
         audio.requests.clear();
@@ -376,7 +370,6 @@ int main()
 {
     try
     {
-        checkEvalStub();
         checkSoundRouting();
         checkDefaultEffects();
         checkBulldozerLifecycle();

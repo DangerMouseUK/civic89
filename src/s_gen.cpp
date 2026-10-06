@@ -15,7 +15,7 @@
 #include "s_alloc.h"
 #include "s_sim.h"
 
-#include "w_tk.h"
+#include "s_msg.h"
 #include "w_update.h"
 #include "Util.h"
 
@@ -564,7 +564,7 @@ void GenerateCityFromSeed(int seed, CityProperties& properties, Budget& budget)
     initWillStuff();
     updateFunds(budget);
     initSimulation(properties, budget);
-    Eval("UIDidGenerateNewCity");
+    notifyGenerationStarted();
 
     GenerateMap(seed);
 }
