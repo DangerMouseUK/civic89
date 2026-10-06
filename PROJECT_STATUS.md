@@ -8,7 +8,7 @@
 
 ## Authoritative local repository state
 
-- Branch: `codex/typed-earthquake-presentation`, created locally from synchronized `main`; no upstream/push yet.
+- Branch: `codex/typed-earthquake-presentation`, created from synchronized `main` and published at the user's request; tracks `origin/codex/typed-earthquake-presentation`.
 - Local and remote `main`: merge commit `4ee280ca42ef289c769e2465f1b6b1d9538a654d` from [PR #4](https://github.com/DangerMouseUK/civic89/pull/4), merged by the user on 6 October 2026. Bootstrap and earlier typed audio routes remain in its history.
 - The merged local `codex/typed-city-effects` was safely deleted with `git branch -d`; GitHub had already deleted its remote branch. Earlier merged engineering branches are also deleted. At cleanup, origin had only `main`; no other stale feature branches existed. Upstream refs and the baseline tag are preserved.
 - `.git`: confirmed at `C:\Dev\Projects\civic89\.git`.
@@ -101,7 +101,7 @@ The current production increment touches only `main.cpp`, `w_tk.cpp` / `.h` and 
 
 Exact commands/target mapping: [project/BUILDING.md](project/BUILDING.md). Local evidence: [tests/baseline/BOOTSTRAP_2026-10-05.md](tests/baseline/BOOTSTRAP_2026-10-05.md). Asset provenance and replacement decision: [project/reference/RUNTIME_ASSETS.md](project/reference/RUNTIME_ASSETS.md), `assets/runtime-assets.json`, `assets/ASSET-LICENSES.yml`.
 
-Bootstrap and the implemented audio routes are merged, with local and hosted build/test evidence retained. No upstream push or history/tag rewrite occurred. Hosted CI verifies separate clean runner builds; manual GUI testing remains on the primary workstation. The current presentation increment has local Debug/Release evidence and has not been pushed or checked by hosted CI. No new GUI, renderer timing, actual audio-device or deterministic simulation test was run for this routing change; recording/null helper tests, source comparison and both build paths provide its evidence.
+Bootstrap and the implemented audio routes are merged, with local and hosted build/test evidence retained. No upstream push or history/tag rewrite occurred. Hosted CI verifies separate clean runner builds; manual GUI testing remains on the primary workstation. The current presentation increment (`3bbda3a` / `9db9f8c`) is published for a pull request at the user's request; hosted CI is pending. No new GUI, renderer timing, actual audio-device or deterministic simulation test was run for this routing change; recording/null helper tests, source comparison and both build paths provide its evidence.
 
 ## Inherited limitations and release gates
 
