@@ -1129,6 +1129,8 @@ void GameLoop()
 
 int main(int argc, char* argv[])
 {
+    (void)argc;
+    (void)argv;
     setLocale();
 
     std::cout << "Starting Micropolis-SDLPP version " << MicropolisVersion << " originally by Will Wright and Don Hopkins." << std::endl;
@@ -1151,9 +1153,14 @@ int main(int argc, char* argv[])
         initViewParamters();
         initUI();
 
+#if defined(CIVIC89_MILESTONE_TESTS)
+        void runMilestoneTests(Budget&, CityProperties&);
+        simInit();
+        runMilestoneTests(budget, cityProperties);
+#else
         gameInit();
-
         GameLoop();
+#endif
 
         cleanUp();
 
@@ -1161,6 +1168,10 @@ int main(int argc, char* argv[])
     }
     catch(const std::exception& e)
     {
+#if defined(CIVIC89_MILESTONE_TESTS)
+        std::cerr << e.what() << std::endl;
+        return 1;
+#else
         std::string message(std::string(e.what()) + "\n\nMicropolis-SDLPP will now close.");
         
         #if defined(_WIN32)
@@ -1168,6 +1179,7 @@ int main(int argc, char* argv[])
         #else
         std::cout << message << std::endl;
         #endif
+#endif
     }
 
     return 0;

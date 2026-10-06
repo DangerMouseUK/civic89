@@ -95,6 +95,26 @@ if(BUILD_TESTING)
     )
     add_test(NAME legacy-audio-and-earthquake COMMAND civic89_legacy_tests)
     set_tests_properties(legacy-audio-and-earthquake PROPERTIES TIMEOUT 10)
+
+    # Exercise native lifecycle code with the same application sources and dummy SDL.
+    add_executable(civic89_milestone_tests ${CIVIC89_INHERITED_SOURCES} tests/MilestoneLifecycle.cpp)
+    target_include_directories(civic89_milestone_tests PRIVATE src)
+    target_compile_definitions(civic89_milestone_tests PRIVATE CIVIC89_MILESTONE_TESTS WINDOWS UNICODE _UNICODE)
+    target_link_libraries(civic89_milestone_tests PRIVATE
+        SDL3::SDL3 SDL3_image::SDL3_image SDL3_ttf::SDL3_ttf
+        nfd::nfd nlohmann_json::nlohmann_json Shlwapi
+    )
+    target_compile_options(civic89_milestone_tests PRIVATE /W4 /sdl /permissive-)
+    set_target_properties(civic89_milestone_tests PROPERTIES
+        VS_GLOBAL_VcpkgEnabled false VS_GLOBAL_VcpkgEnableManifest false
+    )
+    add_dependencies(civic89_milestone_tests civic89_runtime_assets)
+    add_test(NAME milestone-lifecycle COMMAND civic89_milestone_tests)
+    set_tests_properties(milestone-lifecycle PROPERTIES
+        WORKING_DIRECTORY "$<TARGET_FILE_DIR:civic89_milestone_tests>"
+        ENVIRONMENT "SDL_VIDEODRIVER=dummy;SDL_RENDER_DRIVER=software"
+        TIMEOUT 60
+    )
 endif()
 
 # Install only the application, pinned dependencies and inventoried assets.
