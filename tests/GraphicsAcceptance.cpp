@@ -189,9 +189,12 @@ void runGraphicsAcceptance(Budget& budget,CityProperties& city,ToolManager& tool
     }
     const auto before=engineStateDigest(city,budget);
     auto originalArt=applicationMapRenderer().art();
-    failEnhancedGraphicsAfter(14);
-    require(!applyGraphicsStyle(GraphicsStyle::Enhanced) && applicationMapRenderer().art()==originalArt &&
-        engineStateDigest(city,budget)==before,"Partial resource preparation damaged live session");
+    for (const int allocation : {14,73})
+    {
+        failEnhancedGraphicsAfter(allocation);
+        require(!applyGraphicsStyle(GraphicsStyle::Enhanced) && applicationMapRenderer().art()==originalArt &&
+            engineStateDigest(city,budget)==before,"Partial art/minimap preparation damaged live session");
+    }
     require(applicationInterface().message().find("unchanged")!=std::string::npos,"Graphics failure not explained");
     originalArt.reset();
     require(applyGraphicsStyle(GraphicsStyle::Enhanced),"Retry after partial failure");
@@ -204,6 +207,10 @@ void runGraphicsAcceptance(Budget& budget,CityProperties& city,ToolManager& tool
     failEnhancedGraphicsAfter(3);rebuildPresentationGraphics();
     require(applicationMapRenderer().art()->style==GraphicsStyle::Classic && engineStateDigest(city,budget)==before &&
         applicationInterface().message().find("Classic graphics")!=std::string::npos,"Reset did not recover Classic graphics");
+    require(applyGraphicsStyle(GraphicsStyle::Enhanced),"Enhanced before minimap reset failure");
+    failEnhancedGraphicsAfter(73);rebuildPresentationGraphics();
+    require(applicationMapRenderer().art()->style==GraphicsStyle::Classic && engineStateDigest(city,budget)==before &&
+        applicationInterface().message().find("Classic graphics")!=std::string::npos,"Minimap reset failure did not recover Classic");
 
     for (const auto style : {GraphicsStyle::Classic,GraphicsStyle::Enhanced})
     {

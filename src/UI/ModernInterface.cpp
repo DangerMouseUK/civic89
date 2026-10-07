@@ -57,6 +57,9 @@ ModernInterface::ModernInterface(SDL_Renderer* value, Budget& b, const RCI& r, T
 }
 Texture ModernInterface::prepareMinimap(GraphicsStyle style) const
 {
+#if defined(CIVIC89_MILESTONE_TESTS)
+    checkEnhancedGraphicsAllocation(style);
+#endif
     const int d=style==GraphicsStyle::Enhanced ? 2 : 1;
     auto texture=newTexture(renderer,{360*d,300*d});
     if (!SDL_SetTextureScaleMode(texture.texture,SDL_SCALEMODE_NEAREST)) { throw std::runtime_error(SDL_GetError()); }

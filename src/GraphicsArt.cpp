@@ -22,8 +22,7 @@ namespace
     Texture upload(SDL_Renderer* renderer, SDL_Surface* surface, GraphicsArt& art)
     {
 #if defined(CIVIC89_MILESTONE_TESTS)
-        if (art.style == GraphicsStyle::Enhanced && failAfter >= 0 && failAfter-- == 0)
-            { failAfter = -1; throw std::runtime_error("Injected enhanced graphics allocation failure"); }
+        checkEnhancedGraphicsAllocation(art.style);
 #endif
         auto* value = SDL_CreateTextureFromSurface(renderer, surface);
         if (!value) { throw std::runtime_error(SDL_GetError()); }
@@ -42,6 +41,11 @@ namespace
 }
 #if defined(CIVIC89_MILESTONE_TESTS)
 void failEnhancedGraphicsAfter(int textures) { failAfter = textures; }
+void checkEnhancedGraphicsAllocation(GraphicsStyle style)
+{
+    if (style==GraphicsStyle::Enhanced && failAfter>=0 && failAfter--==0)
+        { failAfter=-1; throw std::runtime_error("Injected enhanced graphics allocation failure"); }
+}
 #endif
 
 SurfaceOwner refinePixelRegion(SDL_Surface* source, SDL_Rect region, GraphicsStyle style)

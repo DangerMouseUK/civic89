@@ -974,7 +974,20 @@ void initUI()
             SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Civic 89 file picker", message.c_str(), MainWindow);
         });
     }
-    interfaceManager = std::make_unique<ModernInterface>(MainWindowRenderer, budget, currentRCI(), *toolManager, cityProperties, *audioService, uiSettings, displaySettings,cityRenderer->art());
+    const auto createInterface=[] {
+        return std::make_unique<ModernInterface>(MainWindowRenderer,budget,currentRCI(),*toolManager,cityProperties,*audioService,uiSettings,displaySettings,cityRenderer->art());
+    };
+    try { interfaceManager=createInterface(); }
+    catch (const std::exception& error)
+    {
+        if (graphicsSettings.style!=GraphicsStyle::Enhanced) { throw; }
+        diagnostics->write(Severity::Warning,DiagnosticCode::Display,error.what());
+        interfaceManager.reset();cityRenderer.reset();
+        graphicsSettings.style=GraphicsStyle::Classic;
+        loadGraphics();
+        graphicsFallback="Enhanced graphics unavailable. Classic graphics are active.";
+        interfaceManager=createInterface();
+    }
     interfaceManager->command = performUiCommand;
     interfaceManager->scenarioSelected = [](int id) {
         const auto scenario = scenarioFromLegacyId(id);

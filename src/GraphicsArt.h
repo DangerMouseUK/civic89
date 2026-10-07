@@ -28,4 +28,5 @@ SurfaceOwner refinePixelRegion(SDL_Surface*, SDL_Rect region, GraphicsStyle);
 #if defined(CIVIC89_MILESTONE_TESTS)
 // Fail partway through enhanced preparation, before any live ownership swap.
 void failEnhancedGraphicsAfter(int textures);
+void checkEnhancedGraphicsAllocation(GraphicsStyle);
 #endif
