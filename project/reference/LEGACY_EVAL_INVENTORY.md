@@ -1,5 +1,10 @@
 # Legacy command inventory - Milestone 1 complete
 
+This is the dated M1 replacement record. M3 subsequently implements procedural
+playback and M4 the visible earthquake adapter/timer. The no-op descriptions below
+describe M1 acceptance, not the current application. Current delivery is recorded
+in [project status](../../PROJECT_STATUS.md).
+
 Initial audit: 5 October 2026 against `b6fc77e`, with inherited C++ identical to `upstream-sdlpp-baseline` (`9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad`). Initial count: 12 live `Eval` expressions, plus one inactive options call. The bridge only printed commands and returned false; no interpreter or return-value consumer existed.
 
 **Current state:** zero `Eval` declarations, definitions or calls in `src/`; no string sound overload or `MakeSoundOn` remains. M1-01 through M1-04 are complete. The following table accounts for every former live path and the inactive options command.

@@ -17,4 +17,5 @@ the copyright and SIL Open Font License are in `res/licenses/raleway/OFL.txt`.
 
 Dependency authors and licences are recorded in the packaged
 `licenses/dependencies/<package>/copyright` files. Asset provenance and unresolved
-inherited icon rights are recorded in `assets/ASSET-LICENSES.yml`.
+inherited icon attribution follow-ups are recorded in `assets/ASSET-LICENSES.yml`
+and [the asset investigation](project/ASSET_LICENSE_AUDIT.md).

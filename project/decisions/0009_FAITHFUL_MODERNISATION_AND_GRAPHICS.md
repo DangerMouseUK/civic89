@@ -1,9 +1,9 @@
 # ADR 0009 — Faithful modernisation and optional graphics
 
 Date: 6 October 2026. Base: merged M7 `eb73f64` (PR #12).
-Status: accepted project scope; M8 implementation delivered on its branch with
-physical acceptance pending. M9 is implemented separately on the pending M8 base;
-physical acceptance remains pending for both.
+Status: accepted project scope; M8/M9 software merged in PRs #13/#14. Physical
+acceptance remains pending for both; [ADR 0010](0010_PUBLIC_BETA.md) permits the
+owner-approved unsigned testing beta without claiming those checks passed.
 
 The user clarified that Civic 89 must preserve the original game's gameplay and
 mechanics while modernising its appearance and Windows experience. The only
@@ -62,12 +62,13 @@ the original. The [specification](../GRAPHICS_SPECIFICATION.md) and
 [catalogue](../../assets/graphics-catalogue.json) define a complete palette-preserving
 2x edge refinement of the pinned original inputs, retaining Classic. This is a
 renderer transformation, not newly illustrated artwork or a rights-clearance claim.
-M9's branch is based on unmerged M8 and its PR targets M8 until M8 merges. The
+M9 was developed on M8; both PRs have since merged. The
 graphics preference is separate from city identity/save data and M8 preferences.
 [Project status](../../PROJECT_STATUS.md) records validation and remaining acceptance.
 
 Historical file variants and exact replay remain limited by the supported snapshot
 format. Do not invent format compatibility without verified references/fixtures.
 Physical mixed-DPI/audio/accessibility and clean-machine checks need actual evidence;
-dummy/software tests cannot establish them. Asset/brand clearance and trusted signer
-provisioning remain separate public-release gates.
+dummy/software tests cannot establish them. Stable release retains asset and
+trusted-signing gates. Owner-approved brand review and beta exceptions are recorded
+in ADR 0010, superseding earlier draft-only publication conditions.

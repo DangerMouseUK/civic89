@@ -18,7 +18,10 @@ the installer/portable ZIP. It records the exact Git commit and pinned dependenc
 baseline. Build instructions are in `project/BUILDING.md` and release instructions
 in `project/RELEASING.md`. An application version does not define a city-file version.
 
-Development candidates are not cleared public releases. Inherited OpenSVG atlas
-terms and per-asset rights, formal brand review and physical desktop acceptance
-remain recorded gates in `packaging/release-gates.json`. Public packaging fails
-until these gates are resolved and a trusted signing identity is provided.
+The owner approved public testing beta 0.9.0-beta.1 following the asset
+investigation and confirmed brand review complete. This beta is unsigned and
+physical desktop acceptance is pending. Exact OpenSVG pack notices for three
+inherited UI images and the origins of two legacy source-only branding images
+remain follow-ups; no complete per-icon clearance is claimed. See
+`project/ASSET_LICENSE_AUDIT.md` and `project/decisions/0010_PUBLIC_BETA.md`.
+Stable signed-release gates remain in `packaging/release-gates.json`.

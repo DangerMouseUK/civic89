@@ -1,14 +1,18 @@
-# Civic 89 Project Documentation
+# Civic 89 project documentation
 
-Civic 89-specific planning is intentionally kept under `project/` so the inherited SDLPP `docs/` directory can remain intact during the bootstrap phase.
+M0–M9 software work is merged. The public testing beta and remaining physical/
+provenance/signing work are recorded in [project status](../PROJECT_STATUS.md).
+Inherited SDLPP `docs/` and licence files remain historical upstream material.
 
-- `engineering/` - numbered authoritative engineering plan.
-- `decisions/` - future ADRs and explicit design decisions.
-- `roadmap/` - milestone/status material derived from the engineering plan.
-- `reference/` - upstream provenance and external reference notes.
+- [Build and run](BUILDING.md) and [release engineering](RELEASING.md).
+- [Classic compatibility](CLASSIC_COMPATIBILITY.md), [Enhanced save format](ENHANCED_CITY_FORMAT.md)
+  and [faithfulness audit](FAITHFULNESS_AUDIT.md).
+- [Optional graphics](GRAPHICS_SPECIFICATION.md) and [asset investigation](ASSET_LICENSE_AUDIT.md).
+- [Engineering index](engineering/00_README_INDEX.md) and [roadmap](engineering/08_ROADMAP_AND_IMPLEMENTATION_BACKLOG.md).
+- [Decision records](decisions/README.md), including faithful scope and public beta policy.
+- [Upstream provenance](reference/UPSTREAMS.md) and [runtime inventory](reference/RUNTIME_ASSETS.md).
+- [Public beta testing](../packaging/BETA_RELEASE_NOTES.md).
 
-The repository-root `AGENTS.md` is the concise coding-agent constitution. `PROJECT_STATUS.md` records the current phase and immediate next task.
-
-## Repository provenance checkpoint
-
-The initial Civic 89 clone was captured on 5 October 2026 at `9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad` and tagged `upstream-sdlpp-baseline`. See `reference/UPSTREAMS.md` and repository-root `PROJECT_STATUS.md` for the live bootstrap state.
+Root [AGENTS.md](../AGENTS.md) governs engineering work. Dated baseline documents
+and test evidence retain historical plans/results; current status and later ADRs
+take precedence over superseded bootstrap, gameplay-expansion and draft-only plans.

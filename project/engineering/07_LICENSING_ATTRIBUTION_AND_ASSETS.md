@@ -5,6 +5,17 @@
 **Repository baseline captured:** 5 October 2026  
 **Scope:** **Civic 89** - native Windows modernisation of the open-source Micropolis / original SimCity code lineage
 
+## Current release decision — 7 October 2026
+
+M8/M9 are merged. The owner confirmed brand review fully approved and requested
+public `0.9.0-beta.1` after the [asset investigation](../ASSET_LICENSE_AUDIT.md).
+Signing and physical acceptance are deferred for this testing beta. Exact OpenSVG
+pack notices and two legacy source-only image origins remain follow-ups; the asset
+audit is not represented as complete. [ADR 0010](../decisions/0010_PUBLIC_BETA.md)
+supersedes earlier blanket public-download/draft-only blockers for this version.
+Preserve all inherited notices and exact corresponding source. The checklist
+below remains the stable-release target, not evidence that its items have passed.
+
 ## 1. Scope and disclaimer
 
 This document is an engineering compliance plan, not formal legal advice. Before a commercial or high-profile public release, the final branding, asset rights and distribution method should receive appropriate legal review.
@@ -70,8 +81,9 @@ Track all direct dependencies and their licences. At release time, generate or m
 - SDL3_mixer;
 - nativefiledialog-extended;
 - nlohmann-json;
-- spdlog;
-- Catch2 (development/test dependency, still record for completeness).
+
+Future dependencies need their own notices; the proposed spdlog/Catch2 were
+not adopted and are not in the current manifest.
 
 Do not assume vcpkg package availability is itself a redistribution licence.
 
@@ -105,7 +117,9 @@ SDLPP references font files. Verify each font's redistribution and modification 
 
 ### Sound
 
-The existing audio backend is unfinished, which is an opportunity to start clean. Only add sound effects/music after recording the licence and source.
+M3 implements original procedural effects in GPL project source. All 49 inherited
+source-only WAVs match the original release and remain unstaged. See the asset
+investigation. Record the licence/source before importing any new recording.
 
 ### Original/classic visual assets
 
@@ -129,14 +143,14 @@ For every asset PR:
 
 ## 10. Release compliance checklist
 
-Before public binary distribution:
+For stable distribution (the approved testing beta follows ADR 0010):
 
 - [ ] GPL/inherited licence files included.
 - [ ] Corresponding source for the released binary is tagged/available.
 - [ ] Build instructions are sufficient to reproduce the binary in principle.
 - [ ] Third-party notices included.
 - [ ] Asset ledger has no unknown/uncleared entries.
-- [ ] **Civic 89** product name/logo formally cleared for intended public/commercial use.
+- [x] Owner confirmed **Civic 89** brand review fully approved on 7 October 2026; no independent legal review by the agent is claimed.
 - [ ] No `SimCity` branding in executable name, icon, installer identity or store listing.
 - [ ] Any use of `Micropolis` in public-facing branding has been reviewed against the public-name licence.
 - [ ] Debug-only proprietary/local assets are not present in the package.

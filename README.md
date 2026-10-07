@@ -21,31 +21,41 @@ Civic 89's agreed scope is faithful original gameplay with modern Windows
 presentation; gameplay expansion is outside scope. Existing M7 `.c89` identities
 remain supported and use the same mechanics and map dimensions as `.cty` cities.
 
-The next [roadmap milestones](project/engineering/08_ROADMAP_AND_IMPLEMENTATION_BACKLOG.md)
-are **M8**, faithfulness/Windows polish with physical desktop checks pending, and
-**M9**, optional graphics implemented on this branch for the same city and mechanics.
-M9 is based on unmerged M8; both retain their physical acceptance gates.
+## Download the beta
+
+[**Download Civic 89 0.9.0-beta.1**](https://github.com/DangerMouseUK/civic89/releases/tag/v0.9.0-beta.1)
+from the public GitHub prerelease. No developer tools or GitHub write access are needed.
+
+| Your Windows 11 PC | Installer | Portable ZIP |
+|---|---|---|
+| Intel / AMD (x64) | [x64 installer](https://github.com/DangerMouseUK/civic89/releases/download/v0.9.0-beta.1/civic89-0.9.0-beta.1-windows-x64-setup.exe) | [x64 ZIP](https://github.com/DangerMouseUK/civic89/releases/download/v0.9.0-beta.1/civic89-0.9.0-beta.1-windows-x64.zip) |
+| ARM (ARM64) | [ARM64 installer](https://github.com/DangerMouseUK/civic89/releases/download/v0.9.0-beta.1/civic89-0.9.0-beta.1-windows-arm64-setup.exe) | [ARM64 ZIP](https://github.com/DangerMouseUK/civic89/releases/download/v0.9.0-beta.1/civic89-0.9.0-beta.1-windows-arm64.zip) |
+
+Run the installer, or extract the **whole ZIP** and double-click `civic89.exe`.
+Keep all DLLs and asset folders together. Matching source and SHA-256 checksums
+are on the same release page.
+
+**This is an unsigned testing beta.** Windows may display an unknown-publisher
+warning. Physical desktop/device acceptance is pending; please read the
+[testing instructions and known limits](packaging/BETA_RELEASE_NOTES.md) and
+[report bugs](https://github.com/DangerMouseUK/civic89/issues).
 
 ## Status and compatibility
 
-This is development software (`0.9.0-dev`), with no public release yet. Release tooling
-produces portable ZIPs, per-user installers, matching source archives and checksums.
-Public publication remains gated on asset rights, brand review, signing and physical
-desktop acceptance. See [release instructions](project/RELEASING.md) and
-[current engineering status](PROJECT_STATUS.md).
+M0–M9 software work is merged, including M8 Windows polish and M9 optional
+graphics. No further numbered milestone is currently agreed; remaining work is
+real-machine testing, fixes, provenance follow-ups and trusted signing for stable
+distribution. Native x64/ARM64 builds and packaging pass CI; this does not establish
+physical hardware support. Other operating systems are unsupported.
 
-For personal testing on another PC, download the ZIP or installer from the
-[draft playtest release](https://github.com/DangerMouseUK/civic89/releases)
-while signed into the repository owner's/collaborator's GitHub account. Extract
-the whole ZIP and double-click `civic89.exe`; developer tools are not required.
-Choose x64 for Intel/AMD Windows 11 or ARM64 for ARM Windows 11. See the
-[playtest instructions](packaging/DEVELOPMENT_RELEASE_NOTES.md). Draft downloads
-are restricted to accounts with repository write access.
+The owner approved brand review and public beta publication after the asset
+investigation, and deferred signing/physical acceptance for the beta. Exact OpenSVG
+pack attribution and two legacy source-only image origins remain follow-ups;
+the [asset investigation](project/ASSET_LICENSE_AUDIT.md) records the evidence.
+See [release instructions](project/RELEASING.md), [beta policy](project/decisions/0010_PUBLIC_BETA.md)
+and [current engineering status](PROJECT_STATUS.md).
 
-Windows 11 x64 is the primary target. Native Windows ARM64 builds, tests and packaging
-also pass CI; desktop/hardware support must be validated before release. Other platforms are unsupported.
-
-**Save compatibility:** current 51,360-byte `.cty` files and the supplied scenarios are
+**Save compatibility:** current 51,360-byte `.cty` files and supplied scenarios are
 tested. Older 27,120-byte city files are unsupported. RNG, sprites and scenario progress
 are not serialised, so loading is not an exact replay checkpoint. Automatic recovery
 covers ordinary cities; explicit scenario exports reload as ordinary cities.
@@ -55,12 +65,10 @@ records the ruleset and city name around the same ordinary-city snapshot. Openin
 a save retains its recorded identity. F7 starts a new original-gameplay city.
 The dashboard's **Files** panel offers **Open city**, **Save city**, **Import .cty copy**
 and **Export .cty copy**. Import preserves the source and creates a copy saved as
-`.c89`; export leaves the active city and save destination unchanged. Unknown versions and corrupt
-files are rejected before replacing the current city. See the
-[Classic contract](project/CLASSIC_COMPATIBILITY.md) and
-[Enhanced format](project/ENHANCED_CITY_FORMAT.md). The
-[faithfulness audit](project/FAITHFULNESS_AUDIT.md) records unchanged mechanics
-and why historical 27,120-byte imports remain unsupported.
+`.c89`; export leaves the active city and save destination unchanged. Unknown versions
+and corrupt files are rejected before replacing the city. See the
+[Classic contract](project/CLASSIC_COMPATIBILITY.md), [Enhanced format](project/ENHANCED_CITY_FORMAT.md)
+and [faithfulness audit](project/FAITHFULNESS_AUDIT.md).
 
 ## Build and run
 
