@@ -1275,6 +1275,8 @@ int main(int argc, char* argv[])
                     { throw std::runtime_error("Partial startup retained resources"); }
             }
         }
+        void prepareModernUiAcceptance(const std::filesystem::path&);
+        prepareModernUiAcceptance(userDirectory);
 #endif
         for (int session = 0; session < sessions; ++session)
         {
@@ -1284,13 +1286,16 @@ int main(int argc, char* argv[])
             } lifetime;
             if (!SDL_Init(SDL_INIT_VIDEO)) { throw std::runtime_error(std::string("Unable to initialize SDL: ") + SDL_GetError()); }
             audioService = std::make_unique<AudioManager>(*diagnostics);
-            std::ifstream settings(userDirectory / "audio.cfg");
-            float master, city, construction;
-            if (settings >> master >> city >> construction)
             {
-                audioService->masterVolume(master);
-                audioService->channelVolume(AudioChannel::City, city);
-                audioService->channelVolume(AudioChannel::Construction, construction);
+                // Release the reader before settings can be atomically replaced on Windows.
+                std::ifstream settings(userDirectory / "audio.cfg");
+                float master, city, construction;
+                if (settings >> master >> city >> construction)
+                {
+                    audioService->masterVolume(master);
+                    audioService->channelVolume(AudioChannel::City, city);
+                    audioService->channelVolume(AudioChannel::Construction, construction);
+                }
             }
             initRenderer();
             loadGraphics();
@@ -1300,7 +1305,7 @@ int main(int argc, char* argv[])
 #if defined(CIVIC89_MILESTONE_TESTS)
             void runMilestoneTests(Budget&, CityProperties&, PresentationEvents&);
             void runWindowCameraRenderingTests(Budget&, CityProperties&, PresentationEvents&, ToolManager&, ModernInterface&);
-            void runModernUiAcceptance(Budget&, CityProperties&, ToolManager&);
+            void runModernUiAcceptance(Budget&, CityProperties&, ToolManager&, const std::filesystem::path&);
             void runGraphicsAcceptance(Budget&, CityProperties&, ToolManager&);
             simInit();
             scheduler.reset(SDL_GetTicks());
@@ -1310,7 +1315,7 @@ int main(int argc, char* argv[])
                 runGraphicsParity(budget,cityProperties,parity);
                 break;
             }
-            if (session == 0) { runModernUiAcceptance(budget, cityProperties, *toolManager); }
+            if (session == 0) { runModernUiAcceptance(budget, cityProperties, *toolManager, userDirectory); }
             if (session == 0) { runWindowCameraRenderingTests(budget, cityProperties, presentationEvents, *toolManager, *interfaceManager); }
             if (session == 0) { runGraphicsAcceptance(budget,cityProperties,*toolManager); }
             runMilestoneTests(budget, cityProperties, presentationEvents);

@@ -156,11 +156,11 @@ void ModernInterface::dashboard()
         button(label,{14 + i * width,43,width-4,29},[this,id] { if (command) { command(id == 2 ? UiCommand::Files : static_cast<UiCommand>(id)); } },false,true,id==4 ? "Eval" : id==5 ? "Scenario" : nullptr);
     }
     button(std::string(OverlayNames[static_cast<size_t>(selectedOverlay)]),{14,77,150,26},[this] { show(Panel::Overlays); },selectedOverlay != DataOverlay::None);
-    button("-",{170,77,26,26},[this] { settings.overlayOpacity = std::max(.1f,settings.overlayOpacity-.1f); if(settingsChanged) settingsChanged(); });
-    text(std::to_string(static_cast<int>(std::round(settings.overlayOpacity*100))) + "%",{201,77,40,26});
-    button("+",{244,77,26,26},[this] { settings.overlayOpacity = std::min(1.f,settings.overlayOpacity+.1f); if(settingsChanged) settingsChanged(); });
+    button("Decrease overlay opacity",{170,77,26,26},[this] { settings.overlayOpacity = std::max(.1f,settings.overlayOpacity-.1f); if(settingsChanged) settingsChanged(); },false,true,"-");
+    text("Opacity " + std::to_string(static_cast<int>(std::round(settings.overlayOpacity*100))) + "%",{201,77,110,26});
+    button("Increase overlay opacity",{318,77,26,26},[this] { settings.overlayOpacity = std::min(1.f,settings.overlayOpacity+.1f); if(settingsChanged) settingsChanged(); },false,true,"+");
     const auto& tool = tools.currentTool();
-    text(tool.type == Tool::Type::None ? "Select a tool" : tool.name + " " + dollars(tool.cost),{282,77,220,26});
+    text(tool.type == Tool::Type::None ? "Select a tool" : tool.name + " " + dollars(tool.cost),{356,77,std::min(220.f,size.x-654),26});
     text("R " + std::to_string(rci.residentialDemand()) + "   C " + std::to_string(rci.commercialDemand()) + "   I " + std::to_string(rci.industrialDemand()),{size.x-286,77,274,26},false,accent);
 }
 void ModernInterface::selectTool(size_t i)
@@ -295,7 +295,8 @@ void ModernInterface::overlaysPanel(SDL_FRect area)
         selectedOverlay=static_cast<DataOverlay>(i); minimapDirty=true; show(Panel::None);
     },selectedOverlay==static_cast<DataOverlay>(i));
     text(overlayLegend(selectedOverlay),{area.x,area.y+224,area.w,28},false,accent);
-    text("Use - / + in the dashboard to adjust opacity.",{area.x,area.y+260,area.w,28},false,muted);
+    text("Opacity controls how strongly a data layer covers the map.",{area.x,area.y+260,area.w,28},false,muted);
+    text("Select a layer, then use the dashboard's - / + to adjust it.",{area.x,area.y+292,area.w,28},false,muted);
 }
 void ModernInterface::settingsPanel(SDL_FRect area)
 {

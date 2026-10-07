@@ -3,6 +3,12 @@
 Entries below the beta are dated development delivery records, not current
 branch or publication status.
 
+## Unreleased
+
+- Close the audio-preferences reader after startup so changing settings on a
+  subsequent launch can replace `audio.cfg` without a Windows access-denied error.
+- Label the dashboard percentage as overlay opacity and explain its effect.
+
 ## 0.9.0-beta.1 — 7 October 2026
 
 - First public testing beta combining merged M8 Windows polish and M9 optional graphics.
