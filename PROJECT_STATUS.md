@@ -5,6 +5,14 @@ M0–M9 software work is merged; physical desktop acceptance remains pending.
 
 ## Repository and verification
 
+- Beta [PR #16](https://github.com/DangerMouseUK/civic89/pull/16) is merged at
+  `db939586e18696376200e89ed80233265a5e45d0`; all five jobs pass on merged main in
+  [run 37631106690](https://github.com/DangerMouseUK/civic89/actions/runs/37631106690).
+- Follow-up branch `codex/fix-settings-persistence` addresses the beta report of
+  settings-save errors after relaunch and clarifies the overlay-opacity control.
+  These fixes are unreleased; the published `0.9.0-beta.1` assets are unchanged.
+  Local x64 Debug and Release each pass **56/56** tests, including a regression
+  seeded with existing audio settings that reproduced Windows error 5 before the fix.
 - M8 [PR #13](https://github.com/DangerMouseUK/civic89/pull/13) and M9
   [PR #14](https://github.com/DangerMouseUK/civic89/pull/14) are merged.
   The post-M9 main baseline is `e4986334bb5cda661d95b1018605dedb401ad7b4`.
@@ -13,9 +21,9 @@ M0–M9 software work is merged; physical desktop acceptance remains pending.
   x64 Debug/Release/application ASan and native ARM64 Release **56/56** each;
   headless ASan **45/45**. Both Release architectures pass ZIP/source/installer,
   static DLL closure, update/failure/rollback and install/uninstall acceptance.
-- The beta branch `codex/beta-release` reconciles repository documentation,
-  records the asset investigation/owner decisions, versions the build and adds
-  verified beta staging. It changes no simulation, artwork, dependencies or saves.
+- The merged beta branch `codex/beta-release` reconciled repository documentation,
+  recorded the asset investigation/owner decisions, versioned the build and added
+  verified beta staging. It changed no simulation, artwork, dependencies or saves.
   The beta's exact build commit and delivery checksums are recorded in `release.json`
   on the [release page](https://github.com/DangerMouseUK/civic89/releases/tag/v0.9.0-beta.1).
   The associated PR/checks record validation of the beta inputs separately from

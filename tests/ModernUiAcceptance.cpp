@@ -15,6 +15,8 @@
 #include "FileIo.h"
 #include "main.h"
 #include <SDL3_image/SDL_image.h>
+#include <array>
+#include <cmath>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
@@ -64,8 +66,23 @@ namespace
         std::filesystem::create_directories(path);
         require(IMG_SavePNG(pixels.get(),(path/(name+".png")).string().c_str()),"UI capture publication");
     }
+    void requireAudioSettings(const std::filesystem::path& directory,std::array<float,3> expected)
+    {
+        std::ifstream file(directory/"audio.cfg");
+        std::array<float,3> actual{};
+        require(static_cast<bool>(file>>actual[0]>>actual[1]>>actual[2]),"Saved audio settings unreadable");
+        for(size_t i=0;i<actual.size();++i)
+            require(std::abs(actual[i]-expected[i])<.001f,"Audio settings did not persist after startup with an existing file");
+    }
 }
-void runModernUiAcceptance(Budget& budget,CityProperties& city,ToolManager& tools)
+void prepareModernUiAcceptance(const std::filesystem::path& directory)
+{
+    // Model a returning player before the production startup reader opens this file.
+    std::ofstream file(directory/"audio.cfg");
+    file<<"0.8 0.7 0.6\n";
+    require(static_cast<bool>(file),"Audio settings fixture creation failed");
+}
+void runModernUiAcceptance(Budget& budget,CityProperties& city,ToolManager& tools,const std::filesystem::path& settingsDirectory)
 {
     const auto original=applicationUiSettings();
     const int originalTax=budget.TaxRate();
@@ -94,6 +111,13 @@ void runModernUiAcceptance(Budget& budget,CityProperties& city,ToolManager& tool
     applicationInterface().hideAllWindows();snapshot("compact-dashboard");
     key(SDLK_D);require(tools.currentTool().type==Tool::Type::Road,"Default tool hotkey route");
     const auto before=engineStateDigest(city,budget);
+    applicationUiSettings().overlayOpacity=.6f;
+    control("Increase overlay opacity");
+    require(applicationInterface().overlay()==DataOverlay::None,"Opacity enabled an overlay by itself");
+    const auto savedOpacity=UiSettings::load(settingsDirectory/"ui.cfg");
+    require(savedOpacity && std::abs(savedOpacity->overlayOpacity-.7f)<.001f,"Dashboard opacity did not persist");
+    control("Decrease overlay opacity");
+    require(std::abs(applicationUiSettings().overlayOpacity-.6f)<.001f && engineStateDigest(city,budget)==before,"Opacity changed simulation state");
     control("Budget");require(applicationInterface().currentPanel()==ModernInterface::Panel::Budget,"Dashboard budget routing");
     control("Tax rate +");require(budget.TaxRate()==originalTax+1,"Typed budget edit");budget.TaxRate(originalTax);
     snapshot("compact-budget");control("Close");
@@ -115,6 +139,8 @@ void runModernUiAcceptance(Budget& budget,CityProperties& city,ToolManager& tool
     applicationUiSettings().scale=1;require(SDL_SetWindowSize(MainWindow,800,600),"Compact window restore");windowResized();
     auto& ui=applicationInterface();
     ui.show(ModernInterface::Panel::Overlays);control("Traffic");require(ui.overlay()==DataOverlay::Traffic,"Data selector route");
+    control("Increase overlay opacity");
+    require(std::abs(applicationUiSettings().overlayOpacity-.7f)<.001f,"Active overlay opacity control failed");
     snapshot("compact-overlay");
     require(engineStateDigest(city,budget)==before,"Overlay changed simulation");
     control("Settings");control("Controls");
@@ -124,7 +150,11 @@ void runModernUiAcceptance(Budget& budget,CityProperties& city,ToolManager& tool
     key(SDLK_Z);require(applicationUiSettings().keys[0]==SDLK_Z,"Rebinding did not persist");
     snapshot("compact-controls");key(SDLK_ESCAPE);key(SDLK_Z);require(tools.currentTool().type==Tool::Type::Residential,"Configured hotkey route");
     control("Settings");control("Readability");control("Large text: off");control("High contrast: off");control("Blue overlays: off");snapshot("compact-accessibility");
-    control("Sound");control("Master -");snapshot("compact-sound");
+    control("Sound");control("Master -");
+    requireAudioSettings(settingsDirectory,{.7f,.7f,.6f});
+    control("Master +");
+    requireAudioSettings(settingsDirectory,{.8f,.7f,.6f});
+    snapshot("compact-sound");
     control("Gameplay");snapshot("compact-gameplay");
     const bool autoGoto=gameplayOptions().autoGoto;
     control(autoGoto ? "Auto goto: on" : "Auto goto: off");

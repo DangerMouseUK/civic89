@@ -99,6 +99,11 @@ minimap, F5 evaluation, F6 scenarios, F7 new city, F8/F12 settings, F9 history,
 F10 budget and F11 borderless fullscreen. Tab/Shift+Tab and Enter navigate panels.
 Tool and command keys can be reassigned in Settings.
 
+**Overlays:** select a data layer using the dashboard's **No overlay** button.
+The adjacent **Opacity** percentage controls how strongly that layer covers the
+map; use **− / +** to adjust it. It has no visible effect while **No overlay** is
+selected, and does not change taxes, funding or simulation speed.
+
 **Graphics:** Settings → Readability → **Graphics: Classic/Enhanced** switches without
 reloading your city. Classic is the default. Enhanced refines the original pixel edges
 at twice their source resolution, retaining the palette and all tiles, sprite frames
