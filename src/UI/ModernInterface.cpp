@@ -21,7 +21,6 @@ namespace
 {
     constexpr SDL_Color ink{231,238,245,255}, muted{165,182,196,255}, accent{88,211,192,255};
     constexpr std::array<int,16> iconRows{0,1,2,3,4,5,6,7,8,9,12,13,14,15,16,17};
-    constexpr std::array<const char*,16> ghostFiles{"res","com","ind","fire",nullptr,"police",nullptr,nullptr,nullptr,nullptr,"stadium",nullptr,"seaport","coal","nuclear","airport"};
     constexpr std::array<const char*,10> commandNames{"Pause","Save","Open","Minimap","Evaluation","Scenarios","New city","Settings","Graphs","Budget"};
     constexpr std::array<const char*,4> panNames{"Pan left","Pan right","Pan up","Pan down"};
     bool contains(SDL_FRect rect, Point<int> point)
@@ -48,20 +47,24 @@ bool ModernInterface::reservedKey(SDL_Keycode key)
         key == SDLK_LALT || key == SDLK_RALT || key == SDLK_LGUI || key == SDLK_RGUI;
 }
 ModernInterface::ModernInterface(SDL_Renderer* value, Budget& b, const RCI& r, ToolManager& t,
-    const CityProperties& c, AudioManager& a, UiSettings& prefs, const DisplaySettings& native) : renderer(value), budget(b), rci(r), tools(t), city(c), audio(a), settings(prefs), display(native),
-    icons(loadTexture(value,"icons/buttons.png")), miniTiles(loadTexture(value,"images/tilessm.xpm")), miniCache(newTexture(value,{360,300}))
+    const CityProperties& c, AudioManager& a, UiSettings& prefs, const DisplaySettings& native, std::shared_ptr<const GraphicsArt> images) : renderer(value), budget(b), rci(r), tools(t), city(c), audio(a), settings(prefs), display(native),
+    icons(loadTexture(value,"icons/buttons.png")), art(images ? std::move(images) : GraphicsArt::load(value,GraphicsStyle::Classic)), miniCache(prepareMinimap(art->style))
 {
     if (!TTF_WasInit() && !TTF_Init()) { throw std::runtime_error(SDL_GetError()); }
-    for (size_t i = 0; i < ghosts.size(); ++i)
-    {
-        if (!ghostFiles[i]) { continue; }
-        ghosts[i] = loadTexture(renderer, std::string("images/") + ghostFiles[i] + ".xpm");
-        SDL_SetTextureBlendMode(ghosts[i].texture, SDL_BLENDMODE_BLEND);
-        SDL_SetTextureAlphaMod(ghosts[i].texture, 125);
-    }
     SDL_SetTextureScaleMode(icons.texture, SDL_SCALEMODE_NEAREST);
     SDL_SetTextureScaleMode(miniCache.texture, SDL_SCALEMODE_NEAREST);
     layout(size, density);
+}
+Texture ModernInterface::prepareMinimap(GraphicsStyle style) const
+{
+    const int d=style==GraphicsStyle::Enhanced ? 2 : 1;
+    auto texture=newTexture(renderer,{360*d,300*d});
+    if (!SDL_SetTextureScaleMode(texture.texture,SDL_SCALEMODE_NEAREST)) { throw std::runtime_error(SDL_GetError()); }
+    return texture;
+}
+void ModernInterface::graphics(std::shared_ptr<const GraphicsArt> images, Texture cache) noexcept
+{
+    art=std::move(images); miniCache=std::move(cache); minimapDirty=true;
 }
 void ModernInterface::layout(Vector<float> viewport, float scale)
 {
@@ -167,7 +170,7 @@ void ModernInterface::cancelTool() { tools.currentTool(Tool::Type::None); }
 const Texture* ModernInterface::ghost() const
 {
     const auto index = static_cast<size_t>(tools.currentTool().type);
-    return index < ghosts.size() ? &ghosts[index] : nullptr;
+    return index < art->ghosts.size() ? &art->ghosts[index] : nullptr;
 }
 void ModernInterface::palette()
 {
@@ -198,8 +201,9 @@ void ModernInterface::minimap(const Camera2D& camera)
         if (!SDL_SetRenderTarget(renderer,miniCache.texture)) { throw std::runtime_error(SDL_GetError()); }
         for (int x=0;x<SimWidth;++x) for (int y=0;y<SimHeight;++y)
         {
-            const SDL_FRect source{0,maskedTileValue(tileValue(x,y))*3.f,3,3}, target{x*3.f,y*3.f,3,3};
-            SDL_RenderTexture(renderer,miniTiles.texture,&source,&target);
+            const float cell=3.f*art->density;
+            const SDL_FRect source{0,maskedTileValue(tileValue(x,y))*cell,cell,cell}, target{x*cell,y*cell,cell,cell};
+            SDL_RenderTexture(renderer,art->minimap.texture,&source,&target);
             const auto color = overlayColor(selectedOverlay,overlayValue(selectedOverlay,{x,y}),settings.accessibleColors);
             if (color.a) { fill(target,{color.r,color.g,color.b,static_cast<Uint8>(settings.overlayOpacity*255)}); }
         }
@@ -304,8 +308,11 @@ void ModernInterface::settingsPanel(SDL_FRect area)
         button(settings.accessibleColors ? "Blue overlays: on" : "Blue overlays: off",{area.x+width+6,y+44,width,34},[this,changed] {settings.accessibleColors=!settings.accessibleColors;changed();},settings.accessibleColors);
         const std::array<std::string,5> labels{"Windowed","Maximized","Fullscreen",display.vsync ? "VSync: on" : "VSync: off",display.pixelPerfect ? "Pixel perfect: on" : "Pixel perfect: off"};
         for(int i=0;i<5;++i) button(labels[i],{area.x+(i%3)*area.w/3,y+104+(i/3)*40.f,area.w/3-5,34},[this,i] {if(displayAction) displayAction(i);},i<3 ? static_cast<int>(display.mode)==i : i==3 ? display.vsync : display.pixelPerfect);
-        text("UI scale fits the display. Tab / Enter navigate; Esc closes.",{area.x,y+204,area.w,28},false,muted);
-        text("F11 fullscreen | F12 settings | Home centers the city",{area.x,y+238,area.w,28},false,muted);
+        const bool enhanced=art->style==GraphicsStyle::Enhanced;
+        button(enhanced ? "Graphics: Enhanced" : "Graphics: Classic",{area.x,y+194,area.w,34},[this,enhanced] {
+            if(graphicsChanged) graphicsChanged(enhanced ? GraphicsStyle::Classic : GraphicsStyle::Enhanced);
+        },enhanced);
+        text("Same original gameplay. Switch graphics during play.",{area.x,y+238,area.w,28},false,muted);
     }
     else if(settingsTab==1)
     {

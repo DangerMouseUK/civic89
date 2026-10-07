@@ -15,20 +15,20 @@ C++20 / SDL3 desktop interface. It is an independent project, unaffiliated with 
 - Eight inherited scenarios, native file pickers, atomic city saves and ordinary-city autosave recovery.
 - A separate SDL-free engine, headless runner and Classic simulation regression tests.
 - One original-gameplay path, with `.cty` and versioned `.c89` saves and explicit import/export.
+- Classic graphics and optional sharper pixel edges, switchable during play in Settings.
 
 Civic 89's agreed scope is faithful original gameplay with modern Windows
 presentation; gameplay expansion is outside scope. Existing M7 `.c89` identities
 remain supported and use the same mechanics and map dimensions as `.cty` cities.
 
 The next [roadmap milestones](project/engineering/08_ROADMAP_AND_IMPLEMENTATION_BACKLOG.md)
-are **M8**, faithfulness/Windows polish with the simplified interface delivered on
-this branch and physical desktop checks pending, and optional **M9**, improved
-graphics selectable in Settings during play. M9 is planned; graphics will use the
-same city and mechanics without changing saves.
+are **M8**, faithfulness/Windows polish with physical desktop checks pending, and
+**M9**, optional graphics implemented on this branch for the same city and mechanics.
+M9 is based on unmerged M8; both retain their physical acceptance gates.
 
 ## Status and compatibility
 
-This is development software (`0.8.0-dev`), with no public release yet. Release tooling
+This is development software (`0.9.0-dev`), with no public release yet. Release tooling
 produces portable ZIPs, per-user installers, matching source archives and checksums.
 Public publication remains gated on asset rights, brand review, signing and physical
 desktop acceptance. See [release instructions](project/RELEASING.md) and
@@ -90,6 +90,15 @@ Wheel zooms; right-drag or arrow keys pan; Home centres the camera. Space pauses
 minimap, F5 evaluation, F6 scenarios, F7 new city, F8/F12 settings, F9 history,
 F10 budget and F11 borderless fullscreen. Tab/Shift+Tab and Enter navigate panels.
 Tool and command keys can be reassigned in Settings.
+
+**Graphics:** Settings → Readability → **Graphics: Classic/Enhanced** switches without
+reloading your city. Classic is the default. Enhanced refines the original pixel edges
+at twice their source resolution, retaining the palette and all tiles, sprite frames
+and construction footprints; it is not a newly illustrated building set. The choice
+persists in `graphics.cfg`, separately from city saves and M8's `ui.cfg`. It does not
+change gameplay, simulation/animation timing or save bytes, and is independent of
+the older Enhanced save-format identity. See the [graphics specification](project/GRAPHICS_SPECIFICATION.md)
+and [complete input catalogue](assets/graphics-catalogue.json).
 
 The status bar identifies original gameplay; Files shows the current save format.
 The existing `--mode classic|enhanced` option is retained for save-format compatibility.

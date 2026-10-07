@@ -7,6 +7,7 @@
 #include "../Camera2D.h"
 #include "../SdlResources.h"
 #include "../Ruleset.h"
+#include "../GraphicsArt.h"
 #include <SDL3_ttf/SDL_ttf.h>
 #include <functional>
 #include <unordered_map>
@@ -24,7 +25,10 @@ class ModernInterface
 {
 public:
     enum class Panel { None, Budget, Evaluation, Graphs, Settings, Query, Overlays, Scenarios, NewCity, Files };
-    ModernInterface(SDL_Renderer*, Budget&, const RCI&, ToolManager&, const CityProperties&, AudioManager&, UiSettings&, const DisplaySettings&);
+    ModernInterface(SDL_Renderer*, Budget&, const RCI&, ToolManager&, const CityProperties&, AudioManager&, UiSettings&, const DisplaySettings&,
+        std::shared_ptr<const GraphicsArt> art = {});
+    Texture prepareMinimap(GraphicsStyle) const;
+    void graphics(std::shared_ptr<const GraphicsArt>, Texture) noexcept;
     void layout(Vector<float> size, float density);
     void draw(const Camera2D&);
     bool pointInWindow(Point<int>) const;
@@ -52,6 +56,7 @@ public:
     void overlay(DataOverlay value) { selectedOverlay = value; minimapDirty = true; }
     std::function<void(UiCommand)> command;
     std::function<void()> settingsChanged;
+    std::function<void(GraphicsStyle)> graphicsChanged;
     std::function<void()> optionsChanged;
     std::function<void(int)> displayAction;
     std::function<void(int)> scenarioSelected;
@@ -88,11 +93,10 @@ private:
     std::string tooltip;
     std::vector<Control> controls;
     Texture icons;
-    Texture miniTiles;
+    std::shared_ptr<const GraphicsArt> art;
     Texture miniCache;
     Uint64 minimapUpdated{};
     bool minimapDirty{true};
-    std::array<Texture,16> ghosts;
     using FontOwner = std::unique_ptr<TTF_Font, SdlDeleter<TTF_Font, TTF_CloseFont>>;
     FontOwner normalFont;
     FontOwner boldFont;

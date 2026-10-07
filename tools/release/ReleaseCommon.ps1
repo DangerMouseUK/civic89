@@ -81,13 +81,18 @@ function Test-ReleaseTree([string]$Root, [bool]$Installed = $false) {
             if ($actualArchitecture -ne $manifest.architecture) { throw "Mixed package architectures: $($entry.path) is $actualArchitecture; expected $($manifest.architecture)." }
             if ([IO.Path]::GetFileName($entry.path) -match '(_tests|runner|asan|140d|debug)') { throw 'Development binary in package.' }
         }
-        if ($entry.path -match '(?i)(\.pdb$|\.(cty|c89)\.tmp|(^|/)(audio\.cfg|ui\.cfg|display\.cfg|autosave\.(cty|c89)|civic89\.log)$)') {
+        if ($entry.path -match '(?i)(\.pdb$|\.(cty|c89)\.tmp|(^|/)(audio\.cfg|ui\.cfg|display\.cfg|graphics\.cfg|autosave\.(cty|c89)|civic89\.log)$)') {
             throw 'Private/development files in package.'
         }
     }
     foreach ($required in @('civic89.exe','build-info.json','COPYING','__README_OG','NOTICE.md','AUTHORS.md','README.md',
         'res/tools.json','scenarios/snro.666','licenses/msvc/Redist.txt','vcruntime140.dll','msvcp140.dll','SDL3.dll')) {
         if (!$expected.ContainsKey($required)) { throw "Missing package requirement: $required" }
+    }
+    if ([version]($manifest.version.Split('-')[0]) -ge [version]'0.9.0') {
+        foreach ($required in @('assets/graphics-catalogue.json','project/GRAPHICS_SPECIFICATION.md')) {
+            if (!$expected.ContainsKey($required)) { throw "Missing graphics provenance: $required" }
+        }
     }
     $build = Get-Content -LiteralPath (Join-Path $Root 'build-info.json') -Raw | ConvertFrom-Json
     if ($build.commit -ne $manifest.commit -or $build.version -ne $manifest.version -or $build.architecture -ne $manifest.architecture) {
@@ -121,7 +126,9 @@ function Invoke-PackagedSmoke([string]$Root) {
             $process.WaitForExit()
             $output = Get-Content -LiteralPath (Join-Path $testDirectory 'stdout.txt') -Raw
             if ($process.ExitCode -ne 0 -or $output -notmatch 'Packaged startup, scenario, render, save/reload and shutdown passed' -or
-                ($requiresEnhanced -and $output -notmatch 'Enhanced ruleset, tagged save/load and Classic export passed')) {
+                ($requiresEnhanced -and $output -notmatch 'Enhanced ruleset, tagged save/load and Classic export passed') -or
+                ([version]($build.version.Split('-')[0]) -ge [version]'0.9.0' -and
+                    $output -notmatch 'Classic/Enhanced graphics, identical city bytes and safe switching passed')) {
                 $errors = Get-Content -LiteralPath (Join-Path $testDirectory 'stderr.txt') -Raw
                 throw "Packaged smoke failed ($($process.ExitCode)): $errors"
             }

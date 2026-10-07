@@ -2,7 +2,8 @@
 
 Date: 6 October 2026. Base: merged M7 `eb73f64` (PR #12).
 Status: accepted project scope; M8 implementation delivered on its branch with
-physical acceptance pending. Optional M9 graphics remain planned.
+physical acceptance pending. M9 is implemented separately on the pending M8 base;
+physical acceptance remains pending for both.
 
 The user clarified that Civic 89 must preserve the original game's gameplay and
 mechanics while modernising its appearance and Windows experience. The only
@@ -54,8 +55,16 @@ M8/M9 backlog items and acceptance. Deliver one whole milestone per engineering
 branch/PR. The initial scope commit was documentation only; the M8 branch now
 includes the runtime adjustment, [audit](../FAITHFULNESS_AUDIT.md), regression
 checks and [evidence](../../tests/baseline/M8_2026-10-06.md). M8 acceptance remains
-pending until the required physical checks have actual evidence. M9 is not
-implemented. [Project status](../../PROJECT_STATUS.md) records progress.
+pending until the required physical checks have actual evidence.
+
+On 7 October the user approved M9's sharper pixel-art direction closely following
+the original. The [specification](../GRAPHICS_SPECIFICATION.md) and
+[catalogue](../../assets/graphics-catalogue.json) define a complete palette-preserving
+2x edge refinement of the pinned original inputs, retaining Classic. This is a
+renderer transformation, not newly illustrated artwork or a rights-clearance claim.
+M9's branch is based on unmerged M8 and its PR targets M8 until M8 merges. The
+graphics preference is separate from city identity/save data and M8 preferences.
+[Project status](../../PROJECT_STATUS.md) records validation and remaining acceptance.
 
 Historical file variants and exact replay remain limited by the supported snapshot
 format. Do not invent format compatibility without verified references/fixtures.

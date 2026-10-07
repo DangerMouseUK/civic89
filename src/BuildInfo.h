@@ -5,7 +5,7 @@
 #include "Civic89BuildInfo.h"
 #else
 // The retained Visual Studio comparison project does not generate provenance.
-#define CIVIC89_VERSION "0.8.0-dev"
+#define CIVIC89_VERSION "0.9.0-dev"
 #define CIVIC89_REVISION "unknown"
 #define CIVIC89_DIRTY " (unverified comparison build)"
 #if defined(_M_ARM64)

@@ -12,6 +12,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\UiSettings.cpp" />
+    <ClCompile Include="src\GraphicsSettings.cpp" />
+    <ClCompile Include="src\GraphicsArt.cpp" />
     <ClCompile Include="src\OverlayModel.cpp" />
     <ClCompile Include="src\UI\ModernInterface.cpp" />
     <ClCompile Include="src\Camera2D.cpp" />

@@ -403,8 +403,9 @@ acceptance. Keep the candidate PR a draft until required desktop evidence exists
 
 ## 11. Milestone 9 - Optional enhanced graphics
 
-**Status:** planned, optional, after M8; graphics adoption/art direction must be agreed
-before implementation.
+**Status:** graphics direction approved on 7 October 2026; software scope implemented
+on `codex/m9-enhanced-graphics`, based on pending M8 `c3ba234`. M8 remains unmerged;
+M9 targets its branch until M8 merges. Both physical acceptance gates remain pending.
 
 **Goal:** offer improved graphics for the same game, selectable during play in Settings.
 
@@ -463,6 +464,21 @@ and repeated toggling do not leak resources or damage the city.
 save compatibility and original graphics available. Public release still requires the
 remaining rights/brand/signing/physical gates. If graphics are declined, redefine M9
 only through a separate user decision; do not substitute gameplay expansion.
+
+**M9 implementation checkpoint (7 October 2026):** the user chose sharper pixel art
+closely following the original. The [approved specification](../GRAPHICS_SPECIFICATION.md)
+implements palette-preserving 2x edge refinement, rather than newly illustrated
+artwork, with complete [input mapping/provenance](../../assets/graphics-catalogue.json).
+All 960 tiles/minimap entries, 61 sprite frames and ten textured previews are covered.
+Classic is the default; `graphics.cfg` is independent of both city identities and
+M8's `ui.cfg`. Complete resource preparation precedes both ownership swaps; load/reset
+failures can recover Classic and failed live preparation retains the existing session.
+Fresh-process comparisons cover phase digests, animation/RNG and both save formats;
+catalogue captures, all scenarios/new city, DPI/zoom/backends, repeated toggling and
+failure/reset acceptance are included. [M9 evidence](../../tests/baseline/M9_2026-10-07.md)
+records measurements and build/package checks. This is a software delivery checkpoint;
+required physical readability/mixed-DPI/clean-machine checks and public rights/brand/
+signing gates remain pending. Keep M9 a draft alongside M8 until acceptance exists.
 
 ### Release readiness alongside M8/M9
 

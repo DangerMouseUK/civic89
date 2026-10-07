@@ -54,6 +54,20 @@ $badZip=Join-Path $root 'damaged.zip'
 $badHash=(Get-FileHash -LiteralPath $badZip -Algorithm SHA256).Hash
 Require-Failure { & $update -InstallRoot $install -Archive $badZip -ExpectedSha256 $badHash }
 Require ((Get-Content -LiteralPath (Join-Path $install 'current.json') -Raw) -eq $before) 'Damaged package altered the active pointer.'
+if ([version]($delivery.version.Split('-')[0]) -ge [version]'0.9.0') {
+    # Reject even internally consistent manifests that omit M9 provenance or ship user settings.
+    foreach ($member in @('assets/graphics-catalogue.json','graphics.cfg')) {
+        $variant=Join-Path $root ('graphics-' + [guid]::NewGuid())
+        Expand-ReleaseArchive $archive $variant
+        $memberPath=Join-Path $variant $member
+        if ($member -eq 'graphics.cfg') { [IO.File]::WriteAllText($memberPath,"1 1`n") }
+        else { Remove-Item -LiteralPath $memberPath }
+        $manifest=Get-Content -LiteralPath (Join-Path $variant 'release-manifest.json') -Raw | ConvertFrom-Json
+        $manifest.files=@(Get-ReleaseFiles $variant)
+        Write-ReleaseJson (Join-Path $variant 'release-manifest.json') $manifest
+        Require-Failure { $null=Test-ReleaseTree $variant }
+    }
+}
 foreach ($path in @('../escape.txt','C:/escape.txt','folder\\escape.txt','CON.txt','folder/file.','res/tools.json:stream')) {
     $zipPath=Join-Path $root ('unsafe-' + [guid]::NewGuid() + '.zip')
     $zip=[IO.Compression.ZipFile]::Open($zipPath,[IO.Compression.ZipArchiveMode]::Create)

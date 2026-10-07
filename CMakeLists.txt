@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 4.2)
-project(Civic89 VERSION 0.8.0 LANGUAGES CXX)
+project(Civic89 VERSION 0.9.0 LANGUAGES CXX)
 
 if(NOT WIN32 OR NOT MSVC OR NOT CMAKE_SIZEOF_VOID_P EQUAL 8)
     message(FATAL_ERROR "Civic 89 supports Windows x64/ARM64 with MSVC.")
@@ -40,7 +40,7 @@ set_target_properties(civic89_storage PROPERTIES VS_GLOBAL_VcpkgEnabled false VS
 
 include(CTest)
 if(BUILD_TESTING)
-    add_executable(civic89_ui_tests tests/UiModels.cpp src/UiSettings.cpp src/OverlayModel.cpp)
+    add_executable(civic89_ui_tests tests/UiModels.cpp src/UiSettings.cpp src/GraphicsSettings.cpp src/OverlayModel.cpp)
     target_link_libraries(civic89_ui_tests PRIVATE civic89_engine civic89_storage)
     target_compile_options(civic89_ui_tests PRIVATE /W4 /sdl /permissive-)
     add_test(NAME ui-overlay-preferences COMMAND civic89_ui_tests)
@@ -199,7 +199,7 @@ if(CIVIC89_BUILD_APPLICATION)
         set_tests_properties(legacy-audio-and-earthquake PROPERTIES TIMEOUT 10)
 
         # Exercise native lifecycle code with the same application sources and dummy SDL.
-        add_executable(civic89_milestone_tests ${CIVIC89_APPLICATION_SOURCES} tests/MilestoneLifecycle.cpp tests/WindowCameraRendering.cpp tests/ModernUiAcceptance.cpp)
+        add_executable(civic89_milestone_tests ${CIVIC89_APPLICATION_SOURCES} tests/MilestoneLifecycle.cpp tests/WindowCameraRendering.cpp tests/ModernUiAcceptance.cpp tests/GraphicsAcceptance.cpp)
         target_include_directories(civic89_milestone_tests PRIVATE src)
         target_include_directories(civic89_milestone_tests PRIVATE "${CMAKE_BINARY_DIR}/generated")
         target_compile_definitions(civic89_milestone_tests PRIVATE CIVIC89_CMAKE_BUILD)
@@ -214,10 +214,15 @@ if(CIVIC89_BUILD_APPLICATION)
         )
         add_dependencies(civic89_milestone_tests civic89_runtime_assets)
         add_test(NAME milestone-lifecycle COMMAND civic89_milestone_tests)
+        add_test(NAME graphics-parity COMMAND "${CMAKE_COMMAND}"
+            "-DAPPLICATION=$<TARGET_FILE:civic89_milestone_tests>"
+            "-DRUNTIME=$<TARGET_FILE_DIR:civic89_milestone_tests>"
+            -P "${CMAKE_SOURCE_DIR}/cmake/VerifyGraphicsParity.cmake")
+        set_tests_properties(graphics-parity PROPERTIES TIMEOUT 240 RUN_SERIAL TRUE)
         set_tests_properties(milestone-lifecycle PROPERTIES
             WORKING_DIRECTORY "$<TARGET_FILE_DIR:civic89_milestone_tests>"
             ENVIRONMENT "SDL_VIDEODRIVER=dummy;SDL_RENDER_DRIVER=software;SDL_AUDIODRIVER=dummy"
-            TIMEOUT 120
+            TIMEOUT 180
         )
         add_test(NAME no-legacy-command-bridge COMMAND "${CMAKE_COMMAND}"
             "-DSOURCE_DIR=${CMAKE_SOURCE_DIR}" -P "${CMAKE_SOURCE_DIR}/cmake/VerifyNoLegacyCommands.cmake")

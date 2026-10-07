@@ -4,7 +4,7 @@
 
 M6 supplies the complete packaging/signing/update/ARM64 engineering path; M7 adds
 mode-aware save acceptance to that delivery.
-`0.8.0-dev` identifies development candidates; it is not a stable Classic release
+`0.9.0-dev` identifies M9 development candidates; it is not a stable Classic release
 or a city-format version. The current 51,360-byte save layout and all Classic
 goldens are retained. Older 27,120-byte saves and exact RNG/scenario replay remain
 unsupported. Enhanced v1 stores the same ordinary-city payload in a versioned
@@ -21,6 +21,13 @@ Public release is blocked until the explicit `packaging/release-gates.json` reco
 are resolved. Inherited icon/per-asset rights, brand review and physical desktop
 acceptance are still pending. Public mode also requires a trusted signing identity.
 CI produces unsigned **development candidates** and does not create tags or public releases.
+
+M9 is a separate PR based on pending M8. Keep M8's playtest release immutable;
+use a fresh `playtest-m9-*` tag for a verified M9 candidate. M9 packages include the
+graphics specification and complete input/provenance catalogue. Their smoke test
+switches both graphics options and compares city bytes. `graphics.cfg` remains
+user data, outside deliveries and saves; an M8 rollback ignores it and retains
+the unchanged `ui.cfg` preferences.
 
 ## Download and play on another machine
 

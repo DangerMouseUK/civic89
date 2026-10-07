@@ -76,7 +76,7 @@ Global MSBuild vcpkg integration remains available for that inherited comparison
 
 | Inherited project | CMake |
 |---|---|
-| 65 `ClCompile` entries (47 original + 8 M2 + 4 M3 + 2 M4 + 3 M5 + 1 M7 implementations) | Explicit source parity list; 32 engine units in `civic89_engine`, 33 application units in `civic89` |
+| 67 `ClCompile` entries (47 original + 8 M2 + 4 M3 + 2 M4 + 3 M5 + 1 M7 + 2 M9 implementations) | Explicit source parity list; 32 engine units in `civic89_engine`, 35 application units in `civic89` |
 | `micropolis-sdlpp.rc` | Civic 89 original icon and generated version resource; inherited comparison retains its resource |
 | C++20 / WINDOWS / Unicode | C++20 / WINDOWS / UNICODE / _UNICODE |
 | `/W3`, `/sdl`, conformance | `/W4`, `/sdl`, `/permissive-`; warning debt recorded |
@@ -165,8 +165,9 @@ Application presets run **53** CTests; separate headless/ASan presets run **43**
 
 All 47 original translation-unit paths remain. M2 adds eight support/split files;
 M3 adds four services, M4 adds two camera/settings implementations, M5 adds three
-interface implementations and M7 adds the Enhanced container codec, for **65**
-entries shared with the retained Visual Studio project: **32** engine and **33** application.
+interface implementations, M7 adds the Enhanced container codec and M9 adds two
+graphics implementations, for **67** entries shared with the retained Visual Studio
+project: **32** engine and **35** application.
 `civic89_storage` implements the Windows atomic writer for persistence tests;
 the engine consumes only the platform-free writer interface.
 
@@ -306,7 +307,7 @@ identify version `0.8.0-dev`, full/short Git revision, architecture and dirty st
 find assets beside themselves, so a shortcut or an unrelated working directory
 works. The retained comparison executable still permits repository-relative assets.
 CMake uses an original Civic 89 icon; the inherited `.rc` is preserved for comparison.
-All **65** production source entries remain, with **32** engine / **33** application units.
+All **67** production source entries remain, with **32** engine / **35** application units.
 
 `--smoke-test` launches the real game hidden with an isolated temporary user directory,
 loads Detroit, renders, saves/reloads, imports an Enhanced city, saves/reloads its

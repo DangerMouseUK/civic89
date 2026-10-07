@@ -112,6 +112,8 @@ namespace
     bool vsyncActive{false};
     Uint64 settingsChangedAt{};
     UiSettings uiSettings = ModernInterface::defaultSettings();
+    GraphicsSettings graphicsSettings;
+    std::string graphicsFallback;
 
     Vector<int> WindowSize{};
     Vector<int> DraggableToolVector{};
@@ -430,7 +432,46 @@ void exportClassicGame()
 
 void loadGraphics()
 {
-    cityRenderer = std::make_unique<MapRenderer>(MainWindowRenderer);
+    graphicsFallback.clear();
+    try { cityRenderer = std::make_unique<MapRenderer>(MainWindowRenderer,graphicsSettings.style); }
+    catch (const std::exception& error)
+    {
+        if (graphicsSettings.style==GraphicsStyle::Classic) { throw; }
+        diagnostics->write(Severity::Warning,DiagnosticCode::Display,error.what());
+        cityRenderer = std::make_unique<MapRenderer>(MainWindowRenderer,GraphicsStyle::Classic);
+        graphicsSettings.style=GraphicsStyle::Classic;
+        graphicsFallback="Enhanced graphics unavailable. Classic graphics are active.";
+    }
+}
+
+bool applyGraphicsStyle(GraphicsStyle style)
+{
+    if (style!=GraphicsStyle::Classic && style!=GraphicsStyle::Enhanced) { return false; }
+    if (cityRenderer->art()->style==style) { return true; }
+    try
+    {
+        auto images=GraphicsArt::load(MainWindowRenderer,style);
+        auto map=cityRenderer->prepareMap(style);
+        auto minimap=interfaceManager->prepareMinimap(style);
+        // No city/UI reconstruction and no scheduler reset. Both commits only swap ownership.
+        cityRenderer->graphics(images,std::move(map));
+        interfaceManager->graphics(std::move(images),std::move(minimap));
+    }
+    catch (const std::exception& error)
+    {
+        diagnostics->write(Severity::Warning,DiagnosticCode::Display,error.what());
+        interfaceManager->message("Could not switch graphics. Your current graphics and city are unchanged.");
+        return false;
+    }
+    graphicsSettings.style=style;
+    const auto result=graphicsSettings.save(userDirectory/"graphics.cfg",fileStorage);
+    if (!result)
+    {
+        diagnostics->write(Severity::Error,DiagnosticCode::Settings,result.detail,result.path);
+        interfaceManager->message("Graphics changed for this session; could not save the preference.");
+    }
+    else { interfaceManager->message(style==GraphicsStyle::Enhanced ? "Enhanced graphics active. Same original gameplay." : "Classic graphics active. Same original gameplay."); }
+    return true;
 }
 
 
@@ -933,7 +974,7 @@ void initUI()
             SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Civic 89 file picker", message.c_str(), MainWindow);
         });
     }
-    interfaceManager = std::make_unique<ModernInterface>(MainWindowRenderer, budget, currentRCI(), *toolManager, cityProperties, *audioService, uiSettings, displaySettings);
+    interfaceManager = std::make_unique<ModernInterface>(MainWindowRenderer, budget, currentRCI(), *toolManager, cityProperties, *audioService, uiSettings, displaySettings,cityRenderer->art());
     interfaceManager->command = performUiCommand;
     interfaceManager->scenarioSelected = [](int id) {
         const auto scenario = scenarioFromLegacyId(id);
@@ -941,6 +982,7 @@ void initUI()
             { interfaceManager->message("Could not start the scenario. The current city is unchanged."); }
     };
     interfaceManager->settingsChanged = persistUiSettings;
+    interfaceManager->graphicsChanged = [](GraphicsStyle style) { applyGraphicsStyle(style); };
     interfaceManager->optionsChanged = [] { optionsChanged(gameplayOptions()); };
     interfaceManager->displayAction = [](int action) {
         if (action <= 2) { applyDisplayMode(static_cast<WindowMode>(action)); }
@@ -952,6 +994,7 @@ void initUI()
     sharePresentationEvents(presentationEvents);
     shareAudioService(*audioService);
     setEngineClock([] { return static_cast<int>(SDL_GetTicks()); });
+    if (!graphicsFallback.empty()) { interfaceManager->message(graphicsFallback); }
 }
 ModernInterface& applicationInterface() { return *interfaceManager; }
 UiSettings& applicationUiSettings() { return uiSettings; }
@@ -959,6 +1002,7 @@ UiSettings& applicationUiSettings() { return uiSettings; }
 CityIoResult applicationSaveCityTo(const std::filesystem::path& path) { return saveCityTo(path); }
 std::string applicationSaveDestination() { return fileDialog->filePicked() ? fileDialog->fullPath() : ""; }
 DisplaySettings applicationDisplaySettings() { return displaySettings; }
+uint64_t applicationScheduledDeadline() { return scheduler.next(); }
 #endif
 void rebuildPresentationGraphics()
 {
@@ -970,7 +1014,8 @@ void rebuildPresentationGraphics()
     EventHandling::MouseLeftDown = false; MapToolGesture = false; RightButtonDrag = false;
     loadGraphics(); initUI();
     interfaceManager->show(panel); interfaceManager->overlay(overlay);
-    interfaceManager->minimapShown(minimap); interfaceManager->message(message);
+    interfaceManager->minimapShown(minimap);
+    interfaceManager->message(graphicsFallback.empty() ? message : graphicsFallback);
     diagnostics->write(Severity::Info, DiagnosticCode::Display, "Presentation resources recreated after graphics reset");
 }
 
@@ -1181,6 +1226,9 @@ int main(int argc, char* argv[])
         if (const auto settings = DisplaySettings::load(userDirectory / "display.cfg")) { displaySettings = *settings; }
         else if (std::filesystem::exists(userDirectory / "display.cfg"))
             { diagnostics->write(Severity::Warning, DiagnosticCode::Settings, "Invalid display settings; using defaults"); }
+        if (const auto settings=GraphicsSettings::load(userDirectory/"graphics.cfg")) { graphicsSettings=*settings; }
+        else if (std::filesystem::exists(userDirectory/"graphics.cfg"))
+            { diagnostics->write(Severity::Warning,DiagnosticCode::Settings,"Invalid graphics preference; using Classic"); }
 #if defined(CIVIC89_MILESTONE_TESTS)
         constexpr int sessions = 12;
 #else
@@ -1240,10 +1288,18 @@ int main(int argc, char* argv[])
             void runMilestoneTests(Budget&, CityProperties&, PresentationEvents&);
             void runWindowCameraRenderingTests(Budget&, CityProperties&, PresentationEvents&, ToolManager&, ModernInterface&);
             void runModernUiAcceptance(Budget&, CityProperties&, ToolManager&);
+            void runGraphicsAcceptance(Budget&, CityProperties&, ToolManager&);
             simInit();
             scheduler.reset(SDL_GetTicks());
+            if (const auto* parity=SDL_getenv("CIVIC89_GRAPHICS_PARITY"))
+            {
+                void runGraphicsParity(Budget&,CityProperties&,const std::string&);
+                runGraphicsParity(budget,cityProperties,parity);
+                break;
+            }
             if (session == 0) { runModernUiAcceptance(budget, cityProperties, *toolManager); }
             if (session == 0) { runWindowCameraRenderingTests(budget, cityProperties, presentationEvents, *toolManager, *interfaceManager); }
+            if (session == 0) { runGraphicsAcceptance(budget,cityProperties,*toolManager); }
             runMilestoneTests(budget, cityProperties, presentationEvents);
             const auto result = recovery->save(cityProperties, budget, fileStorage);
             if (!result || !LoadCityDetailed(recovery->path(), cityProperties, budget)) { throw std::runtime_error("Session save/reload failed"); }
@@ -1267,6 +1323,21 @@ int main(int argc, char* argv[])
                 cityRenderer->render(camera); interfaceManager->draw(camera);
                 if (!SDL_RenderPresent(MainWindowRenderer)) { throw std::runtime_error(SDL_GetError()); }
                 std::cout << "Enhanced ruleset, tagged save/load and Classic export passed\n";
+                auto bytes=[](const std::filesystem::path& path) {
+                    std::ifstream file(path,std::ios::binary);
+                    if (!file) { throw std::runtime_error("Cannot inspect graphics smoke save"); }
+                    return std::string{std::istreambuf_iterator<char>(file),{}};
+                };
+                if (!SaveCity(enhancedPath,cityProperties,budget,fileStorage)) { throw std::runtime_error("Graphics baseline save failed"); }
+                const auto original=bytes(enhancedPath);
+                for (const auto style : {GraphicsStyle::Enhanced,GraphicsStyle::Classic})
+                {
+                    if (!applyGraphicsStyle(style)) { throw std::runtime_error("Packaged graphics switch failed"); }
+                    cityRenderer->render(camera);interfaceManager->draw(camera);
+                    if (!SDL_RenderPresent(MainWindowRenderer) || !SaveCity(enhancedPath,cityProperties,budget,fileStorage) ||
+                        bytes(enhancedPath)!=original) { throw std::runtime_error("Graphics changed packaged save bytes"); }
+                }
+                std::cout << "Classic/Enhanced graphics, identical city bytes and safe switching passed\n";
             }
             else if (!startupScenario)
             {
@@ -1296,11 +1367,12 @@ int main(int argc, char* argv[])
 #endif
         }
 #if defined(CIVIC89_MILESTONE_TESTS)
-        diagnostics->write(Severity::Info, DiagnosticCode::Shutdown, "12 application sessions closed");
+        const bool graphicsParity=SDL_getenv("CIVIC89_GRAPHICS_PARITY")!=nullptr;
+        diagnostics->write(Severity::Info, DiagnosticCode::Shutdown, graphicsParity ? "Graphics parity application closed" : "12 application sessions closed");
         diagnostics.reset();
         recovery.reset();
         std::filesystem::remove_all(userDirectory);
-        std::cout << "12 complete SDL application sessions with new/scenario/save/load/quit passed\n";
+        if (!graphicsParity) { std::cout << "12 complete SDL application sessions with new/scenario/save/load/quit passed\n"; }
 #else
         diagnostics->write(Severity::Info, DiagnosticCode::Shutdown, "Civic 89 closed");
 #endif

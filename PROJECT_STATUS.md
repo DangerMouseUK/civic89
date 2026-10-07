@@ -1,14 +1,16 @@
 # Civic 89 - Project Status
 
-**Current phase:** M0–M7 merged; M8 faithfulness/Windows polish in progress; optional M9 graphics planned
-**Updated:** 6 October 2026
+**Current phase:** M0–M7 merged; M8 pending physical acceptance; M9 graphics implemented on M8, validation in progress
+**Updated:** 7 October 2026
 **Current product name:** Civic 89  
 **Repository root:** `C:\Dev\Projects\civic89`  
 **External vcpkg root:** `C:\Dev\vcpkg`
 
 ## Authoritative local repository state
 
-- Engineering branch: `codex/m8-faithfulness-windows-polish`, delivering M8-01 through M8-06 together, including the agreed scope documentation.
+- Engineering branch: `codex/m9-enhanced-graphics`, delivering M9-01 through M9-05 together, based on unmerged M8 head `c3ba23496c183cea4c88310a53aa79924ff8db35`. The M9 PR targets `codex/m8-faithfulness-windows-polish`; retarget it to `main` after M8 merges. Neither M8 nor its branch is merged/deleted by this work.
+- M9 direction approved on 7 October: sharper pixel art closely following the original. Complete palette-preserving 2x edge refinement uses unchanged inherited inputs; it is not a newly illustrated pack. Settings-only graphics selection, complete resource switching/fallback, provenance/catalogue and acceptance are recorded in [graphics specification](project/GRAPHICS_SPECIFICATION.md) and [M9 evidence](tests/baseline/M9_2026-10-07.md). Physical acceptance and public gates remain pending.
+- Latest M8 head `c3ba234` passes all five checks in [run 37511091304](https://github.com/DangerMouseUK/civic89/actions/runs/37511091304). Keep draft PR #13 open while the user tests the existing immutable M8 candidate.
 - M8 candidate: draft [PR #13](https://github.com/DangerMouseUK/civic89/pull/13), implementation `e6039b1`. Local x64 delivery/source/update/installer acceptance passes; all five jobs pass in [CI run 37503989275](https://github.com/DangerMouseUK/civic89/actions/runs/37503989275): application Debug/Release/ASan and native ARM64 55/55; headless ASan 45/45. Both Release architectures pass complete delivery acceptance. Final documentation checks are tracked on the PR. Required physical acceptance remains pending; the draft is not a fully accepted milestone.
 - Personal playtest: [draft release playtest-m8-1](https://github.com/DangerMouseUK/civic89/releases/tag/untagged-8fd9b1ca83f632c6f43e), with x64/ARM64 ZIPs and installers, matching source and combined checksums. Its immutable build commit is `b004537701945e9945df7fbadb6e272b8fbdfc34`, the green [CI run 37505416026](https://github.com/DangerMouseUK/civic89/actions/runs/37505416026) integration merge; its tree matches reviewed PR head `7e83849`. The owner can download on another machine while signed in. M8 stays pending, and public gates remain unchanged.
 - Release follow-up: the branch adds verified development draft staging, negative acceptance and a manual `release-draft` workflow. The manual workflow becomes available after merge to `main`; local staging/upload works now. No public release or trusted signing is claimed.

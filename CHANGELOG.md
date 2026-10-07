@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.9.0-dev — M9 optional faithful graphics
+
+- Classic/Enhanced graphics in Settings, independent of city identity and stored in `graphics.cfg`.
+- Palette-preserving 2x pixel-edge refinement across all 960 tiles/minimap cells,
+  61 sprite frames and ten textured previews, using unchanged pinned inherited assets.
+- Complete resource preparation before live switching; recover to Classic after
+  enhanced startup/reset failure, and retain the current session on a failed switch.
+- Full catalogue captures, display/zoom matrix, resource/performance measurements,
+  injected failure/recovery and fresh-process state/RNG/animation/save comparisons.
+- Both graphics options covered by portable/installer smoke verification.
+
+M9 is stacked on pending M8. No simulation algorithm, golden, animation sequence,
+city format or legacy writer changes. Physical acceptance and existing public
+asset/brand/signing gates remain pending. Enhanced is refined original pixel art,
+not a newly illustrated asset pack.
+
 ## 0.8.0-dev — M8 faithfulness and Windows polish
 
 - Original-gameplay new-city flow/status; Files retains both M7 save formats and import/export.
