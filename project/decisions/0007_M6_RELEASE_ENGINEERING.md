@@ -1,5 +1,9 @@
 # ADR 0007 — M6 release engineering
 
+> Historical delivery decision. Current faithful scope is ADR 0009;
+> [ADR 0010](0010_PUBLIC_BETA.md) supersedes blanket public-download blockers
+> for the owner-approved unsigned beta, without passing physical/asset/signing gates.
+
 Date: 6 October 2026. Scope: all M6-01 through M6-05 plus the root README,
 on `codex/m6-release-engineering`, based on merged M5 `8db4b1e`.
 

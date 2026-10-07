@@ -6,10 +6,10 @@ assets:
     source: Civic 89 M9 transformation source and pinned inherited-sdlpp inputs in graphics-catalogue.json
     author: Civic 89 contributors (implementation); inherited source artwork authors as recorded below
     licence: GPL-3.0-or-later implementation; derived textures retain inherited GPLv3 and EA additional terms
-    redistribution: conditional on inherited release terms; public per-asset clearance remains pending
+    redistribution: conditional on inherited release terms; original XPM evidence verified in project/ASSET_LICENSE_AUDIT.md
     modification: conditional on inherited release terms
     requirements: Include corresponding transformation source, unchanged input artwork, catalogue and inherited notices.
-    notes: Generated GPU textures only; no replacement bitmap files, new recordings or external artwork. Covers all 960 tiles/minimap entries, 61 frames and ten previews. Existing icon/public rights and brand gates are unchanged.
+    notes: Generated GPU textures only; no replacement bitmap files, new recordings or external artwork. Covers all 960 tiles/minimap entries, 61 frames and ten previews. Original XPM input provenance verified; remaining UI icon questions and owner-approved beta policy are in project/ASSET_LICENSE_AUDIT.md and ADR 0010.
   - id: civic89-branding
     paths: [assets/branding/civic89.svg, assets/branding/civic89.ico, tools/create-branding-icon.py]
     name: Original geometric city application mark
@@ -50,27 +50,27 @@ assets:
     redistribution: conditional on inherited release terms
     modification: conditional on inherited release terms
     requirements: Preserve COPYING, README.md, __README_OG, copyright notices and corresponding source.
-    notes: No retail assets added. Project-level provenance retained; per-asset author/licence audit remains a public-release gate.
+    notes: All 73 runtime XPMs and 24 cities exactly match original-release blobs; eight scenarios descend through upstream format conversion. See project/ASSET_LICENSE_AUDIT.md. DashboardWindow.png is separately covered by inherited-icons below. No retail assets added.
   - id: inherited-icons
-    paths: [icons/buttons.png, icons/minimap.png, icons/LICENSE.txt]
-    name: Inherited OpenSVG-derived icon atlases
-    source: https://github.com/ldicker83/Micropolis-SDLPP/tree/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/icons
+    paths: [icons/buttons.png, icons/minimap.png, images/DashboardWindow.png, icons/LICENSE.txt]
+    name: Inherited OpenSVG-derived icon atlases and dashboard icons
+    source: https://github.com/ldicker83/Micropolis-SDLPP/commit/8e9254ad9792d6348cf4e9dfeff37f8ce063885a
     author: OpenSVG attribution only; exact source sets and authors unknown
-    licence: Unknown per-icon terms; icons/LICENSE.txt is attribution, not a licence grant
-    redistribution: unresolved for public binary release
-    modification: unresolved
-    requirements: Recover original icon sets and licences before public packaging.
-    notes: Existing baseline files retained for local build comparison; no new icons imported.
+    licence: Upstream GPL declaration and OpenSVG current project-use terms; exact underlying pack notices unverified
+    redistribution: owner approved testing beta after investigation; pack attribution remains a stable-release follow-up
+    modification: OpenSVG current terms permit customization; pack-specific terms remain unverified
+    requirements: Preserve inherited attribution and source; disclose missing pack notices; recover exact collections and any required notices.
+    notes: Current terms dated 5 July 2026 postdate April import. No confirmed prohibited icon or incompatible licence was established; complete per-icon clearance is not claimed. See project/ASSET_LICENSE_AUDIT.md and ADR 0010. No new icons imported.
   - id: inherited-embedded
     paths: [micropolis.ico, Micropolis.png]
     name: Inherited Windows resource icon and embedded PNG
     source: https://github.com/ldicker83/Micropolis-SDLPP/tree/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad
     author: Inherited upstream project; individual asset authors not established
-    licence: Inherited project-level terms; separate rights and product branding review pending
-    redistribution: unresolved for public Civic 89 release
-    modification: subject to provenance and branding review
-    requirements: Preserve upstream attribution; replace or clear inherited product branding before public release.
-    notes: Compiled into the original RC for build comparison only; no new branding assets added.
+    licence: Inherited project-level GPL terms; specific image origins unverified
+    redistribution: source-only in CMake beta with disclosed provenance follow-up; owner brand review approved
+    modification: retain inherited notices; original image origins remain a follow-up
+    requirements: Preserve upstream attribution and source; disclose unverified origins.
+    notes: Compiled only by the retained Visual Studio comparison RC. Current CMake executable uses the original Civic 89 mark; full source ZIP contains these legacy files. See project/ASSET_LICENSE_AUDIT.md and ADR 0010.
   - id: civic89-synthesized-effects
     paths: [src/AudioManager.cpp]
     name: Original Civic 89 procedural effect bank
@@ -81,3 +81,14 @@ assets:
     modification: conditional on project GPL terms
     requirements: Include corresponding source and GPL notices.
     notes: PCM is generated locally and loaded by SDL3_mixer. No external recording, retail asset or inherited sounds/*.wav is used or staged. It does not consume simulation RNG.
+
+  - id: inherited-source-only
+    paths: [sounds/*.wav, res/hexa.*, res/stri.*, images/obj8-*.xpm]
+    name: Original-release material retained in full source, outside the runtime inventory
+    source: Inherited original-release commit a4a60d6; see project/ASSET_LICENSE_AUDIT.md
+    author: Original Micropolis open-source release contributors
+    licence: GPL-3.0-or-later and inherited EA additional terms
+    redistribution: conditional on inherited release terms
+    modification: conditional on inherited release terms
+    requirements: Preserve inherited licences, notices and corresponding source.
+    notes: 136 of 138 additional inherited asset files exactly match original-release blobs, including all 49 WAVs. The two exceptions are recorded under inherited-embedded. These files are not used or shipped as current binary assets.

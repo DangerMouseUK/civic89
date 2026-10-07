@@ -6,6 +6,8 @@ provides explicit versioning, name retention and corruption detection. This is a
 ordinary-city snapshot, not an exact replay checkpoint. The format remains supported
 under the [faithful modernisation decision](decisions/0009_FAITHFUL_MODERNISATION_AND_GRAPHICS.md);
 optional graphics are application settings independent of this file and its identity.
+Merged M8/M9 and `0.9.0-beta.1` retain this schema unchanged. The public testing
+beta policy is [ADR 0010](decisions/0010_PUBLIC_BETA.md); it does not widen file support.
 
 ## Schema 1
 

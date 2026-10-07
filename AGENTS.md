@@ -12,7 +12,7 @@ The user's 6 October 2026 decision is faithful modernisation of the original gam
 
 The only optional enhancement is a graphics preference. It must not change city state, ruleset identity, RNG consumption, simulation/animation timing or save bytes. Store it in application settings and allow switching during play. Keep existing M7 `.c89` saves supported and the `.cty` writer unchanged.
 
-M7 is merged. Its city-mode interface adjustment belongs to M8; optional graphics belongs to M9. Follow the roadmap and [ADR 0009](project/decisions/0009_FAITHFUL_MODERNISATION_AND_GRAPHICS.md); retain M7's historical delivery record.
+M0–M9 software work is merged. M8 supplies the single-gameplay interface; M9 supplies optional graphics. Physical desktop acceptance is still pending. Follow the roadmap and [ADR 0009](project/decisions/0009_FAITHFUL_MODERNISATION_AND_GRAPHICS.md); preserve dated milestone evidence as historical records. No next numbered milestone is agreed.
 
 ## Workspace contract
 
@@ -22,7 +22,7 @@ M7 is merged. Its city-mode interface adjustment belongs to M8; optional graphic
 - Technical identifier/repository: `civic89`
 - CMake project: `Civic89`
 - Primary executable target: `civic89` -> `civic89.exe`
-- Engine target (after extraction): `civic89_engine`
+- Engine target: `civic89_engine`
 - Tests target: `civic89_tests`
 - Primary platform: Windows 11 x64
 - Toolchain: Visual Studio Enterprise 2026 / current MSVC / C++20 / CMake / vcpkg / SDL3
@@ -73,14 +73,27 @@ The inherited baseline was captured locally on 5 October 2026:
 - upstream remote: `upstream-sdlpp` -> `https://github.com/ldicker83/Micropolis-SDLPP.git`;
 - working tree: clean at capture.
 
-`PROJECT_STATUS.md` is authoritative for whether the new Civic 89 `origin`, inherited build verification and first engineering branch have been completed.
+`PROJECT_STATUS.md` is authoritative for current delivery state. Bootstrap is complete;
+`feature/cmake-bootstrap` is historical, not a new assignment. Keep the retained
+Visual Studio comparison path working alongside the CMake build.
 
-## First engineering mission
+## Beta release policy
 
-The first engineering branch is `feature/cmake-bootstrap`.
+The owner requested public `0.9.0-beta.1` after reviewing the asset investigation,
+confirmed brand review fully approved, and deferred code signing and physical
+desktop acceptance for this beta. Follow [ADR 0010](project/decisions/0010_PUBLIC_BETA.md),
+[release instructions](project/RELEASING.md) and `packaging/release-gates.json`.
+Do not reinstate superseded draft-only/publication blockers or ask again for
+already-authorised beta publication. Keep the missing OpenSVG pack notices and
+two source-only branding origins disclosed; do not mark their audit complete,
+invent licences, replace artwork or contact upstream without user direction.
 
-Its goal is only to make CMake/vcpkg a reproducible build path for the existing Windows application. Do not redesign gameplay, UI, audio or architecture in that branch.
+Require clean versioned builds, green CI, both architectures, exact corresponding
+source and verified checksums. Publish the approved version as an unsigned
+prerelease excluded from Latest. Keep stable signed-release gates separate.
+Never move an existing release tag or replace published assets. A later version
+needs a new recorded release decision. For documentation/release or bug-fix work,
+use the user's requested scope rather than inventing another milestone.
 
-Before editing source, inspect the existing `.vcxproj`, `vcpkg.json`, runtime asset assumptions and current build. Record how the proposed CMake targets map to the inherited project.
-
-After work, report exact configure/build/test commands, results, executable path, warnings/errors and any differences from the inherited Visual Studio build.
+After changes, report targeted checks, unresolved limitations and any checks
+that could not run. Physical acceptance requires real evidence.

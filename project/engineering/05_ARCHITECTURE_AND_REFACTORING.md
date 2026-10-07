@@ -1,5 +1,16 @@
 # Target Architecture and Refactoring Plan
 
+> Current checkpoint — 7 October 2026: M0–M9 software work is merged.
+> This document retains the 5 October planning/audit snapshot and dated updates;
+> bootstrap tasks, starter templates, proposed dependencies and future-tense
+> migration steps are historical, not a new assignment. Implemented build/targets
+> and dependency choices are in [BUILDING.md](../BUILDING.md); current state is
+> [PROJECT_STATUS.md](../../PROJECT_STATUS.md). Faithful scope is governed by
+> [ADR 0009](../decisions/0009_FAITHFUL_MODERNISATION_AND_GRAPHICS.md), and the
+> owner-approved unsigned beta by [ADR 0010](../decisions/0010_PUBLIC_BETA.md).
+> Physical desktop acceptance remains pending. Catch2/spdlog were proposals;
+> they are not current dependencies. Original results are not retroactive checks.
+
 **Status:** Active engineering baseline  
 **Prepared:** 5 October 2026  
 **Repository baseline captured:** 5 October 2026  
@@ -294,8 +305,8 @@ Do not parallelise the simulation until determinism and shared-state assumptions
 
 The user's 6 October 2026 scope decision is one faithful simulation and optional
 graphics, recorded in [ADR 0009](../decisions/0009_FAITHFUL_MODERNISATION_AND_GRAPHICS.md).
-M8 adjusts the merged M7 interface; M9 may add improved graphics after art direction
-is agreed. Keep these boundaries:
+Merged M8 adjusts the M7 interface; merged M9 supplies the agreed sharper
+pixel graphics. Keep these boundaries:
 
 - existing map dimensions, gameplay limits, typed tool/building identities and mechanics;
 - known M7 ruleset identities retained for existing save compatibility;

@@ -59,7 +59,9 @@ Development-only portable staging:
 cmake --install out/build/windows-x64-release --config Release --prefix out/install/windows-x64-release
 ```
 
-Installation includes only the application, pinned dependency DLLs, inventoried assets and notices. It excludes user saves, test binaries, PDBs and arbitrary build-directory files. Run the installed executable from its directory. This does not clear inherited icon rights or historical save compatibility for public release; see `PROJECT_STATUS.md`.
+Installation includes only the application, pinned dependency DLLs, inventoried assets and notices. It excludes user saves, test binaries, PDBs and arbitrary build-directory files. Run the installed executable from its directory. Complete packages use the release scripts. See [beta/stable policy](RELEASING.md),
+[asset evidence](ASSET_LICENSE_AUDIT.md) and `PROJECT_STATUS.md`; historical save
+compatibility is not widened by packaging.
 
 ## Inherited comparison
 
@@ -302,7 +304,7 @@ reviewed captures and exact commands are in [M5 evidence](../tests/baseline/M5_2
 ## M6 release and ARM64 paths
 
 The root README now describes Civic 89 rather than upstream SDLPP. Release builds
-identify version `0.8.0-dev`, full/short Git revision, architecture and dirty state.
+identify version `0.9.0-beta.1`, full/short Git revision, architecture and dirty state.
 `civic89.exe --version` does not initialise SDL or user files. CMake executables
 find assets beside themselves, so a shortcut or an unrelated working directory
 works. The retained comparison executable still permits repository-relative assets.
@@ -349,7 +351,8 @@ and [M7 evidence](../tests/baseline/M7_2026-10-06.md).
 
 ## M8 fidelity and Windows acceptance
 
-Application presets now have 55 checks and SDL-free presets 45. Use the existing
+M8 introduced 55 application checks; M9 adds graphics acceptance, bringing
+current application presets to 56 checks. SDL-free presets have 45. Use the existing
 configure/build/test presets; no new production dependency is introduced. New
 `original-mechanics` and `fidelity-source-contract` checks preserve the audited
 tool/economy/network and baseline data contract without changing algorithms.
@@ -362,7 +365,8 @@ See [audit](FAITHFULNESS_AUDIT.md) and [M8 evidence](../tests/baseline/M8_2026-1
 for results and pending physical checks. SDL panels do not expose a Windows UI
 Automation accessibility tree; keyboard navigation/high contrast/larger text do
 not establish screen-reader support. Historical 27,120-byte cities remain unsupported.
-`--mode` is a compatibility option, not graphics selection; M9 remains planned.
+`--mode` is a save compatibility option. M9 graphics are implemented separately
+in Settings; see [graphics specification](GRAPHICS_SPECIFICATION.md).
 
 `civic89.exe --desktop-test` opens a visible Detroit session using a fresh
 `%TEMP%\civic89-desktop-test-<pid>-<time>` directory for preferences, diagnostics
@@ -370,3 +374,12 @@ and recovery. The path is printed at startup and recorded in its log. Normal
 user data is untouched; the test directory is retained for inspection. File
 pickers use the locations you explicitly choose. Use new test filenames for
 desktop acceptance rather than overwriting a real city.
+
+
+## Public beta version
+
+The numeric CMake project version is `0.9.0`; `CIVIC89_PRERELEASE` is `beta.1`.
+Build identity, `vcpkg.json` version-semver and the retained Visual Studio fallback
+all identify `0.9.0-beta.1`. Dependencies and registry baseline are unchanged.
+Commit release inputs and reconfigure before packaging; a dirty or stale build fails.
+See [RELEASING.md](RELEASING.md) for publication and source/checksum verification.

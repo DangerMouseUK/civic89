@@ -1,5 +1,16 @@
 # Project Charter and Architecture Decision Record
 
+> Current checkpoint — 7 October 2026: M0–M9 software work is merged.
+> This document retains the 5 October planning/audit snapshot and dated updates;
+> bootstrap tasks, starter templates, proposed dependencies and future-tense
+> migration steps are historical, not a new assignment. Implemented build/targets
+> and dependency choices are in [BUILDING.md](../BUILDING.md); current state is
+> [PROJECT_STATUS.md](../../PROJECT_STATUS.md). Faithful scope is governed by
+> [ADR 0009](../decisions/0009_FAITHFUL_MODERNISATION_AND_GRAPHICS.md), and the
+> owner-approved unsigned beta by [ADR 0010](../decisions/0010_PUBLIC_BETA.md).
+> Physical desktop acceptance remains pending. Catch2/spdlog were proposals;
+> they are not current dependencies. Original results are not retroactive checks.
+
 **Status:** Active engineering baseline  
 **Prepared:** 5 October 2026  
 **Repository baseline captured:** 5 October 2026  

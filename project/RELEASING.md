@@ -2,58 +2,97 @@
 
 ## Version, compatibility and publication boundary
 
-M6 supplies the complete packaging/signing/update/ARM64 engineering path; M7 adds
-mode-aware save acceptance to that delivery.
-`0.9.0-dev` identifies M9 development candidates; it is not a stable Classic release
-or a city-format version. The current 51,360-byte save layout and all Classic
-goldens are retained. Older 27,120-byte saves and exact RNG/scenario replay remain
-unsupported. Enhanced v1 stores the same ordinary-city payload in a versioned
-`.c89` container. See [Classic compatibility](CLASSIC_COMPATIBILITY.md),
+The current release version is `0.9.0-beta.1`, not a city-format version.
+M8/M9 software work is merged. Current 51,360-byte `.cty` output, known M7 `.c89`
+identities and Classic goldens are retained. Older 27,120-byte cities and exact
+RNG/sprite/scenario replay remain unsupported. See [Classic compatibility](CLASSIC_COMPATIBILITY.md),
 [Enhanced format](ENHANCED_CITY_FORMAT.md) and [BUILDING.md](BUILDING.md).
 
-Update the CMake project version, `vcpkg.json`, `src/BuildInfo.h` comparison fallback,
-README and CHANGELOG together for a version change. CMake records full commit,
-dirty state, compiler, architecture and pinned dependency baseline in `build-info.json`;
-`--version`, startup logs and Windows executable properties expose the identity.
-Commit and reconfigure release inputs before packaging. A dirty/stale build fails.
+Update the numeric CMake project version/prerelease suffix, `vcpkg.json`
+version-semver, `src/BuildInfo.h` comparison fallback, README and CHANGELOG together.
+CMake records full commit, dirty state, compiler, architecture and pinned dependency
+baseline. `--version`, startup logs and executable properties expose the identity.
+Commit and reconfigure release inputs before packaging; dirty/stale builds fail.
 
-Public release is blocked until the explicit `packaging/release-gates.json` records
-are resolved. Inherited icon/per-asset rights, brand review and physical desktop
-acceptance are still pending. Public mode also requires a trusted signing identity.
-CI produces unsigned **development candidates** and does not create tags or public releases.
+### Public testing beta versus stable release
 
-M9 is a separate PR based on pending M8. Keep M8's playtest release immutable;
-use a fresh `playtest-m9-*` tag for a verified M9 candidate. M9 packages include the
-graphics specification and complete input/provenance catalogue. Their smoke test
-switches both graphics options and compares city bytes. `graphics.cfg` remains
-user data, outside deliveries and saves; an M8 rollback ignores it and retains
-the unchanged `ui.cfg` preferences.
+The owner approved public `0.9.0-beta.1` following the
+[asset investigation](ASSET_LICENSE_AUDIT.md), confirmed brand review fully approved,
+and deferred signing and physical acceptance for the beta. [ADR 0010](decisions/0010_PUBLIC_BETA.md)
+records the version-scoped decision. Exact OpenSVG pack notices for three inherited
+UI images and two legacy source-only branding origins remain follow-ups; do not
+mark their audit complete or invent licences. Preserve all notices/source.
 
-## Download and play on another machine
+`packaging/release-gates.json` separates that beta approval from stable gates.
+`Package-Release.ps1` produces unsigned `development` candidates; verified beta
+staging combines them into release metadata with `distribution: beta`. The binary
+manifest still says `development`, accurately identifying an unsigned build.
+`-Public` on the packager is the **stable signed** path and still requires passed
+stable gates plus a trusted signing identity. Do not use it for this beta or mark
+pending checks passed to get around it. CI builds candidates and never publishes.
 
-For M8 personal testing, use the repository's **draft** playtest release while
-signed into an account with repository write access. Choose `windows-x64.zip` for
-Intel/AMD Windows 11 or `windows-arm64.zip` for ARM Windows 11. Extract the entire
-ZIP into a folder and double-click `civic89.exe`. Keep all included DLLs and asset
-folders together. No compiler, vcpkg, SDL installation or PowerShell is needed to
-play. The architecture's `setup.exe` is an alternative per-user installer.
+### Stage and publish the approved beta
 
-Normal launch keeps application settings/recovery in the user profile. For an
-isolated desktop acceptance session, run `civic89.exe --desktop-test`; it starts
-Detroit with temporary settings/recovery. Use copies of current saves. The
-[plain-English test instructions](../packaging/DEVELOPMENT_RELEASE_NOTES.md)
-describe the checks to try. A successful download/build does not complete physical
-M8 acceptance or clear public asset/brand/signing gates.
+Create the release branch/PR, commit all inputs and require all five `windows-ci`
+jobs green. For an exact branch build, dispatch `windows-ci` on that branch and
+verify its full head SHA equals both deliveries' build commit. Authenticate the
+repository, workflow, event, conclusion and commit with `gh run view`/`gh api`.
+PR runs build an integration merge SHA; if using one, authenticate its parent/tree
+against the reviewed head as the private draft workflow does. Never assume that
+an arbitrary downloaded artifact's identity establishes its origin.
+
+Download `candidate-x64` and `candidate-arm64` from that successful run to fresh
+directories, then stage both (PowerShell 7, from the clean release checkout):
+
+```powershell
+./tools/release/New-DevelopmentRelease.ps1 -Beta -VerifyOnly `
+  -DeliveryDirectory @('out/releases/input-x64','out/releases/input-arm64') `
+  -ExpectedCommit '<full authenticated build commit>' -Tag v0.9.0-beta.1 `
+  -NotesFile packaging/BETA_RELEASE_NOTES.md -OutputDirectory out/releases/beta-inspect
+```
+
+Inspect the nine assets, combined checksums, matching source, licence notices and
+release notes. The script rejects a mismatched beta tag/version, missing recorded
+approval, wrong build/source identity, dirty portable manifest, altered package,
+duplicate architecture and differing architecture sources. Re-run without
+`-VerifyOnly` using a **fresh** output directory to create the immutable tag and
+upload a **draft prerelease**. Upload requires both architectures. It never moves
+an old tag or replaces assets. Review the draft and confirm all nine uploads, then
+perform the already-authorised beta publication as a separate step:
+
+```powershell
+gh release edit v0.9.0-beta.1 --repo DangerMouseUK/civic89 --draft=false --prerelease --latest=false
+```
+
+Verify the release and downloads are accessible without GitHub authentication.
+Keep it excluded from Latest. A later beta version needs a fresh tag and recorded
+owner decision; stable publication follows the signed checklist below. Leave
+`playtest-m8-1` unchanged. The M8/M9 merge does not authorise merging a new docs PR;
+a beta can use an exact green branch commit while its documentation PR awaits review.
+
+## Download and test on another machine
+
+Use the [public beta](https://github.com/DangerMouseUK/civic89/releases/tag/v0.9.0-beta.1).
+Choose x64 for Intel/AMD Windows 11 or ARM64 for ARM Windows 11. Run the matching
+per-user installer or extract the entire portable ZIP and double-click `civic89.exe`.
+Keep all DLLs/assets together; no developer tools or PowerShell are needed to play.
+The beta is unsigned and may show a Windows publisher warning. Checksums establish
+integrity, not publisher authentication. See [testing instructions](../packaging/BETA_RELEASE_NOTES.md).
+
+Normal launch keeps settings/recovery in the user profile. `civic89.exe --desktop-test`
+starts Detroit with isolated temporary settings/recovery; use copies of real saves.
+Record actual display/device results. Physical acceptance stays pending until
+tested; automated/software captures do not establish audibility or GPU frame pacing.
 
 ## Repeatable development drafts
 
 The manually dispatched **release-draft** workflow takes a successful
-`windows-ci` run ID and a fresh `playtest-*` tag. It becomes available after this
-workflow is merged into `main`; it runs trusted main scripts, accepts repository-owned
+`windows-ci` run ID and a fresh `playtest-*` tag. It is available on `main`, runs
+trusted main scripts and accepts repository-owned
 CI runs (including an unmerged PR candidate), authenticates the actual build
 commit and downloads both architectures. PR CI builds use an integration merge;
 the workflow checks that its second parent is the reviewed run's head SHA.
-It does not require merging M8 to stage its existing green build locally.
+It remains available for private playtests; M8/M9 have since merged.
 
 `New-DevelopmentRelease.ps1` verifies all ZIP/installer/source checksums, portable
 inventory/PE/build identity, clean build state and corresponding-source identity.
@@ -84,7 +123,8 @@ build commit and a **draft prerelease**, explicitly excluded from Latest. It nev
 moves an existing tag, replaces a release/asset or publishes. Reusing a release
 tag fails; use a new numbered tag for the next candidate. A draft is visible only
 to repository writers; it is suitable for the owner's other machine, not a public
-download. Public prereleases still require the public-release checklist below.
+download. Public testing betas follow the separate approved policy above;
+stable signed releases follow the checklist below.
 
 The workflow needs only `contents: write` and `actions: read` for its explicit
 draft job. Normal CI retains read-only access and cannot publish a release or
@@ -111,7 +151,7 @@ destination, or reuse that verified `ISCC.exe` without re-running bootstrap.
 The pinned download comes from the [official release](https://github.com/jrsoftware/issrc/releases/tag/is-6_7_3).
 Inno Setup is build tooling, not a game dependency.
 
-`out/releases/civic89-0.8.0-dev-windows-x64/` contains:
+`out/releases/civic89-0.9.0-beta.1-windows-x64/` contains:
 
 - Portable ZIP and per-user installer EXE.
 - Matching source ZIP from the exact build commit, with `source-provenance.json`
@@ -142,7 +182,7 @@ container, exports a Classic copy and tears down. It does not modify real prefer
 This is not a substitute for clean-machine visible/audio/DPI acceptance.
 
 ```powershell
-$delivery = 'out/releases/civic89-0.8.0-dev-windows-x64'
+$delivery = 'out/releases/civic89-0.9.0-beta.1-windows-x64'
 ./tools/release/Test-Release.ps1 -Directory "$delivery/portable"
 ./tools/release/Test-ReleaseTransactions.ps1 -DeliveryDirectory $delivery
 ./tools/release/Test-Installer.ps1 -DeliveryDirectory $delivery
@@ -209,7 +249,7 @@ the extracted package or corresponding source tree:
 
 ```powershell
 ./tools/release/Update-Portable.ps1 -InstallRoot "$env:LOCALAPPDATA\Civic89Portable" `
-  -Archive 'C:\Downloads\civic89-0.8.0-dev-windows-x64.zip' -ExpectedSha256 '<64 hex digits from trusted SHA256SUMS>'
+  -Archive 'C:\Downloads\civic89-0.9.0-beta.1-windows-x64.zip' -ExpectedSha256 '<64 hex digits from trusted SHA256SUMS>'
 ./tools/release/Launch-Portable.ps1 -InstallRoot "$env:LOCALAPPDATA\Civic89Portable"
 ./tools/release/Update-Portable.ps1 -InstallRoot "$env:LOCALAPPDATA\Civic89Portable" -Rollback
 ```
@@ -251,9 +291,10 @@ native ARM64 Release on the [official VS 2026 ARM runner](https://github.com/act
 Both Release jobs build, test, package, launch extracted delivery, exercise updates
 and verify install/uninstall before uploading ZIP/installer/source/checksums.
 
-## Public release checklist
+## Stable signed-release checklist
 
-Resolve the committed gates with evidence; finish physical clean-machine acceptance;
+For stable distribution, resolve the remaining committed gates with evidence;
+finish physical clean-machine acceptance;
 review the complete asset ledger; update version/CHANGELOG; merge only green checks;
 build/sign the exact reviewed commit; inspect packages and matching source; obtain
 release approval. Then create the reviewed tag and a draft GitHub Release containing

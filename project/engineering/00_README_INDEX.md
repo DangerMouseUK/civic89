@@ -1,15 +1,30 @@
 # Civic 89 - Engineering Documentation Index
 
-**Status:** Active engineering baseline  
+**Status:** Maintained index; dated planning snapshot and current delivery links
 **Prepared:** 5 October 2026  
 **Repository baseline captured:** 5 October 2026  
 **Scope:** **Civic 89** - native Windows modernisation of the open-source Micropolis / original SimCity code lineage
 
 ## 1. Purpose of this document set
 
-**Engineering update (6 October 2026):** M0–M7 are merged through [PR #12](https://github.com/DangerMouseUK/civic89/pull/12); local `main` is synchronized at `eb73f64` and the merged M7 branch is removed. Final M7 head `6d73e53` passed all five jobs in [run 37494533588](https://github.com/DangerMouseUK/civic89/actions/runs/37494533588): application Debug/Release/ASan and native ARM64 53/53; headless ASan 43/43, with Classic parity unchanged and complete x64/ARM64 delivery acceptance.
+**Current checkpoint (7 October 2026):** M0–M9 software work is merged through
+PRs #13/#14. Merged main `e498633` passes all five jobs in
+[run 37616383766](https://github.com/DangerMouseUK/civic89/actions/runs/37616383766):
+application/native ARM64 56/56 and headless ASan 45/45, with complete delivery checks.
+Physical desktop acceptance remains pending; no further numbered milestone is agreed.
 
-The user has narrowed the project to faithful original gameplay and modern Windows presentation. [ADR 0009](../decisions/0009_FAITHFUL_MODERNISATION_AND_GRAPHICS.md) withdraws earlier gameplay expansion candidates. The [roadmap](08_ROADMAP_AND_IMPLEMENTATION_BACKLOG.md) defines M8 faithfulness/Windows polish, including the merged M7 interface adjustment, and optional M9 graphics in Settings. The M8 branch retains M7 saves and delivers the simplified workflow, audit and regressions; required physical acceptance remains pending. M9 remains planned. Use [project status](../../PROJECT_STATUS.md), Classic compatibility, Enhanced format and [M8 evidence](../../tests/baseline/M8_2026-10-06.md) for current checks. Public asset/brand/physical acceptance and signer provisioning remain gated. Delivery remains one whole milestone per branch/PR.
+The [roadmap](08_ROADMAP_AND_IMPLEMENTATION_BACKLOG.md), [project status](../../PROJECT_STATUS.md),
+[build instructions](../BUILDING.md) and [release guide](../RELEASING.md) describe
+the implementation. Numbered architectural plans retain their dated proposals;
+use actual CMake targets/presets/manifests over starter examples. Preserve historical
+test results rather than presenting them as current acceptance.
+
+[ADR 0009](../decisions/0009_FAITHFUL_MODERNISATION_AND_GRAPHICS.md) governs faithful
+gameplay/optional graphics. [ADR 0010](../decisions/0010_PUBLIC_BETA.md) records owner
+approval of brand review and the unsigned testing beta after the
+[asset investigation](../ASSET_LICENSE_AUDIT.md), with physical/signing and specific
+provenance follow-ups disclosed. Stable gates remain separate. Delivery is one
+whole milestone per branch/PR unless the user requests a narrower release/fix task.
 
 This pack is the working engineering specification for **Civic 89**, a polished, modern, native Windows application built from the authentic open-source Micropolis / original SimCity simulation lineage.
 
@@ -124,7 +139,7 @@ The project name is now **Civic 89**. Use the following identifiers consistently
 
 Do not use **SimCity** as the shipping product name; use it only for factual historical description. Do not treat **Micropolis** as the Civic 89 product brand. A preliminary collision search found no obvious exact game/software project called Civic 89, but this is **not formal trademark clearance**; complete a proper trademark/brand review before high-profile public or commercial release.
 
-## 7. Current bootstrap position
+## 7. Historical bootstrap completion
 
 The first engineering milestone is **Baseline Bootstrap**. The local repository has now crossed the first provenance checkpoint:
 
