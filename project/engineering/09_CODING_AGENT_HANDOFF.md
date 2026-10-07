@@ -7,7 +7,13 @@
 
 ## 1. Mission
 
-Build **Civic 89** from the authentic open-source Micropolis simulation into a polished native Windows game while preserving Classic Mode compatibility. The immediate assignment is infrastructure and baseline preservation, not feature invention.
+Build **Civic 89** from the authentic open-source Micropolis simulation into a polished native Windows game while preserving the original gameplay and mechanics. The user's 6 October 2026 decision permits optional improved graphics only; use [ADR 0009](../decisions/0009_FAITHFUL_MODERNISATION_AND_GRAPHICS.md) and the current roadmap.
+
+**Current handoff:** M0–M7 are merged. The M8 branch delivers faithfulness/Windows polish and the merged M7 interface adjustment; required physical desktop acceptance remains pending. Read [M8 evidence](../../tests/baseline/M8_2026-10-06.md) and `PROJECT_STATUS.md` before marking it complete. M9 is optional graphics, subject to agreed art direction. Existing M7 `.c89` compatibility and the `.cty` writer remain intact; graphics cannot alter city state, RNG, timing or saves. No M9 implementation is present.
+
+The first-assignment, bootstrap inspection and ready-to-paste prompts below are
+historical bootstrap instructions. Current delivery is one whole roadmap milestone
+per engineering branch/PR, rather than the early PR split suggested in section 5.
 
 ## 2. Authoritative planning documents
 
@@ -40,7 +46,8 @@ When code and planning disagree, do not silently reinterpret the plan. Record th
 - Do not add unlicensed fonts, sounds, icons or retail-game assets.
 - Do not alter the legacy `.cty` format casually.
 - Do not replace the `Eval()` bridge with another string-keyed command system.
-- Do not make Classic Mode behaviour changes without tests and an explicit compatibility note.
+- Preserve original gameplay and mechanics; report fidelity discrepancies and obtain explicit user direction before outcome-changing fixes.
+- Do not implement the withdrawn Enhanced gameplay candidates. Graphics are a Settings preference, independent of city/save identity.
 
 ## 4. Local workspace contract
 
@@ -140,7 +147,7 @@ Pause architectural expansion and raise a clear issue if any of the following is
 - the inherited file format appears to differ from expected Classic compatibility;
 - CMake build changes runtime behaviour compared with the original VS project;
 - a proposed engine separation requires changing simulation logic merely to compile;
-- an upstream bug fix changes city outcomes in Classic Mode without a documented decision.
+- an upstream bug fix changes city outcomes without verified fidelity evidence and explicit user direction.
 
 ## 10. Ready-to-paste first-agent prompt
 

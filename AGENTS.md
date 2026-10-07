@@ -6,6 +6,14 @@ This repository is **Civic 89**, a native Windows modernisation of the GPL Micro
 
 Complete one whole milestone from `project/engineering/08_ROADMAP_AND_IMPLEMENTATION_BACKLOG.md` per engineering branch and PR, including its acceptance checks and compatibility notes. Do not stop after one or two backlog items unless the user explicitly requests a narrower scope. Work as a single agent unless the user explicitly approves delegation for the current task.
 
+## Product scope
+
+The user's 6 October 2026 decision is faithful modernisation of the original gameplay and mechanics. Preserve one simulation contract; modernise Windows presentation, controls and usability. Larger maps, expanded finance/population limits, new buildings/tools/scenarios, changed traffic/utilities/balance, modding and achievements/challenges are outside scope. Day/night and seasonal additions are also excluded from the graphics milestone.
+
+The only optional enhancement is a graphics preference. It must not change city state, ruleset identity, RNG consumption, simulation/animation timing or save bytes. Store it in application settings and allow switching during play. Keep existing M7 `.c89` saves supported and the `.cty` writer unchanged.
+
+M7 is merged. Its city-mode interface adjustment belongs to M8; optional graphics belongs to M9. Follow the roadmap and [ADR 0009](project/decisions/0009_FAITHFUL_MODERNISATION_AND_GRAPHICS.md); retain M7's historical delivery record.
+
 ## Workspace contract
 
 - Repository root: `C:\Dev\Projects\civic89`
@@ -50,7 +58,7 @@ Also read `PROJECT_STATUS.md` for the current task/state.
 - Do not introduce Unity, Unreal, Electron or a browser runtime.
 - Do not mass-format inherited code during infrastructure changes.
 - Do not mix source-tree moves with behaviour changes.
-- Do not change Classic Mode simulation outcomes without tests and an explicit compatibility decision.
+- Preserve original gameplay and simulation outcomes. Report any fidelity discrepancy before making an outcome-changing fix; tests alone do not authorise changed mechanics.
 - Do not change the legacy `.cty` format casually.
 - Do not add unlicensed retail-game assets, fonts, sounds or icons.
 - Do not replace the inherited `Eval()` bridge with another string-command pseudo-API.

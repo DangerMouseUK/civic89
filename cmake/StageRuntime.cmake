@@ -35,6 +35,7 @@ endforeach()
 foreach(path IN ITEMS COPYING __README_OG README.md NOTICE.md AUTHORS.md assets/runtime-assets.json assets/ASSET-LICENSES.yml
     project/reference/RUNTIME_ASSETS.md project/reference/README_SDLPP.md project/reference/UPSTREAMS.md
     project/BUILDING.md project/RELEASING.md project/CLASSIC_COMPATIBILITY.md project/ENHANCED_CITY_FORMAT.md
+    project/GRAPHICS_SPECIFICATION.md assets/graphics-catalogue.json
     PROJECT_STATUS.md packaging/release-gates.json
     project/engineering/08_ROADMAP_AND_IMPLEMENTATION_BACKLOG.md tests/baseline/M5_UI_CITY.png
     tools/release/ReleaseCommon.ps1 tools/release/Update-Portable.ps1 tools/release/Launch-Portable.ps1)

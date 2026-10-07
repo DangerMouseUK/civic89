@@ -21,7 +21,6 @@ namespace
 {
     constexpr SDL_Color ink{231,238,245,255}, muted{165,182,196,255}, accent{88,211,192,255};
     constexpr std::array<int,16> iconRows{0,1,2,3,4,5,6,7,8,9,12,13,14,15,16,17};
-    constexpr std::array<const char*,16> ghostFiles{"res","com","ind","fire",nullptr,"police",nullptr,nullptr,nullptr,nullptr,"stadium",nullptr,"seaport","coal","nuclear","airport"};
     constexpr std::array<const char*,10> commandNames{"Pause","Save","Open","Minimap","Evaluation","Scenarios","New city","Settings","Graphs","Budget"};
     constexpr std::array<const char*,4> panNames{"Pan left","Pan right","Pan up","Pan down"};
     bool contains(SDL_FRect rect, Point<int> point)
@@ -48,20 +47,27 @@ bool ModernInterface::reservedKey(SDL_Keycode key)
         key == SDLK_LALT || key == SDLK_RALT || key == SDLK_LGUI || key == SDLK_RGUI;
 }
 ModernInterface::ModernInterface(SDL_Renderer* value, Budget& b, const RCI& r, ToolManager& t,
-    const CityProperties& c, AudioManager& a, UiSettings& prefs, const DisplaySettings& native) : renderer(value), budget(b), rci(r), tools(t), city(c), audio(a), settings(prefs), display(native),
-    icons(loadTexture(value,"icons/buttons.png")), miniTiles(loadTexture(value,"images/tilessm.xpm")), miniCache(newTexture(value,{360,300}))
+    const CityProperties& c, AudioManager& a, UiSettings& prefs, const DisplaySettings& native, std::shared_ptr<const GraphicsArt> images) : renderer(value), budget(b), rci(r), tools(t), city(c), audio(a), settings(prefs), display(native),
+    icons(loadTexture(value,"icons/buttons.png")), art(images ? std::move(images) : GraphicsArt::load(value,GraphicsStyle::Classic)), miniCache(prepareMinimap(art->style))
 {
     if (!TTF_WasInit() && !TTF_Init()) { throw std::runtime_error(SDL_GetError()); }
-    for (size_t i = 0; i < ghosts.size(); ++i)
-    {
-        if (!ghostFiles[i]) { continue; }
-        ghosts[i] = loadTexture(renderer, std::string("images/") + ghostFiles[i] + ".xpm");
-        SDL_SetTextureBlendMode(ghosts[i].texture, SDL_BLENDMODE_BLEND);
-        SDL_SetTextureAlphaMod(ghosts[i].texture, 125);
-    }
     SDL_SetTextureScaleMode(icons.texture, SDL_SCALEMODE_NEAREST);
     SDL_SetTextureScaleMode(miniCache.texture, SDL_SCALEMODE_NEAREST);
     layout(size, density);
+}
+Texture ModernInterface::prepareMinimap(GraphicsStyle style) const
+{
+#if defined(CIVIC89_MILESTONE_TESTS)
+    checkEnhancedGraphicsAllocation(style);
+#endif
+    const int d=style==GraphicsStyle::Enhanced ? 2 : 1;
+    auto texture=newTexture(renderer,{360*d,300*d});
+    if (!SDL_SetTextureScaleMode(texture.texture,SDL_SCALEMODE_NEAREST)) { throw std::runtime_error(SDL_GetError()); }
+    return texture;
+}
+void ModernInterface::graphics(std::shared_ptr<const GraphicsArt> images, Texture cache) noexcept
+{
+    art=std::move(images); miniCache=std::move(cache); minimapDirty=true;
 }
 void ModernInterface::layout(Vector<float> viewport, float scale)
 {
@@ -146,8 +152,8 @@ void ModernInterface::dashboard()
     for (size_t i = 0; i < commands.size(); ++i)
     {
         const auto id = commands[i];
-        const std::string label = id == 0 ? (paused() ? "Resume" : "Pause") : commandNames[id];
-        button(label,{14 + i * width,43,width-4,29},[this,id] { if (command) { command(static_cast<UiCommand>(id)); } },false,true,id==4 ? "Eval" : id==5 ? "Scenario" : nullptr);
+        const std::string label = id == 0 ? (paused() ? "Resume" : "Pause") : id == 2 ? "Files" : commandNames[id];
+        button(label,{14 + i * width,43,width-4,29},[this,id] { if (command) { command(id == 2 ? UiCommand::Files : static_cast<UiCommand>(id)); } },false,true,id==4 ? "Eval" : id==5 ? "Scenario" : nullptr);
     }
     button(std::string(OverlayNames[static_cast<size_t>(selectedOverlay)]),{14,77,150,26},[this] { show(Panel::Overlays); },selectedOverlay != DataOverlay::None);
     button("-",{170,77,26,26},[this] { settings.overlayOpacity = std::max(.1f,settings.overlayOpacity-.1f); if(settingsChanged) settingsChanged(); });
@@ -167,7 +173,7 @@ void ModernInterface::cancelTool() { tools.currentTool(Tool::Type::None); }
 const Texture* ModernInterface::ghost() const
 {
     const auto index = static_cast<size_t>(tools.currentTool().type);
-    return index < ghosts.size() ? &ghosts[index] : nullptr;
+    return index < art->ghosts.size() ? &art->ghosts[index] : nullptr;
 }
 void ModernInterface::palette()
 {
@@ -198,8 +204,9 @@ void ModernInterface::minimap(const Camera2D& camera)
         if (!SDL_SetRenderTarget(renderer,miniCache.texture)) { throw std::runtime_error(SDL_GetError()); }
         for (int x=0;x<SimWidth;++x) for (int y=0;y<SimHeight;++y)
         {
-            const SDL_FRect source{0,maskedTileValue(tileValue(x,y))*3.f,3,3}, target{x*3.f,y*3.f,3,3};
-            SDL_RenderTexture(renderer,miniTiles.texture,&source,&target);
+            const float cell=3.f*art->density;
+            const SDL_FRect source{0,maskedTileValue(tileValue(x,y))*cell,cell,cell}, target{x*cell,y*cell,cell,cell};
+            SDL_RenderTexture(renderer,art->minimap.texture,&source,&target);
             const auto color = overlayColor(selectedOverlay,overlayValue(selectedOverlay,{x,y}),settings.accessibleColors);
             if (color.a) { fill(target,{color.r,color.g,color.b,static_cast<Uint8>(settings.overlayOpacity*255)}); }
         }
@@ -214,7 +221,6 @@ void ModernInterface::minimap(const Camera2D& camera)
 }
 void ModernInterface::show(Panel value)
 {
-    if (value==Panel::NewCity) { selectedRuleset=city.rulesetId(); }
     panel = value; focus = -1; binding = -1; minimapDragging = false; controls.clear();
 }
 void ModernInterface::budgetPanel(SDL_FRect area)
@@ -305,8 +311,11 @@ void ModernInterface::settingsPanel(SDL_FRect area)
         button(settings.accessibleColors ? "Blue overlays: on" : "Blue overlays: off",{area.x+width+6,y+44,width,34},[this,changed] {settings.accessibleColors=!settings.accessibleColors;changed();},settings.accessibleColors);
         const std::array<std::string,5> labels{"Windowed","Maximized","Fullscreen",display.vsync ? "VSync: on" : "VSync: off",display.pixelPerfect ? "Pixel perfect: on" : "Pixel perfect: off"};
         for(int i=0;i<5;++i) button(labels[i],{area.x+(i%3)*area.w/3,y+104+(i/3)*40.f,area.w/3-5,34},[this,i] {if(displayAction) displayAction(i);},i<3 ? static_cast<int>(display.mode)==i : i==3 ? display.vsync : display.pixelPerfect);
-        text("UI scale fits the display. Tab / Enter navigate; Esc closes.",{area.x,y+204,area.w,28},false,muted);
-        text("F11 fullscreen | F12 settings | Home centers the city",{area.x,y+238,area.w,28},false,muted);
+        const bool enhanced=art->style==GraphicsStyle::Enhanced;
+        button(enhanced ? "Graphics: Enhanced" : "Graphics: Classic",{area.x,y+194,area.w,34},[this,enhanced] {
+            if(graphicsChanged) graphicsChanged(enhanced ? GraphicsStyle::Classic : GraphicsStyle::Enhanced);
+        },enhanced);
+        text("Same original gameplay. Switch graphics during play.",{area.x,y+238,area.w,28},false,muted);
     }
     else if(settingsTab==1)
     {
@@ -358,7 +367,7 @@ void ModernInterface::sheet()
     const auto area=panelArea();
     fill({0,0,size.x,size.y-32},{0,0,0,135});
     fill(area,settings.highContrast ? SDL_Color{0,0,0,255} : SDL_Color{22,34,48,255});
-    constexpr std::array<const char*,9> titles{"","CITY BUDGET","CITY EVALUATION","CITY HISTORY","SETTINGS","ZONE QUERY","CITY DATA","SCENARIOS","NEW CITY"};
+    constexpr std::array<const char*,10> titles{"","CITY BUDGET","CITY EVALUATION","CITY HISTORY","SETTINGS","ZONE QUERY","CITY DATA","SCENARIOS","NEW CITY","CITY FILES"};
     text(titles[static_cast<size_t>(panel)],{area.x+20,area.y+8,area.w-90,32},true,accent);
     button("Close",{area.x+area.w-76,area.y+8,60,30},[this] {show(Panel::None);});
     const SDL_FRect content{area.x+20,area.y+52,area.w-40,area.h-65};
@@ -370,7 +379,7 @@ void ModernInterface::sheet()
     case Panel::Settings: settingsPanel(content); break;
     case Panel::Overlays: overlaysPanel(content); break;
     case Panel::Scenarios:
-        text("Classic v1 scenarios replace this city. Save first if needed.",{content.x,content.y,content.w,32},false,muted);
+        text("Scenarios replace this city. Save first if needed.",{content.x,content.y,content.w,32},false,muted);
         for (size_t i=0;i<ScenarioDefinitions.size();++i)
         {
             const auto& scenario=ScenarioDefinitions[i];
@@ -382,14 +391,21 @@ void ModernInterface::sheet()
         break;
     case Panel::NewCity:
     {
-        const float row=std::min(44.f,content.h/6), height=row-4;
-        text("New city/import replaces this city. Save first.",{content.x,content.y,content.w,height},false,muted);
-        button("Classic mode",{content.x,content.y+row,content.w/2-4,height},[this] {selectedRuleset=RulesetId::ClassicV1;},selectedRuleset==RulesetId::ClassicV1);
-        button("Enhanced mode",{content.x+content.w/2,content.y+row,content.w/2-4,height},[this] {selectedRuleset=RulesetId::EnhancedV1;},selectedRuleset==RulesetId::EnhancedV1);
-        text("Enhanced v1 uses Classic mechanics; saves use .c89.",{content.x,content.y+row*2,content.w,height},false,muted);
-        button("Start new city",{content.x,content.y+row*3,content.w,height},[this] {if(command) command(UiCommand::StartNewCity);show(Panel::None);});
-        button("Import Classic to Enhanced",{content.x,content.y+row*4,content.w,height},[this] {if(command) command(UiCommand::ImportClassic);});
-        button("Export Classic copy",{content.x,content.y+row*5,content.w,height},[this] {if(command) command(UiCommand::ExportClassic);});
+        text("Start a city with original gameplay and mechanics.",{content.x,content.y,content.w,32},false,muted);
+        text("Your current city will be replaced. Save first if needed.",{content.x,content.y+40,content.w,32},false,muted);
+        button("Start new city",{content.x,content.y+96,content.w,40},[this] {if(command) command(UiCommand::StartNewCity);show(Panel::None);});
+        break;
+    }
+    case Panel::Files:
+    {
+        const float row=std::min(44.f,content.h/7), height=row-4;
+        text("Both city formats use the same original gameplay.",{content.x,content.y,content.w,height},false,muted);
+        text(std::string("Current save format: ")+std::string(findRuleset(city.rulesetId())->extension),{content.x,content.y+row,content.w,height},false,muted);
+        button("Open city",{content.x,content.y+row*2,content.w,height},[this] {if(command) command(UiCommand::Open);});
+        button("Save city",{content.x,content.y+row*3,content.w,height},[this] {if(command) command(UiCommand::Save);});
+        button("Import .cty copy",{content.x,content.y+row*4,content.w,height},[this] {if(command) command(UiCommand::ImportClassic);});
+        button("Export .cty copy",{content.x,content.y+row*5,content.w,height},[this] {if(command) command(UiCommand::ExportClassic);});
+        text("Import preserves the source and saves the copy as .c89.",{content.x,content.y+row*6,content.w,height},false,muted);
         break;
     }
     case Panel::Query:
@@ -424,8 +440,8 @@ void ModernInterface::draw(const Camera2D& camera)
     }
     fill({0,size.y-32,size.x,32},settings.highContrast ? SDL_Color{0,0,0,255} : SDL_Color{20,30,43,255});
     const bool showStatus = tooltip.empty() || SDL_GetTicks() < statusUntil;
-    text(showStatus ? status : tooltip,{14,size.y-29,size.x-180,25},false,showStatus ? ink : accent);
-    text(findRuleset(city.rulesetId())->label,{size.x-150,size.y-29,136,25},true,accent);
+    text(showStatus ? status : tooltip,{14,size.y-29,size.x-205,25},false,showStatus ? ink : accent);
+    text("Original gameplay",{size.x-180,size.y-29,166,25},true,accent);
 }
 bool ModernInterface::pointInWindow(Point<int> point) const
 {
@@ -468,6 +484,8 @@ bool ModernInterface::keyDown(SDL_Keycode key, SDL_Keymod modifiers)
             {message("That key is reserved or already assigned.");return true;}
         binding=-1;message("Key binding saved.");if(settingsChanged) settingsChanged();return true;
     }
+    // Leave Windows/application chords alone, including Alt+Tab and Alt+Enter.
+    if(modifiers & (SDL_KMOD_CTRL|SDL_KMOD_ALT|SDL_KMOD_GUI)) return false;
     if(key==SDLK_ESCAPE) {show(panel==Panel::None ? Panel::Settings : Panel::None);return true;}
     if(key==SDLK_TAB)
     {
@@ -485,7 +503,6 @@ bool ModernInterface::keyDown(SDL_Keycode key, SDL_Keymod modifiers)
     {
         const auto action=controls[focus].action; if(controls[focus].enabled) action();return true;
     }
-    if(modifiers & (SDL_KMOD_CTRL|SDL_KMOD_ALT|SDL_KMOD_GUI)) return false;
     if(modalWindowVisible()) return true;
     for(size_t i=0;i<26;++i)
     {

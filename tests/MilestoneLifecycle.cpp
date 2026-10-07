@@ -318,9 +318,6 @@ void runMilestoneTests(Budget& budget, CityProperties& properties, PresentationE
         "Application entry point must retain session on invalid selection");
     generateExplosion({300,300});
     applicationMapRenderer().render(applicationCamera());
-    applicationMapRenderer().clearSpriteImages();
-    applicationMapRenderer().render(applicationCamera()); // Renderer-owned images can be reconstructed independently of engine state.
-    applicationMapRenderer().clearSpriteImages();
-    applicationMapRenderer().clearSpriteImages(); // Empty cache teardown is safe.
+    applicationMapRenderer().render(applicationCamera()); // Complete renderer-owned frame set stays independent of engine state.
     std::cout << "All eight native scenarios, simulation startup, failures, messages, generation and outcomes passed\n";
 }

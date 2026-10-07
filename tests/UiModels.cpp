@@ -1,6 +1,7 @@
 // Civic 89 overlay/preferences model acceptance. SPDX-License-Identifier: GPL-3.0-or-later
 #include "OverlayModel.h"
 #include "UiSettings.h"
+#include "GraphicsSettings.h"
 #include "WindowsFileStorage.h"
 #include "Map.h"
 #include "s_alloc.h"
@@ -56,6 +57,17 @@ int main()
         }
         {std::ofstream out(path);out<<"1 1 0 0 0 0 500 .6";for(size_t i=0;i<30;++i) out<<" 100";}
         require(!UiSettings::load(path),"Duplicate disk bindings accepted");
+        for (const auto style : {GraphicsStyle::Classic,GraphicsStyle::Enhanced})
+        {
+            require(static_cast<bool>(GraphicsSettings{style}.save(path,storage)),"Graphics preference publication");
+            const auto graphics=GraphicsSettings::load(path);
+            require(graphics && graphics->style==style,"Graphics preference round trip");
+        }
+        for (const auto invalid : {"", "1", "0 0", "2 1", "1 -1", "1 2", "1 1 trailing", "1 1.5"})
+        {
+            { std::ofstream out(path);out<<invalid; }
+            require(!GraphicsSettings::load(path),"Invalid graphics preference accepted");
+        }
         std::cout<<"Shared overlay sources, thresholds, colors, edges and validated atomic UI settings passed\n";
     }
     catch(const std::exception& error) {std::cerr<<error.what()<<'\n';return 1;}

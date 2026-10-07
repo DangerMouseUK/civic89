@@ -1,0 +1,80 @@
+name: release-draft
+
+# An explicit green build selection creates a draft only. No signing host or
+# automatic PR/tag trigger; publishing remains a separate release decision.
+on:
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: Successful windows-ci run containing both development deliveries
+        required: true
+      tag:
+        description: Fresh playtest tag, for example playtest-m8-1
+        required: true
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: release-draft
+  cancel-in-progress: false
+
+jobs:
+  draft:
+    if: github.ref == 'refs/heads/main'
+    runs-on: windows-2025-vs2026
+    timeout-minutes: 15
+    permissions:
+      contents: write
+      actions: read
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Authenticate green CI and download both architectures
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ inputs.run_id }}
+        run: |
+          $ErrorActionPreference='Stop'
+          $PSNativeCommandUseErrorActionPreference=$true
+          if ($env:RUN_ID -notmatch '^\d+$') { throw 'Invalid run ID.' }
+          $run=gh api "repos/$env:GITHUB_REPOSITORY/actions/runs/$env:RUN_ID" | ConvertFrom-Json
+          if ($run.status -ne 'completed' -or $run.conclusion -ne 'success' -or
+              $run.path -ne '.github/workflows/windows-ci.yml' -or
+              $run.head_repository.full_name -ne $env:GITHUB_REPOSITORY -or
+              $run.event -notin @('pull_request','push','workflow_dispatch')) { throw 'Select a successful repository-owned windows-ci run.' }
+          $download=Join-Path $env:RUNNER_TEMP ('civic89-draft-input-' + [guid]::NewGuid())
+          foreach ($arch in @('x64','arm64')) {
+            gh run download $env:RUN_ID --repo $env:GITHUB_REPOSITORY --name "candidate-$arch" --dir "$download/$arch"
+          }
+          $x64=Get-Content "$download/x64/delivery.json" -Raw | ConvertFrom-Json
+          $arm64=Get-Content "$download/arm64/delivery.json" -Raw | ConvertFrom-Json
+          if ($x64.commit -notmatch '^[a-f0-9]{40}$' -or $arm64.commit -ne $x64.commit) { throw 'Candidate commits differ.' }
+          # pull_request builds use GitHub's integration merge, not head_sha.
+          $commit=gh api "repos/$env:GITHUB_REPOSITORY/git/commits/$($x64.commit)" | ConvertFrom-Json
+          if ($x64.commit -ne $run.head_sha -and
+              ($run.event -ne 'pull_request' -or $commit.parents.Count -ne 2 -or $commit.parents[1].sha -ne $run.head_sha)) {
+            throw 'Artifact commit is not the selected CI head or its PR integration merge.'
+          }
+          "CANDIDATE_COMMIT=$($x64.commit)" | Out-File $env:GITHUB_ENV -Append -Encoding utf8
+          "CANDIDATE_INPUT=$download" | Out-File $env:GITHUB_ENV -Append -Encoding utf8
+          "CANDIDATE_RUN_URL=$($run.html_url)" | Out-File $env:GITHUB_ENV -Append -Encoding utf8
+      - name: Verify all release inputs and create private development draft
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PLAYTEST_TAG: ${{ inputs.tag }}
+        run: |
+          $ErrorActionPreference='Stop'
+          $PSNativeCommandUseErrorActionPreference=$true
+          $notes=Join-Path $env:RUNNER_TEMP 'civic89-draft-notes.md'
+          $body=(Get-Content packaging/DEVELOPMENT_RELEASE_NOTES.md -Raw) + "`n`nVerified build: $env:CANDIDATE_RUN_URL`n"
+          [IO.File]::WriteAllText($notes,$body,[Text.UTF8Encoding]::new($false))
+          ./tools/release/New-DevelopmentRelease.ps1 -Repository $env:GITHUB_REPOSITORY `
+            -DeliveryDirectory @("$env:CANDIDATE_INPUT/x64","$env:CANDIDATE_INPUT/arm64") `
+            -ExpectedCommit $env:CANDIDATE_COMMIT -Tag $env:PLAYTEST_TAG -NotesFile $notes `
+            -OutputDirectory (Join-Path $env:RUNNER_TEMP ('civic89-draft-' + [guid]::NewGuid()))

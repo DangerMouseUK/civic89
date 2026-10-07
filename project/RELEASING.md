@@ -4,7 +4,7 @@
 
 M6 supplies the complete packaging/signing/update/ARM64 engineering path; M7 adds
 mode-aware save acceptance to that delivery.
-`0.7.0-dev` identifies development candidates; it is not a stable Classic release
+`0.9.0-dev` identifies M9 development candidates; it is not a stable Classic release
 or a city-format version. The current 51,360-byte save layout and all Classic
 goldens are retained. Older 27,120-byte saves and exact RNG/scenario replay remain
 unsupported. Enhanced v1 stores the same ordinary-city payload in a versioned
@@ -21,6 +21,75 @@ Public release is blocked until the explicit `packaging/release-gates.json` reco
 are resolved. Inherited icon/per-asset rights, brand review and physical desktop
 acceptance are still pending. Public mode also requires a trusted signing identity.
 CI produces unsigned **development candidates** and does not create tags or public releases.
+
+M9 is a separate PR based on pending M8. Keep M8's playtest release immutable;
+use a fresh `playtest-m9-*` tag for a verified M9 candidate. M9 packages include the
+graphics specification and complete input/provenance catalogue. Their smoke test
+switches both graphics options and compares city bytes. `graphics.cfg` remains
+user data, outside deliveries and saves; an M8 rollback ignores it and retains
+the unchanged `ui.cfg` preferences.
+
+## Download and play on another machine
+
+For M8 personal testing, use the repository's **draft** playtest release while
+signed into an account with repository write access. Choose `windows-x64.zip` for
+Intel/AMD Windows 11 or `windows-arm64.zip` for ARM Windows 11. Extract the entire
+ZIP into a folder and double-click `civic89.exe`. Keep all included DLLs and asset
+folders together. No compiler, vcpkg, SDL installation or PowerShell is needed to
+play. The architecture's `setup.exe` is an alternative per-user installer.
+
+Normal launch keeps application settings/recovery in the user profile. For an
+isolated desktop acceptance session, run `civic89.exe --desktop-test`; it starts
+Detroit with temporary settings/recovery. Use copies of current saves. The
+[plain-English test instructions](../packaging/DEVELOPMENT_RELEASE_NOTES.md)
+describe the checks to try. A successful download/build does not complete physical
+M8 acceptance or clear public asset/brand/signing gates.
+
+## Repeatable development drafts
+
+The manually dispatched **release-draft** workflow takes a successful
+`windows-ci` run ID and a fresh `playtest-*` tag. It becomes available after this
+workflow is merged into `main`; it runs trusted main scripts, accepts repository-owned
+CI runs (including an unmerged PR candidate), authenticates the actual build
+commit and downloads both architectures. PR CI builds use an integration merge;
+the workflow checks that its second parent is the reviewed run's head SHA.
+It does not require merging M8 to stage its existing green build locally.
+
+`New-DevelopmentRelease.ps1` verifies all ZIP/installer/source checksums, portable
+inventory/PE/build identity, clean build state and corresponding-source identity.
+It checks every source member before sharing one source ZIP between architectures
+(runner ZIP headers/compression can differ). It combines checksums and names
+delivery metadata by architecture so the files do not overwrite each other.
+Downloaded code is never executed by the release job. CI tests this verification
+and rejection of wrong commits, tampered installers, missing hashes and wrong
+source identity even when its outer checksum is valid.
+
+For a local green CI candidate, authenticate its run and download both artifacts:
+
+```powershell
+$run = '<successful windows-ci run ID>'
+gh run view $run --repo DangerMouseUK/civic89
+gh run download $run --repo DangerMouseUK/civic89 --name candidate-x64 --dir out/releases/input-x64
+gh run download $run --repo DangerMouseUK/civic89 --name candidate-arm64 --dir out/releases/input-arm64
+./tools/release/New-DevelopmentRelease.ps1 `
+  -DeliveryDirectory @('out/releases/input-x64','out/releases/input-arm64') `
+  -ExpectedCommit '<full actual delivery commit from the authenticated CI run>' `
+  -Tag playtest-m8-1 -NotesFile packaging/DEVELOPMENT_RELEASE_NOTES.md `
+  -OutputDirectory out/releases/playtest-m8-1
+```
+
+Use `-VerifyOnly` to stage/inspect assets without any GitHub write. Output must be
+fresh. Without that switch, the script creates a lightweight tag at the immutable
+build commit and a **draft prerelease**, explicitly excluded from Latest. It never
+moves an existing tag, replaces a release/asset or publishes. Reusing a release
+tag fails; use a new numbered tag for the next candidate. A draft is visible only
+to repository writers; it is suitable for the owner's other machine, not a public
+download. Public prereleases still require the public-release checklist below.
+
+The workflow needs only `contents: write` and `actions: read` for its explicit
+draft job. Normal CI retains read-only access and cannot publish a release or
+access signing credentials. Stable, signed public releases continue through the
+separate signing stage and final reviewed publication below.
 
 ## Build a complete x64 delivery
 
@@ -42,7 +111,7 @@ destination, or reuse that verified `ISCC.exe` without re-running bootstrap.
 The pinned download comes from the [official release](https://github.com/jrsoftware/issrc/releases/tag/is-6_7_3).
 Inno Setup is build tooling, not a game dependency.
 
-`out/releases/civic89-0.7.0-dev-windows-x64/` contains:
+`out/releases/civic89-0.8.0-dev-windows-x64/` contains:
 
 - Portable ZIP and per-user installer EXE.
 - Matching source ZIP from the exact build commit, with `source-provenance.json`
@@ -73,7 +142,7 @@ container, exports a Classic copy and tears down. It does not modify real prefer
 This is not a substitute for clean-machine visible/audio/DPI acceptance.
 
 ```powershell
-$delivery = 'out/releases/civic89-0.7.0-dev-windows-x64'
+$delivery = 'out/releases/civic89-0.8.0-dev-windows-x64'
 ./tools/release/Test-Release.ps1 -Directory "$delivery/portable"
 ./tools/release/Test-ReleaseTransactions.ps1 -DeliveryDirectory $delivery
 ./tools/release/Test-Installer.ps1 -DeliveryDirectory $delivery
@@ -140,7 +209,7 @@ the extracted package or corresponding source tree:
 
 ```powershell
 ./tools/release/Update-Portable.ps1 -InstallRoot "$env:LOCALAPPDATA\Civic89Portable" `
-  -Archive 'C:\Downloads\civic89-0.7.0-dev-windows-x64.zip' -ExpectedSha256 '<64 hex digits from trusted SHA256SUMS>'
+  -Archive 'C:\Downloads\civic89-0.8.0-dev-windows-x64.zip' -ExpectedSha256 '<64 hex digits from trusted SHA256SUMS>'
 ./tools/release/Launch-Portable.ps1 -InstallRoot "$env:LOCALAPPDATA\Civic89Portable"
 ./tools/release/Update-Portable.ps1 -InstallRoot "$env:LOCALAPPDATA\Civic89Portable" -Rollback
 ```

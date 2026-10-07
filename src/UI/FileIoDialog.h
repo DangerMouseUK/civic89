@@ -15,6 +15,7 @@
 
 #include <string>
 #include <functional>
+#include <filesystem>
 #include "../Ruleset.h"
 
 class FileIoDialog
@@ -29,9 +30,11 @@ public:
 
 	const std::string& savePath() const { return mSavePath; }
 	const std::string& fileName() const { return mFileName; }
-	const std::string fullPath() const { return mSavePath + mSeparator + mFileName; }
+	const std::string fullPath() const { return mSavePath.empty() ? mFileName : mSavePath + mSeparator + mFileName; }
 
     void clearSaveFilename();
+    const std::string& pickedSavePath() const { return mPickedSavePath; }
+    void saveDestination(const std::filesystem::path&);
     const std::string& openPath() const { return mOpenPath; }
     const std::string& exportPath() const { return mExportPath; }
     void errorHandler(std::function<void(const std::string&)> handler) { mErrorHandler = std::move(handler); }
@@ -47,10 +50,12 @@ private:
 	enum class FileOperation { Open, Save, Import, Export };
 
 	bool showFileDialog(FileOperation, RulesetId = RulesetId::ClassicV1);
+    SDL_Window* mWindow;
 
 	std::string mSavePath;
     std::string mOpenPath;
     std::string mExportPath;
+    std::string mPickedSavePath;
     std::function<void(const std::string&)> mErrorHandler;
 	std::string mFileName;
     std::string mSeparator;

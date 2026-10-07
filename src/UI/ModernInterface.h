@@ -7,6 +7,7 @@
 #include "../Camera2D.h"
 #include "../SdlResources.h"
 #include "../Ruleset.h"
+#include "../GraphicsArt.h"
 #include <SDL3_ttf/SDL_ttf.h>
 #include <functional>
 #include <unordered_map>
@@ -18,13 +19,16 @@ class ToolManager;
 class CityProperties;
 class AudioManager;
 struct ZoneStats;
-enum class UiCommand { Pause, Save, Open, Minimap, Evaluation, Scenarios, NewCity, Settings, Graphs, Budget, StartNewCity, ImportClassic, ExportClassic };
+enum class UiCommand { Pause, Save, Open, Minimap, Evaluation, Scenarios, NewCity, Settings, Graphs, Budget, StartNewCity, ImportClassic, ExportClassic, Files };
 
 class ModernInterface
 {
 public:
-    enum class Panel { None, Budget, Evaluation, Graphs, Settings, Query, Overlays, Scenarios, NewCity };
-    ModernInterface(SDL_Renderer*, Budget&, const RCI&, ToolManager&, const CityProperties&, AudioManager&, UiSettings&, const DisplaySettings&);
+    enum class Panel { None, Budget, Evaluation, Graphs, Settings, Query, Overlays, Scenarios, NewCity, Files };
+    ModernInterface(SDL_Renderer*, Budget&, const RCI&, ToolManager&, const CityProperties&, AudioManager&, UiSettings&, const DisplaySettings&,
+        std::shared_ptr<const GraphicsArt> art = {});
+    Texture prepareMinimap(GraphicsStyle) const;
+    void graphics(std::shared_ptr<const GraphicsArt>, Texture) noexcept;
     void layout(Vector<float> size, float density);
     void draw(const Camera2D&);
     bool pointInWindow(Point<int>) const;
@@ -37,7 +41,7 @@ public:
     void show(Panel value);
     void hideAllWindows() { show(Panel::None); }
     Panel currentPanel() const { return panel; }
-    RulesetId newCityRuleset() const { return selectedRuleset; }
+    void focusLost() { minimapDragging = false; binding = -1; focus = -1; }
     SDL_FRect panelArea() const;
     SDL_FRect minimapArea() const;
     void toggleMinimap() { minimapVisible = !minimapVisible; }
@@ -52,6 +56,7 @@ public:
     void overlay(DataOverlay value) { selectedOverlay = value; minimapDirty = true; }
     std::function<void(UiCommand)> command;
     std::function<void()> settingsChanged;
+    std::function<void(GraphicsStyle)> graphicsChanged;
     std::function<void()> optionsChanged;
     std::function<void(int)> displayAction;
     std::function<void(int)> scenarioSelected;
@@ -73,7 +78,6 @@ private:
     float density{1};
     float sidebar{184};
     Panel panel{Panel::None};
-    RulesetId selectedRuleset{RulesetId::ClassicV1};
     DataOverlay selectedOverlay{DataOverlay::None};
     bool minimapVisible{true};
     bool minimapDragging{false};
@@ -89,11 +93,10 @@ private:
     std::string tooltip;
     std::vector<Control> controls;
     Texture icons;
-    Texture miniTiles;
+    std::shared_ptr<const GraphicsArt> art;
     Texture miniCache;
     Uint64 minimapUpdated{};
     bool minimapDirty{true};
-    std::array<Texture,16> ghosts;
     using FontOwner = std::unique_ptr<TTF_Font, SdlDeleter<TTF_Font, TTF_CloseFont>>;
     FontOwner normalFont;
     FontOwner boldFont;

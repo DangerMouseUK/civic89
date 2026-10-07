@@ -10,33 +10,28 @@
 // file, included in this distribution, for details.
 #include "MapRenderer.h"
 #include "Map.h"
-#include "SdlResources.h"
-#include <SDL3_image/SDL_image.h>
 #include <algorithm>
 #include <cmath>
 #include <stdexcept>
 
-MapRenderer::MapRenderer(SDL_Renderer* renderer) : mRenderer(renderer)
+MapRenderer::MapRenderer(SDL_Renderer* renderer, GraphicsStyle style) : mRenderer(renderer), mArt(GraphicsArt::load(renderer,style))
 {
-    SurfaceOwner source(IMG_Load("images/tiles.xpm"));
-    SurfaceOwner destination(SDL_CreateSurface(512, 512, SDL_PIXELFORMAT_RGBA32));
-    if (!source || !destination) { throw std::runtime_error(std::string("Unable to build tile atlas: ") + SDL_GetError()); }
-    for (int tile = 0; tile < TILE_COUNT; ++tile)
-    {
-        const SDL_Rect src{0, tile * 16, 16, 16};
-        const SDL_Rect dst{(tile % 32) * 16, (tile / 32) * 16, 16, 16};
-        if (!SDL_BlitSurface(source.get(), &src, destination.get(), &dst)) { throw std::runtime_error(SDL_GetError()); }
-    }
-    auto* texture = SDL_CreateTextureFromSurface(renderer, destination.get());
-    if (!texture) { throw std::runtime_error(std::string("Unable to create tile atlas: ") + SDL_GetError()); }
-    mAtlas = buildTexture(texture);
-    mMap = newTexture(renderer, {SimWidth * 16, SimHeight * 16});
+    mMap = prepareMap(style);
     mOverlay = buildTexture(SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA32, SDL_TEXTUREACCESS_STREAMING, SimWidth, SimHeight));
     if (!mOverlay.texture) { throw std::runtime_error(SDL_GetError()); }
     SDL_SetTextureScaleMode(mOverlay.texture, SDL_SCALEMODE_NEAREST);
     SDL_SetTextureBlendMode(mOverlay.texture, SDL_BLENDMODE_BLEND);
-    SDL_SetTextureScaleMode(mAtlas.texture, SDL_SCALEMODE_NEAREST);
-    SDL_SetTextureScaleMode(mMap.texture, SDL_SCALEMODE_NEAREST);
+}
+Texture MapRenderer::prepareMap(GraphicsStyle style) const
+{
+    const int d=style==GraphicsStyle::Enhanced ? 2 : 1;
+    auto texture=newTexture(mRenderer,{SimWidth*16*d,SimHeight*16*d});
+    if (!SDL_SetTextureScaleMode(texture.texture,SDL_SCALEMODE_NEAREST)) { throw std::runtime_error(SDL_GetError()); }
+    return texture;
+}
+void MapRenderer::graphics(std::shared_ptr<const GraphicsArt> art, Texture map) noexcept
+{
+    mArt=std::move(art); mMap=std::move(map); invalidate();
 }
 void MapRenderer::updateTiles(Point<int> begin, Point<int> end)
 {
@@ -47,9 +42,10 @@ void MapRenderer::updateTiles(Point<int> begin, Point<int> end)
         {
             const auto tile = mBlink && tileIsZoned({x, y}) && !tileIsPowered({x, y}) ? LightningBolt : tileValue(x, y);
             const auto masked = maskedTileValue(tile);
-            const SDL_FRect src{static_cast<float>((masked % 32) * 16), static_cast<float>((masked / 32) * 16), 16, 16};
-            const SDL_FRect dst{static_cast<float>(x * 16), static_cast<float>(y * 16), 16, 16};
-            SDL_RenderTexture(mRenderer, mAtlas.texture, &src, &dst);
+            const float cell=16.f*mArt->density;
+            const SDL_FRect src{(masked%32)*cell,(masked/32)*cell,cell,cell};
+            const SDL_FRect dst{x*cell,y*cell,cell,cell};
+            SDL_RenderTexture(mRenderer, mArt->tiles.texture, &src, &dst);
         }
     }
     // Texture targets have their own scale; present only the window, after UI drawing.
@@ -82,14 +78,16 @@ void MapRenderer::render(const Camera2D& camera, Vector<float> shake, std::optio
     const SDL_FRect source{position.x, position.y, std::min(size.x, SimWidth * 16.f - position.x),
         std::min(size.y, SimHeight * 16.f - position.y)};
     const SDL_FRect destination{shake.x, shake.y, source.w * camera.zoom(), source.h * camera.zoom()};
-    SDL_RenderTexture(mRenderer, mMap.texture, &source, &destination);
+    const float density=static_cast<float>(mArt->density);
+    const SDL_FRect pixels{source.x*density,source.y*density,source.w*density,source.h*density};
+    SDL_RenderTexture(mRenderer, mMap.texture, &pixels, &destination);
     if (overlay != DataOverlay::None)
     {
         const SDL_FRect dataSource{source.x / 16, source.y / 16, source.w / 16, source.h / 16};
         SDL_SetTextureAlphaMod(mOverlay.texture, static_cast<Uint8>(std::clamp(opacity, 0.f, 1.f) * 255));
         SDL_RenderTexture(mRenderer, mOverlay.texture, &dataSource, &destination);
     }
-    mSprites.draw(mRenderer, camera, shake);
+    mSprites.draw(mRenderer, camera, shake, *mArt);
     if (preview)
     {
         const auto point = camera.worldToScreen({preview->worldRect.x, preview->worldRect.y}) + shake;

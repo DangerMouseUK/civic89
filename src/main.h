@@ -20,9 +20,11 @@
 #include <SDL3/SDL.h>
 
 #include "EngineState.h"
+#include "GraphicsSettings.h"
 
 extern SDL_Renderer* MainWindowRenderer;
 class Camera2D;
 class MapRenderer;
 Camera2D& applicationCamera();
 MapRenderer& applicationMapRenderer();
+bool applyGraphicsStyle(GraphicsStyle);

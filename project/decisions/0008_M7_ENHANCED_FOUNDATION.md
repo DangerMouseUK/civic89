@@ -3,6 +3,12 @@
 Date: 6 October 2026. Base: merged M6 `fa3534b` (PR #11).
 Branch: `codex/m7-enhanced-foundation`.
 
+**Historical decision; future expansion direction superseded:** M7 is merged in
+PR #12. The user's later 6 October 2026 decision in
+[ADR 0009](0009_FAITHFUL_MODERNISATION_AND_GRAPHICS.md) withdraws the gameplay
+candidates mentioned below. Preserve this M7 delivery record and save compatibility;
+put the interface adjustment in M8 and optional graphics in M9.
+
 The user selected the complete foundation scope, rather than all nine speculative
 gameplay candidates. Define the Classic development contract first; do not label
 the product a stable public release or waive the existing release gates.
