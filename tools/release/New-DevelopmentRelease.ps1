@@ -117,7 +117,7 @@ $sums = foreach ($asset in $assets | Sort-Object) {
 $sumFile = Join-Path $OutputDirectory 'SHA256SUMS.txt'
 [IO.File]::WriteAllLines($sumFile, $sums, [Text.UTF8Encoding]::new($false))
 $assets.Add($sumFile)
-$body = "**Draft development build for personal testing. Unsigned; M8 physical acceptance and public-release gates remain pending.**`n`n" +
+$body = "**Draft development build for personal testing. Unsigned; required physical acceptance and public-release gates remain pending.**`n`n" +
     "Build: ``$version``; commit: ``$ExpectedCommit``; architectures: $(@($architectures.Keys | Sort-Object) -join ', ').`n`n" + $notes
 $bodyFile = Join-Path $OutputDirectory 'release-notes.md'
 [IO.File]::WriteAllText($bodyFile, $body, [Text.UTF8Encoding]::new($false))
