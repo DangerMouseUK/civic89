@@ -491,11 +491,12 @@ after the asset investigation. ADR 0010 records the specific remaining follow-up
 
 ### Release readiness after M8/M9
 
-Publish the approved `0.9.0-beta.1` prerelease only from green, clean, verified
+Publish the approved `0.9.0-beta.2` prerelease only from green, clean, verified
 x64/ARM64 deliveries with exact source and combined checksums. Brand review is
 owner-approved; signing/physical checks are deferred for beta. Disclose the
 [asset follow-ups](../ASSET_LICENSE_AUDIT.md). The owner's publication decision is
-[ADR 0010](../decisions/0010_PUBLIC_BETA.md), not an inference from passing tests.
+[ADR 0011](../decisions/0011_BETA_2_SETTINGS_FIXES.md), continuing ADR 0010's beta
+terms, not an inference from passing tests.
 Complete provenance/physical acceptance and provision signing before stable
 distribution; keep [release policy](../RELEASING.md) and status accurate.
 

@@ -2,7 +2,7 @@
 
 ## Version, compatibility and publication boundary
 
-The current release version is `0.9.0-beta.1`, not a city-format version.
+The current release version is `0.9.0-beta.2`, not a city-format version.
 M8/M9 software work is merged. Current 51,360-byte `.cty` output, known M7 `.c89`
 identities and Classic goldens are retained. Older 27,120-byte cities and exact
 RNG/sprite/scenario replay remain unsupported. See [Classic compatibility](CLASSIC_COMPATIBILITY.md),
@@ -16,10 +16,12 @@ Commit and reconfigure release inputs before packaging; dirty/stale builds fail.
 
 ### Public testing beta versus stable release
 
-The owner approved public `0.9.0-beta.1` following the
-[asset investigation](ASSET_LICENSE_AUDIT.md), confirmed brand review fully approved,
-and deferred signing and physical acceptance for the beta. [ADR 0010](decisions/0010_PUBLIC_BETA.md)
-records the version-scoped decision. Exact OpenSVG pack notices for three inherited
+The owner approved public `0.9.0-beta.2` to deliver the merged settings fixes,
+continuing beta.1's reviewed [asset investigation](ASSET_LICENSE_AUDIT.md), brand
+approval and deferral of signing/physical acceptance.
+[ADR 0011](decisions/0011_BETA_2_SETTINGS_FIXES.md) records the version-scoped
+decision, continuing [ADR 0010](decisions/0010_PUBLIC_BETA.md)'s beta terms.
+Exact OpenSVG pack notices for three inherited
 UI images and two legacy source-only branding origins remain follow-ups; do not
 mark their audit complete or invent licences. Preserve all notices/source.
 
@@ -47,7 +49,7 @@ directories, then stage both (PowerShell 7, from the clean release checkout):
 ```powershell
 ./tools/release/New-DevelopmentRelease.ps1 -Beta -VerifyOnly `
   -DeliveryDirectory @('out/releases/input-x64','out/releases/input-arm64') `
-  -ExpectedCommit '<full authenticated build commit>' -Tag v0.9.0-beta.1 `
+  -ExpectedCommit '<full authenticated build commit>' -Tag v0.9.0-beta.2 `
   -NotesFile packaging/BETA_RELEASE_NOTES.md -OutputDirectory out/releases/beta-inspect
 ```
 
@@ -61,18 +63,19 @@ an old tag or replaces assets. Review the draft and confirm all nine uploads, th
 perform the already-authorised beta publication as a separate step:
 
 ```powershell
-gh release edit v0.9.0-beta.1 --repo DangerMouseUK/civic89 --draft=false --prerelease --latest=false
+gh release edit v0.9.0-beta.2 --repo DangerMouseUK/civic89 --draft=false --prerelease --latest=false
 ```
 
 Verify the release and downloads are accessible without GitHub authentication.
 Keep it excluded from Latest. A later beta version needs a fresh tag and recorded
 owner decision; stable publication follows the signed checklist below. Leave
-`playtest-m8-1` unchanged. The M8/M9 merge does not authorise merging a new docs PR;
-a beta can use an exact green branch commit while its documentation PR awaits review.
+`v0.9.0-beta.1` and `playtest-m8-1` unchanged. Publication approval does not authorise
+merging the release PR; a beta can use an authenticated green CI integration commit
+or exact green branch commit while its documentation PR awaits review.
 
 ## Download and test on another machine
 
-Use the [public beta](https://github.com/DangerMouseUK/civic89/releases/tag/v0.9.0-beta.1).
+Use the [public beta](https://github.com/DangerMouseUK/civic89/releases/tag/v0.9.0-beta.2).
 Choose x64 for Intel/AMD Windows 11 or ARM64 for ARM Windows 11. Run the matching
 per-user installer or extract the entire portable ZIP and double-click `civic89.exe`.
 Keep all DLLs/assets together; no developer tools or PowerShell are needed to play.
@@ -151,7 +154,7 @@ destination, or reuse that verified `ISCC.exe` without re-running bootstrap.
 The pinned download comes from the [official release](https://github.com/jrsoftware/issrc/releases/tag/is-6_7_3).
 Inno Setup is build tooling, not a game dependency.
 
-`out/releases/civic89-0.9.0-beta.1-windows-x64/` contains:
+`out/releases/civic89-0.9.0-beta.2-windows-x64/` contains:
 
 - Portable ZIP and per-user installer EXE.
 - Matching source ZIP from the exact build commit, with `source-provenance.json`
@@ -182,7 +185,7 @@ container, exports a Classic copy and tears down. It does not modify real prefer
 This is not a substitute for clean-machine visible/audio/DPI acceptance.
 
 ```powershell
-$delivery = 'out/releases/civic89-0.9.0-beta.1-windows-x64'
+$delivery = 'out/releases/civic89-0.9.0-beta.2-windows-x64'
 ./tools/release/Test-Release.ps1 -Directory "$delivery/portable"
 ./tools/release/Test-ReleaseTransactions.ps1 -DeliveryDirectory $delivery
 ./tools/release/Test-Installer.ps1 -DeliveryDirectory $delivery
@@ -249,7 +252,7 @@ the extracted package or corresponding source tree:
 
 ```powershell
 ./tools/release/Update-Portable.ps1 -InstallRoot "$env:LOCALAPPDATA\Civic89Portable" `
-  -Archive 'C:\Downloads\civic89-0.9.0-beta.1-windows-x64.zip' -ExpectedSha256 '<64 hex digits from trusted SHA256SUMS>'
+  -Archive 'C:\Downloads\civic89-0.9.0-beta.2-windows-x64.zip' -ExpectedSha256 '<64 hex digits from trusted SHA256SUMS>'
 ./tools/release/Launch-Portable.ps1 -InstallRoot "$env:LOCALAPPDATA\Civic89Portable"
 ./tools/release/Update-Portable.ps1 -InstallRoot "$env:LOCALAPPDATA\Civic89Portable" -Rollback
 ```

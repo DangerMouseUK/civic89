@@ -25,6 +25,8 @@ approval of brand review and the unsigned testing beta after the
 [asset investigation](../ASSET_LICENSE_AUDIT.md), with physical/signing and specific
 provenance follow-ups disclosed. Stable gates remain separate. Delivery is one
 whole milestone per branch/PR unless the user requests a narrower release/fix task.
+The follow-up settings-fix beta `0.9.0-beta.2` is separately approved by
+[ADR 0011](../decisions/0011_BETA_2_SETTINGS_FIXES.md).
 
 This pack is the working engineering specification for **Civic 89**, a polished, modern, native Windows application built from the authentic open-source Micropolis / original SimCity simulation lineage.
 
