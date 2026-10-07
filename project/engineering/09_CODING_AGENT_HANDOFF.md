@@ -15,7 +15,8 @@ M7 `.c89` compatibility and the `.cty` writer remain intact. Physical acceptance
 is pending, not passed. Current work is the owner-approved public testing beta,
 then demonstrated fixes/provenance/desktop/signing follow-up; no next milestone
 is agreed. Use [project status](../../PROJECT_STATUS.md), [asset investigation](../ASSET_LICENSE_AUDIT.md)
-and [ADR 0010](../decisions/0010_PUBLIC_BETA.md). The owner approved brand review
+and [ADR 0011](../decisions/0011_BETA_2_SETTINGS_FIXES.md). Beta.2 delivers the merged
+settings fixes under the original beta terms. The owner approved brand review
 and deferred signing/physical checks for this beta; do not resurrect old draft-only
 requirements, claim missing evidence exists or replace artwork without direction.
 

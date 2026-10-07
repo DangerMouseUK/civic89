@@ -2,6 +2,9 @@
 
 Date: 7 October 2026. Status: accepted owner decision.
 
+Follow-up: [ADR 0011](0011_BETA_2_SETTINGS_FIXES.md) records the separately approved
+beta.2 release under the same beta terms. The original beta.1 decision follows.
+
 M8 and M9 are merged in PRs #13 and #14. Their software checks passed, while
 physical desktop acceptance remains pending. The owner requested a public beta
 so people can download the game and provide that testing evidence.

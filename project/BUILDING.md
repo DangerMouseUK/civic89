@@ -304,7 +304,7 @@ reviewed captures and exact commands are in [M5 evidence](../tests/baseline/M5_2
 ## M6 release and ARM64 paths
 
 The root README now describes Civic 89 rather than upstream SDLPP. Release builds
-identify version `0.9.0-beta.1`, full/short Git revision, architecture and dirty state.
+identify version `0.9.0-beta.2`, full/short Git revision, architecture and dirty state.
 `civic89.exe --version` does not initialise SDL or user files. CMake executables
 find assets beside themselves, so a shortcut or an unrelated working directory
 works. The retained comparison executable still permits repository-relative assets.
@@ -378,8 +378,8 @@ desktop acceptance rather than overwriting a real city.
 
 ## Public beta version
 
-The numeric CMake project version is `0.9.0`; `CIVIC89_PRERELEASE` is `beta.1`.
+The numeric CMake project version is `0.9.0`; `CIVIC89_PRERELEASE` is `beta.2`.
 Build identity, `vcpkg.json` version-semver and the retained Visual Studio fallback
-all identify `0.9.0-beta.1`. Dependencies and registry baseline are unchanged.
+all identify `0.9.0-beta.2`. Dependencies and registry baseline are unchanged.
 Commit release inputs and reconfigure before packaging; a dirty or stale build fails.
 See [RELEASING.md](RELEASING.md) for publication and source/checksum verification.

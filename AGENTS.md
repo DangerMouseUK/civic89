@@ -79,9 +79,11 @@ Visual Studio comparison path working alongside the CMake build.
 
 ## Beta release policy
 
-The owner requested public `0.9.0-beta.1` after reviewing the asset investigation,
-confirmed brand review fully approved, and deferred code signing and physical
-desktop acceptance for this beta. Follow [ADR 0010](project/decisions/0010_PUBLIC_BETA.md),
+The owner approved public `0.9.0-beta.2` to deliver the merged settings fixes,
+continuing beta.1's reviewed asset decision, brand approval and deferral of code
+signing and physical desktop acceptance. Follow
+[ADR 0011](project/decisions/0011_BETA_2_SETTINGS_FIXES.md),
+[the original beta decision](project/decisions/0010_PUBLIC_BETA.md),
 [release instructions](project/RELEASING.md) and `packaging/release-gates.json`.
 Do not reinstate superseded draft-only/publication blockers or ask again for
 already-authorised beta publication. Keep the missing OpenSVG pack notices and

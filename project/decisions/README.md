@@ -14,5 +14,6 @@ Later ADRs record implementation and superseding decisions:
 - [0008 — M7 foundation](0008_M7_ENHANCED_FOUNDATION.md)
 - [0009 — Faithful modernisation and graphics](0009_FAITHFUL_MODERNISATION_AND_GRAPHICS.md)
 - [0010 — Public beta](0010_PUBLIC_BETA.md)
+- [0011 — Beta.2 settings fixes](0011_BETA_2_SETTINGS_FIXES.md)
 
 Preserve dated decisions as history; cite their superseding ADR when policy changes.

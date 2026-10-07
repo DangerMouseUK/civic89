@@ -3,11 +3,16 @@
 Entries below the beta are dated development delivery records, not current
 branch or publication status.
 
-## Unreleased
+## 0.9.0-beta.2 — 7 October 2026
 
 - Close the audio-preferences reader after startup so changing settings on a
   subsequent launch can replace `audio.cfg` without a Windows access-denied error.
 - Label the dashboard percentage as overlay opacity and explain its effect.
+- Regression coverage starts with existing audio preferences and verifies repeated
+  volume saves, persisted opacity and unchanged simulation state.
+- New x64/ARM64 testing-beta deliveries with the same unsigned-release policy.
+
+No gameplay, city format, artwork, dependency or golden-reference change.
 
 ## 0.9.0-beta.1 — 7 October 2026
 

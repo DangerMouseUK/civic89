@@ -8,11 +8,13 @@
 ## Current release decision — 7 October 2026
 
 M8/M9 are merged. The owner confirmed brand review fully approved and requested
-public `0.9.0-beta.1` after the [asset investigation](../ASSET_LICENSE_AUDIT.md).
+public beta.1 after the [asset investigation](../ASSET_LICENSE_AUDIT.md), then
+approved `0.9.0-beta.2` to deliver settings fixes with the same beta terms.
 Signing and physical acceptance are deferred for this testing beta. Exact OpenSVG
 pack notices and two legacy source-only image origins remain follow-ups; the asset
-audit is not represented as complete. [ADR 0010](../decisions/0010_PUBLIC_BETA.md)
-supersedes earlier blanket public-download/draft-only blockers for this version.
+audit is not represented as complete. [ADR 0011](../decisions/0011_BETA_2_SETTINGS_FIXES.md)
+records beta.2 approval, continuing [ADR 0010](../decisions/0010_PUBLIC_BETA.md)'s
+supersession of earlier blanket public-download/draft-only blockers for these versions.
 Preserve all inherited notices and exact corresponding source. The checklist
 below remains the stable-release target, not evidence that its items have passed.
 

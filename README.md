@@ -23,13 +23,16 @@ remain supported and use the same mechanics and map dimensions as `.cty` cities.
 
 ## Download the beta
 
-[**Download Civic 89 0.9.0-beta.1**](https://github.com/DangerMouseUK/civic89/releases/tag/v0.9.0-beta.1)
+[**Download Civic 89 0.9.0-beta.2**](https://github.com/DangerMouseUK/civic89/releases/tag/v0.9.0-beta.2)
 from the public GitHub prerelease. No developer tools or GitHub write access are needed.
+
+Beta.2 fixes settings-save errors after relaunch and labels the dashboard's
+overlay-opacity control. See the [changelog](CHANGELOG.md).
 
 | Your Windows 11 PC | Installer | Portable ZIP |
 |---|---|---|
-| Intel / AMD (x64) | [x64 installer](https://github.com/DangerMouseUK/civic89/releases/download/v0.9.0-beta.1/civic89-0.9.0-beta.1-windows-x64-setup.exe) | [x64 ZIP](https://github.com/DangerMouseUK/civic89/releases/download/v0.9.0-beta.1/civic89-0.9.0-beta.1-windows-x64.zip) |
-| ARM (ARM64) | [ARM64 installer](https://github.com/DangerMouseUK/civic89/releases/download/v0.9.0-beta.1/civic89-0.9.0-beta.1-windows-arm64-setup.exe) | [ARM64 ZIP](https://github.com/DangerMouseUK/civic89/releases/download/v0.9.0-beta.1/civic89-0.9.0-beta.1-windows-arm64.zip) |
+| Intel / AMD (x64) | [x64 installer](https://github.com/DangerMouseUK/civic89/releases/download/v0.9.0-beta.2/civic89-0.9.0-beta.2-windows-x64-setup.exe) | [x64 ZIP](https://github.com/DangerMouseUK/civic89/releases/download/v0.9.0-beta.2/civic89-0.9.0-beta.2-windows-x64.zip) |
+| ARM (ARM64) | [ARM64 installer](https://github.com/DangerMouseUK/civic89/releases/download/v0.9.0-beta.2/civic89-0.9.0-beta.2-windows-arm64-setup.exe) | [ARM64 ZIP](https://github.com/DangerMouseUK/civic89/releases/download/v0.9.0-beta.2/civic89-0.9.0-beta.2-windows-arm64.zip) |
 
 Run the installer, or extract the **whole ZIP** and double-click `civic89.exe`.
 Keep all DLLs and asset folders together. Matching source and SHA-256 checksums
@@ -52,7 +55,7 @@ The owner approved brand review and public beta publication after the asset
 investigation, and deferred signing/physical acceptance for the beta. Exact OpenSVG
 pack attribution and two legacy source-only image origins remain follow-ups;
 the [asset investigation](project/ASSET_LICENSE_AUDIT.md) records the evidence.
-See [release instructions](project/RELEASING.md), [beta policy](project/decisions/0010_PUBLIC_BETA.md)
+See [release instructions](project/RELEASING.md), [beta.2 policy](project/decisions/0011_BETA_2_SETTINGS_FIXES.md)
 and [current engineering status](PROJECT_STATUS.md).
 
 **Save compatibility:** current 51,360-byte `.cty` files and supplied scenarios are

@@ -2,7 +2,7 @@
 
 Direction selected by the user on 7 October 2026: sharper pixel art closely following
 the original. M8 and M9 are merged in PRs #13/#14. The software implementation
-is included in `0.9.0-beta.1`; physical desktop acceptance remains pending.
+is included unchanged in `0.9.0-beta.2`; physical desktop acceptance remains pending.
 
 Enhanced graphics refine the existing pixel edges at twice the source resolution,
 using an original implementation of a local, palette-preserving neighbour rule.
