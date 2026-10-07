@@ -5,6 +5,13 @@
 **Repository baseline captured:** 5 October 2026  
 **Scope:** **Civic 89** - native Windows modernisation of the open-source Micropolis / original SimCity code lineage
 
+**Current checkpoint (7 October 2026):** M0–M9 software work is merged, including
+M8 [PR #13](https://github.com/DangerMouseUK/civic89/pull/13) and M9
+[PR #14](https://github.com/DangerMouseUK/civic89/pull/14). Physical acceptance is
+pending. No further numbered milestone is agreed. Dated delivery records below
+retain their original versions/results; current beta policy is
+[ADR 0010](../decisions/0010_PUBLIC_BETA.md) and [project status](../../PROJECT_STATUS.md).
+
 ## 1. Roadmap philosophy
 
 The milestones are ordered to reduce risk. Do not begin the visible remaster work until the project can prove that the inherited simulation still builds and behaves consistently.
@@ -301,7 +308,7 @@ above. M7 remains complete; its interface adjustment is M8-02 below.
 
 ## 10. Milestone 8 - Faithfulness and Windows polish
 
-**Status:** in progress on `codex/m8-faithfulness-windows-polish`.
+**Status:** software merged in PR #13; physical desktop acceptance pending and deferred for the public testing beta (ADR 0010).
 
 **Goal:** finish fidelity and desktop acceptance work around the original game, and
 align the merged M7 interface with the single gameplay contract.
@@ -399,13 +406,14 @@ opening succeeds. Required physical visibility/input/dialog/audibility/mixed-DPI
 checks remain pending because desktop capture/input access is unavailable.
 [M8 evidence/checklist](../../tests/baseline/M8_2026-10-06.md) records results and
 delivery/CI progress. This is an implementation checkpoint, not full milestone
-acceptance. Keep the candidate PR a draft until required desktop evidence exists.
+acceptance. The PR has since merged; ADR 0010 permits the public testing beta
+while these physical checks remain pending.
 
 ## 11. Milestone 9 - Optional enhanced graphics
 
-**Status:** graphics direction approved on 7 October 2026; software scope implemented
-on `codex/m9-enhanced-graphics`, based on pending M8 `c3ba234`. M8 remains unmerged;
-M9 targets its branch until M8 merges. Both physical acceptance gates remain pending.
+**Status:** direction approved and software merged in PR #14 on 7 October 2026,
+after M8 PR #13. Physical acceptance remains pending and is deferred for the
+public testing beta. The implementation checkpoint below retains dated evidence.
 
 **Goal:** offer improved graphics for the same game, selectable during play in Settings.
 
@@ -461,8 +469,8 @@ and repeated toggling do not leak resources or damage the city.
 - Document the graphics preference, asset attribution and complete milestone evidence.
 
 **Acceptance:** one branch/PR completes the graphics milestone with unchanged gameplay,
-save compatibility and original graphics available. Public release still requires the
-remaining rights/brand/signing/physical gates. If graphics are declined, redefine M9
+save compatibility and original graphics available. Stable release requires the
+remaining rights/signing/physical gates; ADR 0010 governs the approved testing beta. If graphics are declined, redefine M9
 only through a separate user decision; do not substitute gameplay expansion.
 
 **M9 implementation checkpoint (7 October 2026):** the user chose sharper pixel art
@@ -477,15 +485,19 @@ Fresh-process comparisons cover phase digests, animation/RNG and both save forma
 catalogue captures, all scenarios/new city, DPI/zoom/backends, repeated toggling and
 failure/reset acceptance are included. [M9 evidence](../../tests/baseline/M9_2026-10-07.md)
 records measurements and build/package checks. This is a software delivery checkpoint;
-required physical readability/mixed-DPI/clean-machine checks and public rights/brand/
-signing gates remain pending. Keep M9 a draft alongside M8 until acceptance exists.
+required physical readability/mixed-DPI/clean-machine checks remain pending.
+M8/M9 are now merged; the owner approved brand review and the unsigned public beta
+after the asset investigation. ADR 0010 records the specific remaining follow-ups.
 
-### Release readiness alongside M8/M9
+### Release readiness after M8/M9
 
-Resolve the per-asset rights audit and brand review, provision the trusted signer and
-perform physical clean-machine desktop/install/update acceptance before public
-publication. Keep [release gates](../RELEASING.md) and status accurate. Completing a
-milestone does not itself authorise publication or clear an external gate.
+Publish the approved `0.9.0-beta.1` prerelease only from green, clean, verified
+x64/ARM64 deliveries with exact source and combined checksums. Brand review is
+owner-approved; signing/physical checks are deferred for beta. Disclose the
+[asset follow-ups](../ASSET_LICENSE_AUDIT.md). The owner's publication decision is
+[ADR 0010](../decisions/0010_PUBLIC_BETA.md), not an inference from passing tests.
+Complete provenance/physical acceptance and provision signing before stable
+distribution; keep [release policy](../RELEASING.md) and status accurate.
 
 ## 12. Historical first implementation sequence for a coding agent
 

@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 4.2)
 project(Civic89 VERSION 0.9.0 LANGUAGES CXX)
+set(CIVIC89_PRERELEASE "beta.1")
 
 if(NOT WIN32 OR NOT MSVC OR NOT CMAKE_SIZEOF_VOID_P EQUAL 8)
     message(FATAL_ERROR "Civic 89 supports Windows x64/ARM64 with MSVC.")

@@ -1,5 +1,16 @@
 # Sources and Reference Links
 
+> Current checkpoint — 7 October 2026: M0–M9 software work is merged.
+> This document retains the 5 October planning/audit snapshot and dated updates;
+> bootstrap tasks, starter templates, proposed dependencies and future-tense
+> migration steps are historical, not a new assignment. Implemented build/targets
+> and dependency choices are in [BUILDING.md](../BUILDING.md); current state is
+> [PROJECT_STATUS.md](../../PROJECT_STATUS.md). Faithful scope is governed by
+> [ADR 0009](../decisions/0009_FAITHFUL_MODERNISATION_AND_GRAPHICS.md), and the
+> owner-approved unsigned beta by [ADR 0010](../decisions/0010_PUBLIC_BETA.md).
+> Physical desktop acceptance remains pending. Catch2/spdlog were proposals;
+> they are not current dependencies. Original results are not retroactive checks.
+
 **Status:** Active engineering baseline  
 **Prepared:** 5 October 2026  
 **Repository baseline captured:** 5 October 2026  
@@ -70,3 +81,12 @@ As of the planning date:
 - GitHub runner-image documentation lists `windows-2025-vs2026` for x64 and `windows-11-vs2026-arm` for Windows 11 ARM64 with Visual Studio 2026.
 
 Re-check versions before intentional dependency upgrades. The architecture does not depend on these exact patch versions.
+
+
+## 7 October 2026 asset investigation and release decision
+
+- [Committed asset evidence](../ASSET_LICENSE_AUDIT.md), including exact upstream commits.
+- [OpenSVG project-use terms](https://opensvg.dev/terms-of-service), inspected 7 October;
+  current terms dated 5 July 2026 do not identify the imported April icon packs.
+- [Pinned author Raleway OFL](https://github.com/impallari/Raleway/blob/6c67ab1f7aa65c442bd2745bb9d4ef1cd7bc01fa/OFL.txt).
+- [Owner-approved public beta policy](../decisions/0010_PUBLIC_BETA.md).

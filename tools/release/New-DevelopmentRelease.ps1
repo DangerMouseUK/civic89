@@ -1,4 +1,4 @@
-# Stage verified deliveries as a private GitHub draft. SPDX-License-Identifier: GPL-3.0-or-later
+# Stage verified playtest/beta deliveries as a GitHub draft. SPDX-License-Identifier: GPL-3.0-or-later
 [CmdletBinding()]
 param(
     [Parameter(Mandatory)][string[]]$DeliveryDirectory,
@@ -7,12 +7,15 @@ param(
     [Parameter(Mandatory)][string]$NotesFile,
     [Parameter(Mandatory)][string]$OutputDirectory,
     [string]$Repository = 'DangerMouseUK/civic89',
+    [switch]$Beta,
     [switch]$VerifyOnly
 )
 . (Join-Path $PSScriptRoot 'ReleaseCommon.ps1')
 $PSNativeCommandUseErrorActionPreference = $true
-if ($ExpectedCommit -notmatch '^[a-f0-9]{40}$' -or $Tag -notmatch '^playtest-[a-z0-9]+(?:-[a-z0-9]+)*$' -or
-    $Repository -notmatch '^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$') { throw 'Invalid commit, playtest tag or repository.' }
+if ($ExpectedCommit -notmatch '^[a-f0-9]{40}$' -or
+    (!$Beta -and $Tag -notmatch '^playtest-[a-z0-9]+(?:-[a-z0-9]+)*$') -or
+    ($Beta -and $Tag -notmatch '^v\d+\.\d+\.\d+-beta\.[1-9]\d*$') -or
+    $Repository -notmatch '^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$') { throw 'Invalid commit, release tag or repository.' }
 $notes = Get-Content -LiteralPath $NotesFile -Raw
 if ([string]::IsNullOrWhiteSpace($notes)) { throw 'Release notes are required.' }
 $OutputDirectory = [IO.Path]::GetFullPath($OutputDirectory)
@@ -58,6 +61,10 @@ foreach ($directory in $DeliveryDirectory) {
     if ($delivery.schema -ne 1 -or $delivery.product -ne 'Civic 89' -or $delivery.commit -ne $ExpectedCommit -or
         $delivery.distribution -ne 'development' -or $delivery.architecture -notin @('x64','arm64')) { throw 'Wrong development delivery identity.' }
     Assert-ReleaseVersion $delivery.version
+    if ($Beta) {
+        $policy = Get-Content -LiteralPath (Join-Path $PSScriptRoot '../../packaging/release-gates.json') -Raw | ConvertFrom-Json
+        Assert-BetaReleasePolicy $delivery.version $Tag $policy.beta
+    }
     if ($version -and $version -ne $delivery.version) { throw 'Delivery versions differ.' }
     $version = $delivery.version
     if ($architectures.ContainsKey($delivery.architecture)) { throw 'Duplicate delivery architecture.' }
@@ -107,9 +114,11 @@ foreach ($directory in $DeliveryDirectory) {
     $assets.Add($metadata)
 }
 if (!$version) { throw 'At least one delivery is required.' }
+if ($Beta -and !$VerifyOnly -and $architectures.Count -ne 2) { throw 'Beta publication requires x64 and ARM64 deliveries.' }
 $metadata = Join-Path $OutputDirectory 'release.json'
 Write-ReleaseJson $metadata ([ordered]@{schema=1;product='Civic 89';version=$version;commit=$ExpectedCommit;
-    tag=$Tag;distribution='development';draft=$true;architectures=@($architectures.Keys | Sort-Object)})
+    tag=$Tag;distribution=$(if ($Beta) { 'beta' } else { 'development' });stagedAsDraft=$true;
+    architectures=@($architectures.Keys | Sort-Object)})
 $assets.Add($metadata)
 $sums = foreach ($asset in $assets | Sort-Object) {
     "$((Get-FileHash -LiteralPath $asset -Algorithm SHA256).Hash.ToLowerInvariant())  $([IO.Path]::GetFileName($asset))"
@@ -117,7 +126,12 @@ $sums = foreach ($asset in $assets | Sort-Object) {
 $sumFile = Join-Path $OutputDirectory 'SHA256SUMS.txt'
 [IO.File]::WriteAllLines($sumFile, $sums, [Text.UTF8Encoding]::new($false))
 $assets.Add($sumFile)
-$body = "**Draft development build for personal testing. Unsigned; required physical acceptance and public-release gates remain pending.**`n`n" +
+$summary = if ($Beta) {
+    '**Public beta for testing. Unsigned; physical desktop acceptance is pending. Asset provenance follow-ups are disclosed below.**'
+} else {
+    '**Draft development build for personal testing. Unsigned; stable-release gates remain pending.**'
+}
+$body = "$summary`n`n" +
     "Build: ``$version``; commit: ``$ExpectedCommit``; architectures: $(@($architectures.Keys | Sort-Object) -join ', ').`n`n" + $notes
 $bodyFile = Join-Path $OutputDirectory 'release-notes.md'
 [IO.File]::WriteAllText($bodyFile, $body, [Text.UTF8Encoding]::new($false))
@@ -128,7 +142,7 @@ if ($VerifyOnly) { Write-Output "Verified $($assets.Count) release assets: $Outp
 # downloaded binaries and never publishes, replaces assets or moves an old tag.
 gh api "repos/$Repository/git/commits/$ExpectedCommit" --silent
 $existing = @(gh api "repos/$Repository/releases" --paginate --jq '.[].tag_name')
-if ($Tag -in $existing) { throw 'Release tag already has a release; choose a new playtest tag.' }
+if ($Tag -in $existing) { throw 'Release tag already has a release; choose a new release tag.' }
 $refs = @(gh api "repos/$Repository/git/matching-refs/tags/$Tag" | ConvertFrom-Json)
 $exact = @($refs | Where-Object { $_.ref -eq "refs/tags/$Tag" })
 if ($exact.Count) {

@@ -1,8 +1,8 @@
 # M9 faithful pixel graphics
 
 Direction selected by the user on 7 October 2026: sharper pixel art closely following
-the original. M9 develops on `codex/m9-enhanced-graphics`, based on unmerged M8
-`c3ba234`. Its PR targets the M8 branch until M8 is accepted and merged.
+the original. M8 and M9 are merged in PRs #13/#14. The software implementation
+is included in `0.9.0-beta.1`; physical desktop acceptance remains pending.
 
 Enhanced graphics refine the existing pixel edges at twice the source resolution,
 using an original implementation of a local, palette-preserving neighbour rule.
@@ -33,7 +33,9 @@ Classic graphics remain the default and retain their original pixels.
 The inputs come from the pinned open-source SDLPP baseline, under the inherited
 GPL/additional terms recorded in the asset ledger; derived art retains those terms.
 The transformation implementation is GPL-3.0-or-later Civic 89 source. This does
-not clear the separate per-asset/public-release, icon, brand or signing gates.
+not establish missing icon-pack attribution. The [asset investigation](ASSET_LICENSE_AUDIT.md)
+and [beta decision](decisions/0010_PUBLIC_BETA.md) record the owner-approved
+unsigned testing release and remaining stable-release follow-ups.
 
 ## State and resource contract
 

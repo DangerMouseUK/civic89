@@ -1,136 +1,84 @@
-# Civic 89 - Project Status
+# Civic 89 — Project status
 
-**Current phase:** M0–M7 merged; M8 pending physical acceptance; M9 graphics implemented and locally verified on M8, physical acceptance pending
-**Updated:** 7 October 2026
-**Current product name:** Civic 89  
-**Repository root:** `C:\Dev\Projects\civic89`  
-**External vcpkg root:** `C:\Dev\vcpkg`
+**Updated:** 7 October 2026. **Current delivery:** public testing beta `0.9.0-beta.1`.
+M0–M9 software work is merged; physical desktop acceptance remains pending.
 
-## Authoritative local repository state
+## Repository and verification
 
-- Engineering branch: `codex/m9-enhanced-graphics`, delivering M9-01 through M9-05 together, based on unmerged M8 head `c3ba23496c183cea4c88310a53aa79924ff8db35`. The M9 PR targets `codex/m8-faithfulness-windows-polish`; retarget it to `main` after M8 merges. Neither M8 nor its branch is merged/deleted by this work.
-- M9 direction approved on 7 October: sharper pixel art closely following the original. Complete palette-preserving 2x edge refinement uses unchanged inherited inputs; it is not a newly illustrated pack. Settings-only graphics selection, complete resource switching/fallback, provenance/catalogue and acceptance are recorded in [graphics specification](project/GRAPHICS_SPECIFICATION.md) and [M9 evidence](tests/baseline/M9_2026-10-07.md). Physical acceptance and public gates remain pending.
-- M9 local acceptance: Debug/Release/application ASan **56/56** each; source-archive headless **45/45**; retained Visual Studio Release and native Direct3D 11 lifecycle pass. Complete x64 ZIP/source/installer, update/failure/rollback and development-draft verification pass for implementation `706e896`. The real M8 playtest → M9 → M8 rollback preserves prior city formats and preference copies. CI/native ARM64 are tracked on the M9 draft PR. The host is a remote virtual display; physical GPU/frame pacing and readability remain unverified.
-- M9 draft [PR #14](https://github.com/DangerMouseUK/civic89/pull/14) targets M8 #13. All five jobs pass for `eefbbc1` in [run 37593554242](https://github.com/DangerMouseUK/civic89/actions/runs/37593554242), including native ARM64 and both complete Release deliveries. Final minimap-allocation recovery rechecks pass in Debug/Release/application ASan and native Direct3D 11; follow-up hosted checks are tracked on the PR.
-- Latest M8 head `c3ba234` passes all five checks in [run 37511091304](https://github.com/DangerMouseUK/civic89/actions/runs/37511091304). Keep draft PR #13 open while the user tests the existing immutable M8 candidate.
-- M8 candidate: draft [PR #13](https://github.com/DangerMouseUK/civic89/pull/13), implementation `e6039b1`. Local x64 delivery/source/update/installer acceptance passes; all five jobs pass in [CI run 37503989275](https://github.com/DangerMouseUK/civic89/actions/runs/37503989275): application Debug/Release/ASan and native ARM64 55/55; headless ASan 45/45. Both Release architectures pass complete delivery acceptance. Final documentation checks are tracked on the PR. Required physical acceptance remains pending; the draft is not a fully accepted milestone.
-- Personal playtest: [draft release playtest-m8-1](https://github.com/DangerMouseUK/civic89/releases/tag/untagged-8fd9b1ca83f632c6f43e), with x64/ARM64 ZIPs and installers, matching source and combined checksums. Its immutable build commit is `b004537701945e9945df7fbadb6e272b8fbdfc34`, the green [CI run 37505416026](https://github.com/DangerMouseUK/civic89/actions/runs/37505416026) integration merge; its tree matches reviewed PR head `7e83849`. The owner can download on another machine while signed in. M8 stays pending, and public gates remain unchanged.
-- Release follow-up: the branch adds verified development draft staging, negative acceptance and a manual `release-draft` workflow. The manual workflow becomes available after merge to `main`; local staging/upload works now. No public release or trusted signing is claimed.
-- Scope selected by the user: faithful original gameplay/mechanics, modern Windows presentation and optional improved graphics only. The earlier Enhanced gameplay candidates are withdrawn; [ADR 0009](project/decisions/0009_FAITHFUL_MODERNISATION_AND_GRAPHICS.md) records the decision.
-- M7 delivery: merged [PR #12](https://github.com/DangerMouseUK/civic89/pull/12). Final head `6d73e53` passed all five jobs in [run 37494533588](https://github.com/DangerMouseUK/civic89/actions/runs/37494533588): application Debug/Release/ASan and native ARM64 **53/53**, headless ASan **43/43**. Both Release jobs passed complete packaging/update/install acceptance.
-- Local and remote `main`: `eb73f64230e35c2f0aaf8134c4cd5e6100ed155d`, the user-merged M7 PR. The recorded CI result verifies the final M7 branch head.
-- Synced with fetch/prune and a fast-forward to origin/main; verified M7 branch-head ancestry and deleted merged `codex/m7-enhanced-foundation`. Origin had already deleted it. The uncommitted planning update was carried into M8; its empty planning branch is removed. Upstream refs/tag are preserved.
-- `.git`: confirmed at `C:\Dev\Projects\civic89\.git`.
-- Baseline SHA: `9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad`.
-- Baseline tag: `upstream-sdlpp-baseline` (annotated; verified locally and on origin).
-- Preserved upstream remote: `upstream-sdlpp` -> `https://github.com/ldicker83/Micropolis-SDLPP.git`.
-- Civic 89 `origin`: `https://github.com/DangerMouseUK/civic89.git`.
-- Upstream push URL remains `DISABLED`. Complete inherited history is preserved.
-- Existing documentation/policy commits: `72608d8`, `a36e360`.
-- Bootstrap commits now on `main`: `d83be2c` (assets), `ae0ba9d` (build/tests), `2ca122b` (CI), `9f63d86` and `a47cd47` (evidence/status).
-- The actual cloned SHA exactly matches the SDLPP SHA used by the engineering audit.
+- M8 [PR #13](https://github.com/DangerMouseUK/civic89/pull/13) and M9
+  [PR #14](https://github.com/DangerMouseUK/civic89/pull/14) are merged.
+  The post-M9 main baseline is `e4986334bb5cda661d95b1018605dedb401ad7b4`.
+  Merged M8/M9 feature branches were removed after ancestry checks and fetch/prune.
+- All five jobs pass on merged main in [run 37616383766](https://github.com/DangerMouseUK/civic89/actions/runs/37616383766):
+  x64 Debug/Release/application ASan and native ARM64 Release **56/56** each;
+  headless ASan **45/45**. Both Release architectures pass ZIP/source/installer,
+  static DLL closure, update/failure/rollback and install/uninstall acceptance.
+- The beta branch `codex/beta-release` reconciles repository documentation,
+  records the asset investigation/owner decisions, versions the build and adds
+  verified beta staging. It changes no simulation, artwork, dependencies or saves.
+  The beta's exact build commit and delivery checksums are recorded in `release.json`
+  on the [release page](https://github.com/DangerMouseUK/civic89/releases/tag/v0.9.0-beta.1).
+  The associated PR/checks record validation of the beta inputs separately from
+  the merged-main evidence above. Release publication follows successful CI.
+- The earlier `playtest-m8-1` draft remains an immutable private development
+  candidate at `b004537701945e9945df7fbadb6e272b8fbdfc34`; it is not the public beta.
 
-## Bootstrap checklist
+## Owner decisions and remaining acceptance
 
-- [x] Install/select the Visual Studio Enterprise 2026 C++ development environment.
-- [x] Confirm Git is installed.
-- [x] Clone Micropolis-SDLPP directly into `C:\Dev\Projects\civic89` (no manual `git init`).
-- [x] Confirm `.git` exists inside the project root.
-- [x] Rename inherited `origin` to `upstream-sdlpp`.
-- [x] Capture exact HEAD `9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad`.
-- [x] Create annotated tag `upstream-sdlpp-baseline`.
-- [x] Configure Civic 89 origin; verify remote `main`, branch and baseline tag.
-- [x] Verify inherited **micropolis-sdlpp.sln** / **micropolis-cpp.vcxproj** Release x64 build again before changes.
-- [x] Commit the initial project/agent documentation on `main`.
-- [x] Create `feature/cmake-bootstrap` and hand the workspace to the coding agent.
-- [x] Inventory 122 runtime asset/notice files, including 82 textures and four font paths.
-- [x] Restore missing Raleway fonts from a pinned author repository under OFL 1.1, with copyright/licence.
-- [x] Exclude original Virtue due to restrictive bundled terms; use the documented unmodified Raleway Bold alias at `res/virtue.ttf` for both builds.
-- [x] Configure/build CMake x64 Debug and Release via explicit pinned vcpkg toolchain; disable global integration on generated projects.
-- [x] Pass both CTest checks in both configurations: inherited runtime font/data/texture smoke and all 47 source-file entries matching the `.vcxproj`.
-- [x] Inherited GUI smoke: map, date advancement, construction, minimap, native save/open, own-save reload and normal exit.
-- [x] CMake Release GUI comparison: map, date advancement, construction, minimap, native save/open, own-save reload and normal exit.
-- [x] CMake Debug and portable Release installation startup/date/exit checks (exit code 0).
-- [x] Stage all 122 assets from a Git archive, without ignored workstation files.
-- [x] Configure/build/test both presets from a fresh full-source Git archive of `9f63d86`, with MSBuild vcpkg integration disabled in that process; 2/2 tests pass in each configuration.
-- [x] Add Debug/Release GitHub Actions on the VS 2026 Windows runner after local build/run checks; validate YAML locally.
-- [x] Verify hosted CI: [run 37317705607](https://github.com/DangerMouseUK/civic89/actions/runs/37317705607) passed Debug and Release configure/build plus 2/2 tests in each configuration for `9f63d86`, using separate VS 2026 Windows runners and pinned external vcpkg checkouts.
-- [x] Capture a fresh-source Release screenshot and verify its normal exit with code 0.
-- [x] Record commands, results, inherited differences and generated save fixtures under `tests/baseline/`.
-- [x] Merge PR #1, synchronize local `main` with `git pull --ff-only`, and remove the merged feature branch.
-- [x] Verify merged-main hosted CI: [run 37355668174](https://github.com/DangerMouseUK/civic89/actions/runs/37355668174) passed for `b6fc77e`.
+The owner confirmed brand review fully approved, reviewed the asset investigation
+and requested a public testing beta. Signing and physical acceptance are explicitly
+deferred for this beta. [ADR 0010](project/decisions/0010_PUBLIC_BETA.md) governs the
+version-scoped beta approval; stable release gates remain separate.
 
-## Completed M7
+[Asset evidence](project/ASSET_LICENSE_AUDIT.md) establishes exact original-release
+matches for all 73 shipped XPMs and 24 cities, author-release matches/OFL for the
+four fonts, and source provenance for Civic 89 additions. OpenSVG permits project
+use in its current terms, but exact packs/notices for three inherited UI images
+and the origins of two legacy source-only branding resources remain follow-ups.
+No confirmed prohibited icon or licence incompatibility was established. This
+does not claim a completed per-icon rights audit; inherited notices are preserved.
 
-**M7 - Enhanced Mode foundation.** All five items were delivered together in merged PR #12.
+Still pending: physical monitor/mixed-DPI/readability/frame-pacing checks, audible
+audio/native-dialog/accessibility acceptance on real machines, the above asset
+follow-ups and trusted signing provisioning. Automated/virtual-display results
+do not replace physical evidence. Beta testers should use
+[testing instructions](packaging/BETA_RELEASE_NOTES.md) and report issues.
 
-- [x] M7-01: supported Classic v1 development contract, with historical/replay/platform limitations and unchanged public-release gates.
-- [x] M7-02: typed versioned registry, exact ruleset identities/capabilities and rejection of unknown modes before mutation. Enhanced v1 currently uses Classic mechanics.
-- [x] M7-03: new-city mode selection, active UI/runner identity, CLI selection and Classic scenario policy; cancelling a pending selection preserves the live mode.
-- [x] M7-04: unchanged `.cty` layout, bounded/checksummed `.c89`, explicit import/export, atomic failure preservation and separate mode-aware recovery slots.
-- [x] M7-05: complete local and hosted native acceptance. Debug/Release and application ASan pass **53/53** each; headless ASan and corresponding-source export pass **43/43**. All 25 Classic goldens and four generated-city parity cases are unchanged. Real ZIP/installer/update/rollback, both save formats' retention, production Enhanced smoke under ASan and retained Visual Studio Release pass.
+## Product and compatibility
 
-[ADR 0008](project/decisions/0008_M7_ENHANCED_FOUNDATION.md),
-[Classic contract](project/CLASSIC_COMPATIBILITY.md),
-[Enhanced format](project/ENHANCED_CITY_FORMAT.md) and
-[M7 evidence](tests/baseline/M7_2026-10-06.md) record the foundation and acceptance.
-M0–M7 are merged. M8 now presents one original-gameplay path while retaining both
-M7 save identities and CLI compatibility. This adjusts M7's interface, not its
-completed foundation. Public asset/brand/physical acceptance and trusted signing provisioning remain
-external gates; development candidates are unsigned.
+One faithful original-gameplay contract. No larger maps, wider limits, new tools/
+buildings/scenarios, balance changes, mods, achievements, day/night or seasons.
+Classic graphics are default; optional palette-preserving 2x edge refinement
+switches during play and persists in `graphics.cfg`, independently of city state,
+RNG, timing, saves and `ui.cfg`. See [ADR 0009](project/decisions/0009_FAITHFUL_MODERNISATION_AND_GRAPHICS.md).
 
-## Current engineering task and remaining milestones
+Keep current 51,360-byte `.cty` output and known M7 `.c89` compatibility. Historical
+27,120-byte cities and exact RNG/sprite/scenario replay are unsupported. Scenario
+exports reopen as ordinary cities. See [Classic contract](project/CLASSIC_COMPATIBILITY.md),
+[Enhanced format](project/ENHANCED_CITY_FORMAT.md) and [fidelity audit](project/FAITHFULNESS_AUDIT.md).
 
-The M8 branch includes all six items' software work: fidelity source/data audit and
-regressions, historical format investigation, one gameplay path/retained saves,
-Windows chord/focus/save-location fixes, expanded display matrix and documentation.
-Local application Debug/Release/ASan pass 55/55; headless Debug/ASan pass 45/45.
-Native hidden Direct3D 11 and default audio-device checks pass. Required physical
-acceptance remains pending: the desktop bridge returned black capture and denied
-input access. See [M8 evidence/checklist](tests/baseline/M8_2026-10-06.md). Keep its
-PR a candidate/draft until those checks have evidence; do not mark M8 fully accepted.
-The [roadmap](project/engineering/08_ROADMAP_AND_IMPLEMENTATION_BACKLOG.md) defines:
+## Next work and historical evidence
 
-- [ ] **M8 - Faithfulness and Windows polish:** original-mechanics audit/regressions,
-  historical-save investigation, physical desktop/display/input/audio/dialog checks
-  and complete milestone validation. Includes simplifying the merged M7 interface
-  around one gameplay contract while preserving existing `.c89`/`.cty` workflows,
-  recovery, CLI compatibility and failure isolation.
-- [ ] **M9 - Optional enhanced graphics:** agreed faithful art direction/licensed
-  assets, Classic/Enhanced graphics in Settings, complete rendering integration,
-  performance/desktop acceptance and unchanged state/RNG/timing/save output. Graphics
-  may switch during play and never select a different simulation or require conversion.
+No further numbered milestone is agreed. Gather beta feedback, fix demonstrated
+issues within scope, complete provenance/desktop acceptance and provision signing
+before a stable release. The [roadmap](project/engineering/08_ROADMAP_AND_IMPLEMENTATION_BACKLOG.md)
+retains the complete M0–M9 plan and dated delivery records.
 
-M9 is optional and requires agreed graphics adoption/art direction before implementation.
-No larger maps, wider limits, additional buildings/tools/scenarios, changed traffic/
-utilities/balance, mods, achievements/challenges or day/night/seasons are planned.
-One whole implementation milestone remains the unit of each engineering branch/PR.
-Public release additionally needs asset/brand clearance, trusted signing and remaining
-physical clean-machine acceptance; these gates are not cleared by this plan.
+Historical commands/results are under [tests/baseline](tests/baseline/), including
+[bootstrap](tests/baseline/BOOTSTRAP_2026-10-05.md),
+[M7](tests/baseline/M7_2026-10-06.md), [M8](tests/baseline/M8_2026-10-06.md)
+and [M9](tests/baseline/M9_2026-10-07.md). Their older branch/draft/version statements
+describe their capture date; current policy is ADR 0010. Do not rewrite historical
+results as newly passed checks.
 
-## Verified environment and dependency baseline
+## Preserved provenance and workspace
 
-- Installed Visual Studio Enterprise 2026: **18.10.3**. CMake selects the installed VS 2026 BuildTools instance, MSVC **19.51.36260.0**, toolset directory **14.51.36231**.
-- Bundled CMake: **4.3.1-msvc1**. Presets require CMake 4.2+ for the VS 2026 generator; no developer shell/Ninja needed.
-- vcpkg executable version: `2026-09-26-51bf87ca6e9bf3e622d84ff323bd202ab1ca0c0b`.
-- Clean external checkout/manifest registry baseline: **19780d9cdf84d0944cf9a318666703b89ab6629c**. The executable version and registry commit are different identifiers.
-- Original five direct dependencies retained: SDL3 3.4.18, SDL3_image 3.4.4#1, SDL3_ttf 3.2.2#1, nativefiledialog-extended 1.4.1, nlohmann-json 3.12.0#2. M3 adds SDL3_mixer 3.2.4 with optional codec features disabled at the same registry baseline.
-
-Exact commands/target mapping: [project/BUILDING.md](project/BUILDING.md). Local evidence: [tests/baseline/BOOTSTRAP_2026-10-05.md](tests/baseline/BOOTSTRAP_2026-10-05.md). Asset provenance and replacement decision: [project/reference/RUNTIME_ASSETS.md](project/reference/RUNTIME_ASSETS.md), `assets/runtime-assets.json`, `assets/ASSET-LICENSES.yml`.
-
-M0–M7 are merged. M7 added explicit ruleset and save compatibility boundaries around
-the completed native interface and delivery tooling. The engine remains platform-free. All 122 staged
-assets/notices are retained; new audio is original GPL source-generated PCM.
-No upstream push, history rewrite or tag modification occurred.
-
-## Inherited limitations and release gates
-
-- Missing fonts were an inherited packaging defect, not a Civic 89 regression. Startup now works with approved fonts/substitute. Original developer font versions and pixel-identical text metrics cannot be established.
-- **Historical 27,120-byte `.cty` import remains unsupported.** M8 verified the differing 16-bit/history/metadata layout against a pinned Micropolis reference and tests rejection of all 24 inherited files before mutation. No faithful history mapping/decoder is claimed. The current 51,360-byte writer stays unchanged; see [audit](project/FAITHFULNESS_AUDIT.md). Post-load scans still run; RNG, sprites and scenario progress are not serialized.
-- `icons/LICENSE.txt` supplies OpenSVG attribution without identifying original icon sets/licences. Public binary redistribution remains blocked on that audit. Other retained graphics/fixtures preserve inherited project-level GPL/additional-terms provenance, not a completed per-asset rights review.
-- M3 supplies functional audio, mute/volume, resource teardown and reliable native city saves. M4 supplies camera auto-goto, timed earthquake presentation, DPI and rendering changes. Original procedural effects are used; no music asset is introduced.
-- Autosave/recovery covers ordinary cities. Automatic scenario autosave is skipped because the inherited format cannot restore scenario objectives/deadlines. Explicit scenario exports retain ordinary-city behavior. Desktop audibility/native-dialog interaction are not established by dummy-driver tests.
-- Historical bootstrap `/W4` capture exposed **50 inherited warnings per configuration**: 40 C4100, one C4189, two C4389, one C4456, six C4459. The inherited `/W3` comparison build reported none. No warning-as-error policy introduced.
-- A final inherited MSBuild rerun passed after the manifest change with four CS1668 environment warnings: two missing `LIB` search directories reported twice by Roslyn inline tasks (Enterprise ATL/MFC and `lib\um\x64`). These are workstation/global-integration warnings, not C++ errors; no unrelated environment repair was made.
-- The main window and new dialogs identify Civic 89; inherited UI art/resources remain for comparison. `civic89.exe` is the new target name; M6 adds Civic 89 executable resources and development packaging; public release clearance remains gated.
-- Retained `.sln`/`.vcxproj` build with the M2 split/support files, M3/M4/M5 services and M7 container codec. Engine extraction, deterministic digests and ASan are verified. Exhaustive desktop/DPI/resource/asset compliance testing remains later work; automated native tests use SDL dummy/software rendering.
+- Root: `C:\Dev\Projects\civic89`; external vcpkg: `C:\Dev\vcpkg`.
+- Origin: `https://github.com/DangerMouseUK/civic89.git`.
+- Upstream: `https://github.com/ldicker83/Micropolis-SDLPP.git`, remote
+  `upstream-sdlpp`, push URL `DISABLED`; complete history is retained.
+- Fixed annotated tag `upstream-sdlpp-baseline` resolves to
+  `9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad` (captured 5 October 2026).
+- Build/run commands: [BUILDING.md](project/BUILDING.md). Distribution and
+  signing: [RELEASING.md](project/RELEASING.md). All inherited licences/notices
+  and the retained Visual Studio comparison build remain intact.

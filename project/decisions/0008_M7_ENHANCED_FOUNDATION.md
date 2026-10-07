@@ -1,5 +1,9 @@
 # ADR 0008 — M7 Enhanced Mode foundation
 
+> Historical delivery decision. Current faithful scope is ADR 0009;
+> [ADR 0010](0010_PUBLIC_BETA.md) supersedes blanket public-download blockers
+> for the owner-approved unsigned beta, without passing physical/asset/signing gates.
+
 Date: 6 October 2026. Base: merged M6 `fa3534b` (PR #11).
 Branch: `codex/m7-enhanced-foundation`.
 

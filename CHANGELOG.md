@@ -1,5 +1,20 @@
 # Changelog
 
+Entries below the beta are dated development delivery records, not current
+branch or publication status.
+
+## 0.9.0-beta.1 — 7 October 2026
+
+- First public testing beta combining merged M8 Windows polish and M9 optional graphics.
+- x64/ARM64 portable ZIPs and per-user installers, exact source and combined checksums.
+- Repository-wide documentation reconciliation, durable asset investigation and
+  explicit owner-approved beta policy. Brand review approved; signing and physical
+  desktop acceptance deferred for this unsigned prerelease. Provenance follow-ups disclosed.
+- Verified beta staging requires the approved version/tag, clean matching builds
+  and both architectures before upload. Stable signed-release gates remain separate.
+
+No gameplay, city format, artwork, dependency or golden-reference change.
+
 ## 0.9.0-dev — M9 optional faithful graphics
 
 - Classic/Enhanced graphics in Settings, independent of city identity and stored in `graphics.cfg`.

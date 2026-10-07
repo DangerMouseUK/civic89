@@ -20,16 +20,17 @@ saves. M8 (`0.8.0-dev`) candidates retain their original graphics.
 Please try launching and playing, saving/reopening a city, cancelling the native
 file picker, hearing audio, Alt+Tab/minimise/restore, resizing/fullscreen and readable
 UI scale on your actual screen(s). Report the Windows version, architecture, screen
-resolution/scaling, game version and steps to reproduce any issue. Physical checks
-and public asset/brand/signing clearance remain pending. Windows may show a warning
+resolution/scaling, game version and steps to reproduce any issue. Physical checks remain pending. Public beta approval and stable-release
+follow-ups are documented in project/decisions/0010_PUBLIC_BETA.md; this template
+still describes a private development draft. Windows may show a warning
 because this testing build is unsigned; check the release identity before choosing
 to run it.
 
 For M9, compare both graphics options while playing the same city. Check animated
 buildings, moving sprites, construction previews, minimap and overlays at different
 zoom levels; switch repeatedly, save/reopen and try fullscreen. At 1080p and 4K,
-report stutters or unreadable details and include your graphics adapter. Keep M8
-pending until its own physical checks pass; M9 does not replace that acceptance.
+report stutters or unreadable details and include your graphics adapter. M8/M9 are now merged; their physical acceptance remains pending. The public
+beta gathers that evidence without claiming the checks have passed.
 
 `SHA256SUMS.txt` covers the packages, matching source and identity files. The source
 ZIP corresponds to the embedded build commit. This draft is for the repository

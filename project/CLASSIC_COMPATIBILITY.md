@@ -1,8 +1,10 @@
 # Classic v1 compatibility contract
 
 This is the supported **development engine/data contract**, established from merged
-M6 `fa3534b`. It does not declare a stable public release or clear the asset, brand,
-signing and physical desktop gates in `packaging/release-gates.json`.
+M6 `fa3534b`, retained through merged M8/M9 and `0.9.0-beta.1`. It does not
+declare a stable release or physical desktop acceptance. The owner-approved
+unsigned beta policy is [ADR 0010](decisions/0010_PUBLIC_BETA.md); stable gates
+remain separate in `packaging/release-gates.json`.
 
 **Scope update (6 October 2026):** [ADR 0009](decisions/0009_FAITHFUL_MODERNISATION_AND_GRAPHICS.md)
 requires faithful original gameplay throughout the project. Optional graphics are an

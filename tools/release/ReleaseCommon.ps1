@@ -6,6 +6,17 @@ function Assert-ReleaseVersion([string]$Version) {
     if ($Version -notmatch '^\d+\.\d+\.\d+(?:-[0-9A-Za-z]+(?:[.-][0-9A-Za-z]+)*)?$') { throw 'Invalid release version.' }
 }
 
+function Assert-BetaReleasePolicy([string]$Version, [string]$Tag, $Policy) {
+    if ($Version -notmatch '^\d+\.\d+\.\d+-beta\.[1-9]\d*$' -or $Tag -cne "v$Version") {
+        throw 'Beta tag must match the beta delivery version.'
+    }
+    if ($Policy.version -cne $Version -or $Policy.approved -ne $true -or
+        $Policy.brandReviewApproved -ne $true -or $Policy.assetInvestigationReviewed -ne $true -or
+        $Policy.unsignedAccepted -ne $true -or $Policy.physicalAcceptanceDeferred -ne $true) {
+        throw 'Beta release lacks the recorded owner decisions for this version.'
+    }
+}
+
 function Assert-RelativeReleasePath([string]$Path) {
     if (!$Path -or $Path.Contains('\') -or $Path.StartsWith('/') -or $Path.Length -gt 200) { throw "Unsafe package path: $Path" }
     foreach ($part in $Path.Split('/')) {
@@ -92,6 +103,12 @@ function Test-ReleaseTree([string]$Root, [bool]$Installed = $false) {
     if ([version]($manifest.version.Split('-')[0]) -ge [version]'0.9.0') {
         foreach ($required in @('assets/graphics-catalogue.json','project/GRAPHICS_SPECIFICATION.md')) {
             if (!$expected.ContainsKey($required)) { throw "Missing graphics provenance: $required" }
+        }
+    }
+    if ($manifest.version -match '-beta\.') {
+        foreach ($required in @('project/ASSET_LICENSE_AUDIT.md','project/decisions/0010_PUBLIC_BETA.md',
+            'packaging/BETA_RELEASE_NOTES.md','packaging/release-gates.json')) {
+            if (!$expected.ContainsKey($required)) { throw "Missing beta disclosure: $required" }
         }
     }
     $build = Get-Content -LiteralPath (Join-Path $Root 'build-info.json') -Raw | ConvertFrom-Json

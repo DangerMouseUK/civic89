@@ -1,0 +1,166 @@
+# Civic 89 asset licence investigation — 7 October 2026
+
+Investigated checkout: `e4986334bb5cda661d95b1018605dedb401ad7b4` (merged M8/M9).
+Investigation completed before beta preparation; no assets were changed and no
+upstream contact was made. This report records the evidence and its limits.
+
+## Owner decisions
+
+The owner has approved brand review as completed and explicitly deferred physical
+desktop acceptance and code signing for the beta. After reviewing the investigation, the owner requested the public testing beta
+with the inherited assets and disclosed follow-ups. These decisions do not recover
+missing pack notices or establish unverified asset origins. See
+[ADR 0010](decisions/0010_PUBLIC_BETA.md) and the separate stable/beta policy in
+`packaging/release-gates.json`.
+
+## Method and scope
+
+- Verified all 122 runtime inventory hashes, applying the inventory's LF text normalization.
+- Compared Git blob identities against the inherited original-release commit `a4a60d6`.
+  This compares actual file contents, including matches at different original paths.
+- Inspected the changes and histories of later assets and the inherited licensing notices.
+- Compared the committed font binaries with immutable Git objects in the author's Raleway release.
+- Examined 138 additional tracked files under the inherited asset directories that are
+  outside the runtime inventory, including the two retained Windows branding resources.
+- Inspected the existing clean M9 x64 portable delivery's licence directories and contents.
+- Consulted the upstream OpenSVG site and searched candidate icon shapes. Similarity
+  comparisons did not establish an authoritative per-icon mapping; no candidate licence
+  has been assigned to an atlas on that basis.
+
+Machine-readable comparisons and research downloads are local ignored evidence
+under `out/audit/asset-licenses-2026-10-07/`. The committed runtime inventory and
+Git objects named below make the content comparisons reproducible. Research files
+are not product inputs and are not included in binary deliveries.
+
+## Findings supported by direct evidence
+
+### Original game art, cities, scenarios and data
+
+All **73 shipped XPM images** (tiles, minimap, sprites and previews) and **24 bundled
+city files** have exact blob matches in the original inherited release: 97 files.
+The original release notice expressly covers non-text assets, including graphics,
+cities and scenarios, under GPL version 3 or later with the inherited additional terms.
+These files have a recorded permission basis; blanket claims that their art is
+unlicensed are unsupported.
+
+The eight current scenario files descend from the original scenarios through
+Leeor Dicker's format-conversion commit `6896074162239cf537f838995db5387b42085c16`.
+The two JSON data files descend through the same GPL upstream project; their latest
+change is `335f07ca67a49cbdea609655bead55acb95442f8`.
+
+Six of the seven panel PNGs are later SDLPP interface work, with author history and
+the upstream project's GPL declaration. No separate external icon source was found
+for those six plain backgrounds. The dashboard is the exception described below.
+This is source-provenance evidence, not an independent claim about every upstream
+contributor's ownership.
+
+Sources:
+- [Original release notice](https://raw.githubusercontent.com/SimHacker/micropolis/c98f6b08519887b450d9be198bfca5237aab6d0c/micropolis-activity/README), also preserved locally in `__README_OG`.
+- [Pinned SDLPP licence declaration](https://raw.githubusercontent.com/ldicker83/Micropolis-SDLPP/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/README.md).
+- [Scenario conversion](https://github.com/ldicker83/Micropolis-SDLPP/commit/6896074162239cf537f838995db5387b42085c16).
+
+Redistribution must retain COPYING, the inherited additional terms and attribution,
+identify Civic 89 as a modified independent project, and provide corresponding source.
+
+### Fonts
+
+The four shipped TTF files are unmodified Raleway binaries. Their Git blob identities
+match the author's pinned release `6c67ab1f7aa65c442bd2745bb9d4ef1cd7bc01fa`:
+
+| Local file | Author-release blob |
+|---|---|
+| res/Raleway-Medium.ttf | 99df2d6062a7e471d13f56e5eb5e937c0dc1579c |
+| res/Raleway-Bold.ttf | 7aa37f014fec4c7b5a9abaecbbc5992e6507cdc2 |
+| res/Raleway-BoldItalic.ttf | 1d1c6dd6cfe583675204ea3ec3ae01c020184f92 |
+| res/virtue.ttf | 7aa37f014fec4c7b5a9abaecbbc5992e6507cdc2 |
+
+`virtue.ttf` is a filename alias for unmodified Raleway Bold, not the excluded Virtue
+font. The bundled OFL/copyright text matches the author release after line-ending
+and trailing-whitespace normalization. No missing font licence was found.
+
+Source: [Pinned author OFL](https://raw.githubusercontent.com/impallari/Raleway/6c67ab1f7aa65c442bd2745bb9d4ef1cd7bc01fa/OFL.txt).
+
+### Civic 89 additions
+
+The application mark has a complete original geometric generator and SVG source,
+with GPL-3.0-or-later attribution. Audio is generated by `src/AudioManager.cpp` from
+project source, without imported recordings. Enhanced graphics are generated by
+the project's GPL source from the same licensed inherited XPM inputs. These have
+source and ledger records; no additional external bitmap or recording was found.
+
+### Source-only original material
+
+Of 138 additional inherited asset files outside the runtime inventory, **136** have
+exact original-release blob matches, including **all 49 inherited WAV recordings**.
+They are covered by the original non-text-assets notice. Those WAVs are not used or
+shipped in the current binary delivery; they are present in the full source archive.
+The ledger's earlier statement that their individual provenance was unestablished
+can be improved with this direct original-release evidence.
+
+## Remaining specific provenance/attribution gaps
+
+### Three UI images introduced or changed in the OpenSVG commit
+
+Commit `8e9254ad9792d6348cf4e9dfeff37f8ce063885a`, by Leeor Dicker on 22 April 2026 UTC,
+replaces the earlier Freepik/Flaticon attribution with OpenSVG and changes:
+
+- `icons/buttons.png` — used in the current modern interface and comparison UI.
+- `icons/minimap.png` — staged, used by the retained minimap UI.
+- `images/DashboardWindow.png` — includes embedded icons in the retained dashboard.
+
+All three are in the binary runtime inventory. The dashboard is currently grouped
+under generic inherited artwork, so an audit confined to `icons/` misses it.
+Generated screenshots showing these icons inherit the same attribution question.
+
+`icons/LICENSE.txt` contains only the OpenSVG name and site link. No original SVG
+files, icon-pack identifiers, individual credits or pack-specific licence text were
+found in the committed current tree or that introducing change. The author's commit
+states an intention to use more permissive icons; that does not identify the terms.
+
+OpenSVG's **current** terms permit incorporating and customizing icons in personal
+and commercial projects. The site identifies itself as a curator of open-source
+collections. This is positive evidence against treating all OpenSVG use as forbidden
+or requiring a paid licence. However, the current terms were updated 5 July 2026,
+after the April import, and do not identify which underlying packs the atlases used.
+We still need the actual pack(s), applicable notices and any modification attribution.
+No confirmed incompatibility or confirmed prohibited icon has been established.
+
+Sources:
+- [Exact upstream import/change](https://github.com/ldicker83/Micropolis-SDLPP/commit/8e9254ad9792d6348cf4e9dfeff37f8ce063885a).
+- [Pinned existing attribution file](https://github.com/ldicker83/Micropolis-SDLPP/blob/9c4e85a0decd57ba6f76d9e1ec82461940ecc3ad/icons/LICENSE.txt).
+- [OpenSVG current terms, section 2](https://opensvg.dev/terms-of-service).
+- [OpenSVG collection/author explanation](https://opensvg.dev/pricing).
+
+### Two legacy Windows branding resources in the full source archive
+
+`Micropolis.png` was replaced in `f0c64a13c2ec2cd9e8321fe58ce8b929a12a6df8`;
+`micropolis.ico` was introduced in `63b6a5a19ee1b3dc3f3a84c0bca1a6be86c9c166`.
+Neither current file matches the original-release blobs and neither introducing
+commit establishes the image's underlying source or separate licence. The GPL
+upstream declaration is present, but their specific image origins remain unverified.
+
+They are compiled only by the retained Visual Studio comparison project. The CMake
+Civic 89 executable uses the original Civic 89 mark. The existing portable package
+contains neither legacy image as a standalone file, but the complete corresponding
+source archive includes them. This is a source-distribution provenance question,
+not evidence that the current Civic 89 executable embeds the old branding.
+
+## Existing package notices
+
+The inspected clean M9 x64 delivery includes COPYING, the inherited notice, author
+and project notices, the Raleway licence, 13 pinned dependency copyright directories,
+and Microsoft CRT Redist.txt plus its separate runtime notice. There is no missing
+licence bundle across the package as a whole. This check establishes presence, not
+an exhaustive legal review of every dependency or the publishing operator's tooling licence.
+
+## Remaining follow-up
+
+Recover the source icon names/collections from the SDLPP author, including the
+dashboard icons, and ask for the origins of the two legacy branding images. This
+may allow retaining the current artwork with correct notices. Contact requires
+the owner's explicit authorization; no message or issue has been sent.
+
+If that information cannot be recovered, discuss a targeted, clearly licensed
+replacement or source-export treatment with the owner. Do not replace artwork,
+invent an attribution or mark the asset gate passed merely from visual similarity
+or the aggregator's general description. No purchase is established as necessary.

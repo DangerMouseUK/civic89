@@ -34,6 +34,29 @@ Assert-Rejected 'wrong commit' { & $publisher @wrong -DeliveryDirectory $Deliver
 Assert-Rejected 'duplicate architecture' { & $publisher @parameters -DeliveryDirectory @($DeliveryDirectory[0],$DeliveryDirectory[0]) `
     -OutputDirectory (Join-Path $OutputDirectory 'duplicate-arch') } 'Duplicate delivery architecture'
 
+# Beta approval is scoped to one version and cannot turn a stable/dev tag into a beta.
+$policy = (Get-Content -LiteralPath (Join-Path $PSScriptRoot '../../packaging/release-gates.json') -Raw | ConvertFrom-Json).beta
+Assert-BetaReleasePolicy $policy.version "v$($policy.version)" $policy
+foreach ($field in @('approved','brandReviewApproved','assetInvestigationReviewed','unsignedAccepted','physicalAcceptanceDeferred')) {
+    $unapproved = $policy | ConvertTo-Json | ConvertFrom-Json
+    $unapproved.$field = $false
+    Assert-Rejected "missing beta decision: $field" { Assert-BetaReleasePolicy $policy.version "v$($policy.version)" $unapproved } 'lacks the recorded owner decisions'
+}
+Assert-Rejected 'approval for a different beta' { Assert-BetaReleasePolicy '0.9.0-beta.999' 'v0.9.0-beta.999' $policy } 'lacks the recorded owner decisions'
+Assert-Rejected 'stable version using beta policy' { Assert-BetaReleasePolicy '0.9.0' 'v0.9.0' $policy } 'Beta tag must match'
+if ($delivery.version -eq $policy.version) {
+    $beta = $parameters.Clone(); $beta.Beta = $true; $beta.Tag = "v$($delivery.version)"
+    & $publisher @beta -DeliveryDirectory $DeliveryDirectory -OutputDirectory (Join-Path $OutputDirectory 'valid-beta')
+    $wrongTag = $beta.Clone(); $wrongTag.Tag = 'v0.9.0-beta.999'
+    Assert-Rejected 'beta tag/version mismatch' { & $publisher @wrongTag -DeliveryDirectory $DeliveryDirectory `
+        -OutputDirectory (Join-Path $OutputDirectory 'wrong-beta-tag') } 'Beta tag must match'
+    if ($DeliveryDirectory.Count -eq 1) {
+        $upload = $beta.Clone(); $upload.Remove('VerifyOnly')
+        Assert-Rejected 'incomplete beta architecture upload' { & $publisher @upload -DeliveryDirectory $DeliveryDirectory `
+            -OutputDirectory (Join-Path $OutputDirectory 'incomplete-beta') } 'requires x64 and ARM64'
+    }
+}
+
 $tampered = Copy-Delivery 'tampered-input'
 $setup = Get-ChildItem -LiteralPath $tampered -Filter '*-setup.exe'
 [IO.File]::AppendAllText($setup.FullName, 'tampered')
