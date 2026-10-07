@@ -1,7 +1,18 @@
-# Civic 89 0.9.0-beta.1
+# Civic 89 0.9.0-beta.2
 
-The first public testing beta includes the merged M8 Windows polish and M9
-optional graphics. It preserves the original gameplay and mechanics.
+This testing beta fixes settings-save errors reported in beta.1 and clarifies the
+dashboard's overlay-opacity percentage. It includes the merged M8 Windows polish
+and M9 optional graphics, preserving the original gameplay and mechanics.
+
+## Changes since beta.1
+
+- Settings can be saved after relaunching with an existing `audio.cfg`. The startup
+  reader now closes before Windows replaces the preferences file.
+- The dashboard percentage reads **Opacity**, with descriptive hover text and
+  help. It controls how strongly the selected data overlay covers the map and has
+  no visible effect with **No overlay** selected.
+- Regression checks cover existing settings, repeated volume saves and persisted
+  opacity. Simulation, city formats, artwork and dependencies are unchanged.
 
 ## Download and play
 
@@ -17,8 +28,17 @@ warning. Check that you downloaded from DangerMouseUK/civic89 on GitHub before
 deciding to run it. SHA256SUMS.txt checks download integrity; it is not a digital
 signature or a substitute for trusting the download source.
 
+To update from beta.1, save your city and close the game. Run the new installer,
+or extract the whole new ZIP to a **fresh folder**. Preferences remain in
+`%APPDATA%\Civic89\Civic89`; keep any city files you saved in the old game folder.
+There is no automatic network updater. Beta.1 downloads remain unchanged.
+
 ## What to test
 
+- Change **Opacity** beside the overlay selector, select Traffic or Pollution,
+  then restart and confirm the percentage was retained. No overlay means there
+  is no coloured data layer to fade. Check that no settings-save error appears.
+- Change Settings → Sound volumes, close/relaunch and confirm they were retained.
 - Start a city with F7 or choose one of the eight scenarios with F6. Build roads,
   zones and utilities, change speed (1–4), pause (Space) and try budget/history.
 - Save and reopen a **copy** of a city; cancel the file picker and try Unicode
@@ -55,8 +75,8 @@ steps to reproduce and expected/actual behaviour. Attach diagnostics from
   images and the origins of two legacy source-only branding resources remain
   follow-ups. No prohibited icon or confirmed licence incompatibility was found;
   a complete per-icon rights audit is not claimed. See the
-  [asset investigation](https://github.com/DangerMouseUK/civic89/blob/v0.9.0-beta.1/project/ASSET_LICENSE_AUDIT.md)
-  and [beta decision](https://github.com/DangerMouseUK/civic89/blob/v0.9.0-beta.1/project/decisions/0010_PUBLIC_BETA.md).
+  [asset investigation](https://github.com/DangerMouseUK/civic89/blob/v0.9.0-beta.2/project/ASSET_LICENSE_AUDIT.md)
+  and [beta.2 decision](https://github.com/DangerMouseUK/civic89/blob/v0.9.0-beta.2/project/decisions/0011_BETA_2_SETTINGS_FIXES.md).
 
 The matching source ZIP and inherited GPL/additional terms accompany the binaries.
 Release metadata identifies the exact clean build commit. This is a prerelease,

@@ -1,6 +1,6 @@
 # Civic 89 — Project status
 
-**Updated:** 7 October 2026. **Current delivery:** public testing beta `0.9.0-beta.1`.
+**Updated:** 7 October 2026. **Release version:** public testing beta `0.9.0-beta.2`.
 M0–M9 software work is merged; physical desktop acceptance remains pending.
 
 ## Repository and verification
@@ -8,11 +8,17 @@ M0–M9 software work is merged; physical desktop acceptance remains pending.
 - Beta [PR #16](https://github.com/DangerMouseUK/civic89/pull/16) is merged at
   `db939586e18696376200e89ed80233265a5e45d0`; all five jobs pass on merged main in
   [run 37631106690](https://github.com/DangerMouseUK/civic89/actions/runs/37631106690).
-- Follow-up branch `codex/fix-settings-persistence` addresses the beta report of
-  settings-save errors after relaunch and clarifies the overlay-opacity control.
-  These fixes are unreleased; the published `0.9.0-beta.1` assets are unchanged.
+- Settings-fix [PR #17](https://github.com/DangerMouseUK/civic89/pull/17) is merged
+  at `2b6acb5a43f499c418b6d8a6404155aeb2c4cd7f`. It fixes settings-save errors after
+  relaunch and clarifies the overlay-opacity control. Merged-main verification is
+  recorded in [run 37638042234](https://github.com/DangerMouseUK/civic89/actions/runs/37638042234).
   Local x64 Debug and Release each pass **56/56** tests, including a regression
   seeded with existing audio settings that reproduced Windows error 5 before the fix.
+- Release branch `codex/release-0.9.0-beta.2` versions these fixes and records the
+  owner's beta.2 publication approval in [ADR 0011](project/decisions/0011_BETA_2_SETTINGS_FIXES.md).
+  Publication requires green CI and verified x64/ARM64 deliveries. The
+  [beta.2 release page](https://github.com/DangerMouseUK/civic89/releases/tag/v0.9.0-beta.2)
+  records availability, exact build commit and checksums; beta.1 remains immutable.
 - M8 [PR #13](https://github.com/DangerMouseUK/civic89/pull/13) and M9
   [PR #14](https://github.com/DangerMouseUK/civic89/pull/14) are merged.
   The post-M9 main baseline is `e4986334bb5cda661d95b1018605dedb401ad7b4`.
@@ -35,8 +41,9 @@ M0–M9 software work is merged; physical desktop acceptance remains pending.
 
 The owner confirmed brand review fully approved, reviewed the asset investigation
 and requested a public testing beta. Signing and physical acceptance are explicitly
-deferred for this beta. [ADR 0010](project/decisions/0010_PUBLIC_BETA.md) governs the
-version-scoped beta approval; stable release gates remain separate.
+deferred for testing betas. [ADR 0011](project/decisions/0011_BETA_2_SETTINGS_FIXES.md)
+approves beta.2 and continues [ADR 0010](project/decisions/0010_PUBLIC_BETA.md)'s
+original beta terms; stable release gates remain separate.
 
 [Asset evidence](project/ASSET_LICENSE_AUDIT.md) establishes exact original-release
 matches for all 73 shipped XPMs and 24 cities, author-release matches/OFL for the
@@ -76,7 +83,7 @@ Historical commands/results are under [tests/baseline](tests/baseline/), includi
 [bootstrap](tests/baseline/BOOTSTRAP_2026-10-05.md),
 [M7](tests/baseline/M7_2026-10-06.md), [M8](tests/baseline/M8_2026-10-06.md)
 and [M9](tests/baseline/M9_2026-10-07.md). Their older branch/draft/version statements
-describe their capture date; current policy is ADR 0010. Do not rewrite historical
+describe their capture date; current policy is ADR 0011. Do not rewrite historical
 results as newly passed checks.
 
 ## Preserved provenance and workspace

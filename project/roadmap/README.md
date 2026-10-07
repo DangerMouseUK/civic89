@@ -6,4 +6,4 @@ still pending. No M10 or other numbered milestone has been agreed.
 
 Current work is the public testing beta, real-machine feedback/fixes, provenance
 follow-ups and trusted signing before stable distribution. See
-[project status](../../PROJECT_STATUS.md) and [beta policy](../decisions/0010_PUBLIC_BETA.md).
+[project status](../../PROJECT_STATUS.md) and [beta.2 policy](../decisions/0011_BETA_2_SETTINGS_FIXES.md).

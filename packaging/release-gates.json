@@ -6,13 +6,13 @@
     {"id": "clean-machine-desktop", "passed": false, "detail": "Physical display, mixed-DPI, audible audio and native-dialog acceptance is pending; beta testers will supply this evidence."}
   ],
   "beta": {
-    "version": "0.9.0-beta.1",
+    "version": "0.9.0-beta.2",
     "approved": true,
     "brandReviewApproved": true,
     "assetInvestigationReviewed": true,
     "unsignedAccepted": true,
     "physicalAcceptanceDeferred": true,
-    "decision": "project/decisions/0010_PUBLIC_BETA.md",
-    "detail": "Owner requested a public testing beta after the asset investigation, accepted the disclosed provenance follow-ups, and deferred signing and physical acceptance. Stable gates remain separate."
+    "decision": "project/decisions/0011_BETA_2_SETTINGS_FIXES.md",
+    "detail": "Owner approved beta.2 to deliver the merged settings fixes, continuing beta.1's reviewed asset decision, disclosed provenance follow-ups and deferral of signing and physical acceptance. Stable gates remain separate."
   }
 }

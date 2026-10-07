@@ -18,10 +18,10 @@ the installer/portable ZIP. It records the exact Git commit and pinned dependenc
 baseline. Build instructions are in `project/BUILDING.md` and release instructions
 in `project/RELEASING.md`. An application version does not define a city-file version.
 
-The owner approved public testing beta 0.9.0-beta.1 following the asset
-investigation and confirmed brand review complete. This beta is unsigned and
-physical desktop acceptance is pending. Exact OpenSVG pack notices for three
+The owner approved public testing beta 0.9.0-beta.2 to deliver settings fixes,
+continuing beta.1's reviewed asset decision and completed brand review. This beta
+is unsigned and physical desktop acceptance is pending. Exact OpenSVG pack notices for three
 inherited UI images and the origins of two legacy source-only branding images
 remain follow-ups; no complete per-icon clearance is claimed. See
-`project/ASSET_LICENSE_AUDIT.md` and `project/decisions/0010_PUBLIC_BETA.md`.
+`project/ASSET_LICENSE_AUDIT.md` and `project/decisions/0011_BETA_2_SETTINGS_FIXES.md`.
 Stable signed-release gates remain in `packaging/release-gates.json`.
